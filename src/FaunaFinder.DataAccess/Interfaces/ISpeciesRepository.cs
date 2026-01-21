@@ -13,7 +13,11 @@ public interface ISpeciesRepository
         int speciesId,
         CancellationToken cancellationToken = default);
 
-    Task<IReadOnlyList<SpeciesForSearchDto>> SearchSpeciesAsync(
+    Task<IReadOnlyList<SpeciesForSearchDto>> GetSpeciesAsync(
         SpeciesParameters parameters,
+        CancellationToken cancellationToken = default);
+
+    Task<int> GetTotalSpeciesCountAsync(
+        string? search = null,
         CancellationToken cancellationToken = default);
 }

@@ -343,7 +343,7 @@
         sheetOpen = true;
         StateHasChanged();
 
-        allSpecies = await SpeciesRepository.SearchSpeciesAsync(new SpeciesParameters(), cancellationToken);
+        allSpecies = await SpeciesRepository.GetSpeciesAsync(new SpeciesParameters(PageSize: 500), cancellationToken);
     }
 
     private void ShowAllSpecies()
