@@ -1,6 +1,7 @@
 @page "/species/{Id:int}"
 @inject ISpeciesRepository SpeciesRepository
 @inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
 
 <PageTitle>@(species?.CommonName ?? "Species") - FaunaFinder</PageTitle>
 
@@ -11,7 +12,7 @@
                StartIcon="@Icons.Material.Filled.ArrowBack"
                OnClick="NavigateBack"
                Class="mb-4">
-        Back to Species
+        Back
     </MudButton>
 
     @if (isLoading)
@@ -51,17 +52,16 @@
         }
         else
         {
-            <MudGrid Spacing="2" Class="mb-6">
+            <MudGrid Spacing="3" Class="mb-6">
                 @foreach (var municipality in species.Municipalities)
                 {
-                    <MudItem xs="6" sm="4" md="3" lg="2">
-                        <MudChip T="string"
-                                 Color="Color.Primary"
-                                 Variant="Variant.Outlined"
-                                 OnClick="@(() => NavigateToMunicipality(municipality.Id))"
-                                 Class="municipality-chip">
-                            @municipality.Name
-                        </MudChip>
+                    <MudItem xs="6" sm="4" md="3">
+                        <MudCard Elevation="2" Class="municipality-card" @onclick="() => NavigateToMunicipality(municipality.Id)">
+                            <MudCardContent Class="d-flex align-center justify-center pa-3">
+                                <MudIcon Icon="@Icons.Material.Filled.LocationCity" Size="Size.Small" Color="Color.Primary" Class="mr-2" />
+                                <MudText Typo="Typo.body1" Color="Color.Primary">@municipality.Name</MudText>
+                            </MudCardContent>
+                        </MudCard>
                     </MudItem>
                 }
             </MudGrid>
@@ -111,14 +111,14 @@
 </MudContainer>
 
 <style>
-    .municipality-chip {
+    .municipality-card {
         cursor: pointer;
-        width: 100%;
-        justify-content: center;
+        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
     }
 
-    .municipality-chip:hover {
-        background-color: rgba(45, 106, 79, 0.1);
+    .municipality-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
     }
 </style>
 
@@ -145,9 +145,9 @@
         StateHasChanged();
     }
 
-    private void NavigateBack()
+    private async Task NavigateBack()
     {
-        NavigationManager.NavigateTo("/species");
+        await JSRuntime.InvokeVoidAsync("history.back");
     }
 
     private void NavigateToMunicipality(int municipalityId)

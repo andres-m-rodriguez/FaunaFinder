@@ -2,6 +2,7 @@
 @inject IMunicipalityRepository MunicipalityRepository
 @inject ISpeciesRepository SpeciesRepository
 @inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
 
 <PageTitle>@(municipality?.Name ?? "Pueblo") - FaunaFinder</PageTitle>
 
@@ -12,7 +13,7 @@
                StartIcon="@Icons.Material.Filled.ArrowBack"
                OnClick="NavigateBack"
                Class="mb-4">
-        Back to Pueblos
+        Back
     </MudButton>
 
     @if (isLoading)
@@ -158,9 +159,9 @@
         expandedSpeciesId = expanded ? speciesId : null;
     }
 
-    private void NavigateBack()
+    private async Task NavigateBack()
     {
-        NavigationManager.NavigateTo("/pueblos");
+        await JSRuntime.InvokeVoidAsync("history.back");
     }
 
     private void NavigateToSpecies(int speciesId)
