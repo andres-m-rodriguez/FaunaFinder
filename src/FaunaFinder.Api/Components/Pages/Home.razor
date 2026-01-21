@@ -3,7 +3,6 @@
 @inject IMunicipalityRepository MunicipalityRepository
 @inject ISpeciesRepository SpeciesRepository
 @inject IJSRuntime JS
-@inject ISnackbar Snackbar
 
 <PageTitle>FaunaFinder - Puerto Rico</PageTitle>
 
@@ -14,7 +13,7 @@
 
     @* Desktop Sidebar *@
     <MudHidden Breakpoint="Breakpoint.SmAndDown">
-        <MudDrawer Open="@(selectedMunicipality != null || showAllSpecies)"
+        <MudDrawer Open="@(clickedMunicipalityName != null || showAllSpecies)"
                    Anchor="Anchor.End"
                    Variant="DrawerVariant.Persistent"
                    Width="360px"
@@ -27,11 +26,11 @@
                     <MudText Typo="Typo.body2" Class="mt-3">Loading...</MudText>
                 </MudContainer>
             }
-            else if (selectedMunicipality != null)
+            else if (clickedMunicipalityName != null)
             {
                 <MudPaper Class="pa-3 mud-theme-primary" Square="true" Elevation="0">
                     <div class="d-flex justify-space-between align-center">
-                        <MudText Typo="Typo.subtitle1">@selectedMunicipality.Name</MudText>
+                        <MudText Typo="Typo.subtitle1">@clickedMunicipalityName</MudText>
                         <MudButton Variant="Variant.Text" Color="Color.Inherit" Size="Size.Small" OnClick="ShowAllSpecies">
                             All Species
                         </MudButton>
@@ -152,13 +151,13 @@
 
     @* Mobile Bottom Sheet *@
     <MudHidden Breakpoint="Breakpoint.MdAndUp">
-        @if (selectedMunicipality != null || showAllSpecies)
+        @if (clickedMunicipalityName != null || showAllSpecies)
         {
             <div class="mobile-sheet-backdrop @(sheetOpen ? "open" : "")" @onclick="CloseSheet"></div>
             <div class="mobile-sheet @(sheetOpen ? "open" : "")">
                 <div class="mobile-sheet-header">
                     <MudText Typo="Typo.subtitle1" Class="ml-3">
-                        @(selectedMunicipality?.Name ?? "All Species")
+                        @(clickedMunicipalityName ?? "All Species")
                     </MudText>
                     <MudSpacer />
                     <MudIconButton Icon="@Icons.Material.Filled.Close"
@@ -172,7 +171,7 @@
                         <MudText Typo="Typo.body2" Class="mt-3">Loading...</MudText>
                     </MudContainer>
                 }
-                else if (selectedMunicipality != null)
+                else if (clickedMunicipalityName != null)
                 {
                     <MudContainer Class="pa-3" MaxWidth="MaxWidth.False">
                         @if (species.Count == 0)
@@ -264,7 +263,7 @@
 
     @* Mobile FAB for "View All Species" when nothing selected *@
     <MudHidden Breakpoint="Breakpoint.MdAndUp">
-        @if (selectedMunicipality == null && !showAllSpecies)
+        @if (clickedMunicipalityName == null && !showAllSpecies)
         {
             <MudFab Color="Color.Primary"
                     StartIcon="@Icons.Material.Filled.List"
@@ -277,6 +276,7 @@
 
 @code {
     private MunicipalityForListDto? selectedMunicipality;
+    private string? clickedMunicipalityName;
     private IReadOnlyList<SpeciesForListDto> species = [];
     private IReadOnlyList<SpeciesForSearchDto> allSpecies = [];
     private IReadOnlyList<MunicipalityForListDto> municipalities = [];
@@ -300,20 +300,15 @@
     }
 
     [JSInvokable]
-    public async Task OnMunicipalityClick(string geoJsonId)
+    public async Task OnMunicipalityClick(string geoJsonId, string name)
     {
         var municipality = municipalities?.FirstOrDefault(m => m.GeoJsonId == geoJsonId);
-
-        if (municipality == null)
-        {
-            Snackbar.Add("No data available for this municipality.", Severity.Info);
-            return;
-        }
 
         isLoading = true;
         showAllSpecies = false;
         expandedSpeciesId = null;
         selectedMunicipality = municipality;
+        clickedMunicipalityName = name;
         species = [];
         sheetOpen = false;
         StateHasChanged();
@@ -323,7 +318,10 @@
         sheetOpen = true;
         StateHasChanged();
 
-        species = await SpeciesRepository.GetSpeciesByMunicipalityAsync(municipality.Id);
+        if (municipality != null)
+        {
+            species = await SpeciesRepository.GetSpeciesByMunicipalityAsync(municipality.Id);
+        }
 
         isLoading = false;
         StateHasChanged();
@@ -353,6 +351,7 @@
     private void ShowAllSpecies()
     {
         selectedMunicipality = null;
+        clickedMunicipalityName = null;
         species = [];
         expandedSpeciesId = null;
     }
@@ -373,6 +372,7 @@
         await Task.Delay(300);
 
         selectedMunicipality = null;
+        clickedMunicipalityName = null;
         showAllSpecies = false;
         species = [];
         allSpecies = [];
