@@ -2,6 +2,7 @@
 @using FaunaFinder.Contracts.Dtos.Municipalities
 @using FaunaFinder.Contracts.Parameters
 @inject IMunicipalityRepository MunicipalityRepository
+@inject NavigationManager NavigationManager
 
 <PageTitle>Pueblos - FaunaFinder</PageTitle>
 
@@ -39,7 +40,7 @@
             @foreach (var municipality in municipalities)
             {
                 <MudItem xs="12" sm="6" md="4" lg="3">
-                    <MudCard Elevation="2" Class="municipality-card">
+                    <MudCard Elevation="2" Class="municipality-card" Style="cursor: pointer;" @onclick="() => NavigateToDetail(municipality.Id)">
                         <MudCardContent>
                             <MudText Typo="Typo.h6" Color="Color.Primary">@municipality.Name</MudText>
                             <div class="d-flex align-center mt-2">
@@ -127,5 +128,10 @@
     {
         currentPage = page - 1;
         await LoadMunicipalities();
+    }
+
+    private void NavigateToDetail(int municipalityId)
+    {
+        NavigationManager.NavigateTo($"/pueblos/{municipalityId}");
     }
 }
