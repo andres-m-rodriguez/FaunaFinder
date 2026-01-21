@@ -1,23 +1,36 @@
 @inherits LayoutComponentBase
 
-<div class="layout">
-    <header class="header">
-        <div class="header-content">
-            <a href="/" class="logo">
-                <span class="logo-text">FaunaFinder</span>
-            </a>
-            <nav class="nav">
-                <a href="/" class="nav-link">Map</a>
-                <a href="/about" class="nav-link">About</a>
-            </nav>
-        </div>
-    </header>
+<MudThemeProvider Theme="_theme" />
+<MudPopoverProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
 
-    <main class="main-content">
+<MudLayout>
+    <MudAppBar Color="Color.Primary" Fixed="true" Dense="true">
+        <MudText Typo="Typo.h6" Class="ml-2">FaunaFinder</MudText>
+        <MudSpacer />
+        <MudButton Href="/" Color="Color.Inherit" Variant="Variant.Text">Map</MudButton>
+        <MudButton Href="/about" Color="Color.Inherit" Variant="Variant.Text">About</MudButton>
+    </MudAppBar>
+
+    <MudMainContent Class="pt-14">
         @Body
-    </main>
+    </MudMainContent>
+</MudLayout>
 
-    <footer class="footer">
-        <p>FaunaFinder - Puerto Rico Conservation Species Finder</p>
-    </footer>
-</div>
+@code {
+    private readonly MudTheme _theme = new()
+    {
+        PaletteLight = new PaletteLight
+        {
+            Primary = "#2d6a4f",
+            PrimaryDarken = "#1b4332",
+            PrimaryLighten = "#40916c",
+            Secondary = "#40916c",
+            AppbarBackground = "#2d6a4f",
+            Background = "#f8f9fa",
+            Surface = "#ffffff",
+            DrawerBackground = "#ffffff"
+        }
+    };
+}
