@@ -77,7 +77,7 @@ public sealed class SpeciesRepository(
             .FirstOrDefaultAsync(cancellationToken);
     }
 
-    public async Task<IReadOnlyList<SpeciesForSearchDto>> SearchSpeciesAsync(
+    public async Task<IReadOnlyList<SpeciesForSearchDto>> GetSpeciesAsync(
         SpeciesParameters parameters,
         CancellationToken cancellationToken = default)
     {
@@ -101,21 +101,39 @@ public sealed class SpeciesRepository(
                     ms.MunicipalityId == parameters.MunicipalityId.Value));
         }
 
-        // Keyset pagination
-        if (parameters.FromCursor.HasValue)
-        {
-            query = query.Where(s => s.Id > parameters.FromCursor.Value);
-        }
-
-        // Project and return
+        // Project and return with municipality names
         return await query
             .OrderBy(static s => s.CommonName)
-            .Take(parameters.Limit ?? 50)
+            .Skip(parameters.Page * parameters.PageSize)
+            .Take(parameters.PageSize)
             .Select(static s => new SpeciesForSearchDto(
                 s.Id,
                 s.CommonName,
-                s.ScientificName
+                s.ScientificName,
+                s.MunicipalitySpecies
+                    .Select(ms => ms.Municipality.Name)
+                    .OrderBy(n => n)
+                    .ToList()
             ))
             .ToListAsync(cancellationToken);
+    }
+
+    public async Task<int> GetTotalSpeciesCountAsync(
+        string? search = null,
+        CancellationToken cancellationToken = default)
+    {
+        await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
+
+        var query = context.Species.AsNoTracking().AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var searchLower = search.ToLower();
+            query = query.Where(s =>
+                s.CommonName.ToLower().Contains(searchLower) ||
+                s.ScientificName.ToLower().Contains(searchLower));
+        }
+
+        return await query.CountAsync(cancellationToken);
     }
 }
