@@ -1,0 +1,132 @@
+@page "/species"
+@inject ISpeciesRepository SpeciesRepository
+
+<PageTitle>Species - FaunaFinder</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="py-6">
+    <MudText Typo="Typo.h4" Color="Color.Primary" GutterBottom="true">Species</MudText>
+    <MudText Typo="Typo.body1" Color="Color.Secondary" Class="mb-4">
+        Explore the species of Puerto Rico and discover where they can be found.
+    </MudText>
+
+    <MudTextField @bind-Value="searchTerm"
+                  Placeholder="Search species..."
+                  Adornment="Adornment.Start"
+                  AdornmentIcon="@Icons.Material.Filled.Search"
+                  Variant="Variant.Outlined"
+                  Immediate="true"
+                  DebounceInterval="300"
+                  OnDebounceIntervalElapsed="OnSearchChanged"
+                  Class="mb-4" />
+
+    @if (isLoading)
+    {
+        <MudContainer Class="d-flex justify-center py-8">
+            <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+        </MudContainer>
+    }
+    else if (species.Count == 0)
+    {
+        <MudAlert Severity="Severity.Info" Variant="Variant.Text" Class="mb-4">
+            No species found matching your search.
+        </MudAlert>
+    }
+    else
+    {
+        <MudGrid Spacing="3">
+            @foreach (var s in species)
+            {
+                <MudItem xs="12" sm="6" md="4" lg="3">
+                    <MudCard Elevation="2" Class="species-card">
+                        <MudCardContent>
+                            <MudText Typo="Typo.h6" Color="Color.Primary">@s.CommonName</MudText>
+                            <MudText Typo="Typo.body2" Color="Color.Secondary" Class="font-italic">
+                                @s.ScientificName
+                            </MudText>
+                            <div class="d-flex align-center mt-2">
+                                <MudIcon Icon="@Icons.Material.Filled.LocationOn" Size="Size.Small" Color="Color.Secondary" Class="mr-2" />
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">
+                                    @s.MunicipalityNames.Count @(s.MunicipalityNames.Count == 1 ? "municipality" : "municipalities")
+                                </MudText>
+                            </div>
+                        </MudCardContent>
+                    </MudCard>
+                </MudItem>
+            }
+        </MudGrid>
+
+        <div class="d-flex justify-center mt-6">
+            <MudPagination Count="@totalPages"
+                          Selected="@(currentPage + 1)"
+                          SelectedChanged="OnPageChanged"
+                          Color="Color.Primary"
+                          Variant="Variant.Filled"
+                          ShowFirstButton="true"
+                          ShowLastButton="true" />
+        </div>
+
+        <MudText Typo="Typo.caption" Color="Color.Secondary" Align="Align.Center" Class="mt-2">
+            Showing @((currentPage * pageSize) + 1)-@Math.Min((currentPage + 1) * pageSize, totalCount) of @totalCount species
+        </MudText>
+    }
+</MudContainer>
+
+<style>
+    .species-card {
+        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        height: 100%;
+    }
+
+    .species-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15) !important;
+    }
+</style>
+
+@code {
+    private IReadOnlyList<SpeciesForSearchDto> species = [];
+    private string searchTerm = string.Empty;
+    private int currentPage = 0;
+    private int pageSize = 12;
+    private int totalCount = 0;
+    private int totalPages = 0;
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadSpecies();
+    }
+
+    private async Task LoadSpecies()
+    {
+        isLoading = true;
+        StateHasChanged();
+
+        var parameters = new SpeciesParameters(
+            PageSize: pageSize,
+            Page: currentPage,
+            Search: string.IsNullOrWhiteSpace(searchTerm) ? null : searchTerm
+        );
+
+        species = await SpeciesRepository.GetSpeciesAsync(parameters);
+        totalCount = await SpeciesRepository.GetTotalSpeciesCountAsync(
+            string.IsNullOrWhiteSpace(searchTerm) ? null : searchTerm
+        );
+        totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
+
+        isLoading = false;
+        StateHasChanged();
+    }
+
+    private async Task OnSearchChanged()
+    {
+        currentPage = 0;
+        await LoadSpecies();
+    }
+
+    private async Task OnPageChanged(int page)
+    {
+        currentPage = page - 1;
+        await LoadSpecies();
+    }
+}
