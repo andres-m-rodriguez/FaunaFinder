@@ -1,0 +1,197 @@
+@page "/"
+@inject IFaunaFinderRepository Repository
+@inject IJSRuntime JS
+
+<PageTitle>FaunaFinder - Puerto Rico</PageTitle>
+
+<div class="map-page">
+    <div class="map-container">
+        <div id="map" class="map"></div>
+    </div>
+
+    <aside class="sidebar open">
+        @if (isLoading)
+        {
+            <div class="loading">
+                <div class="spinner"></div>
+                <p>Loading...</p>
+            </div>
+        }
+        else if (selectedMunicipality != null)
+        {
+            <div class="sidebar-header">
+                <h2>@selectedMunicipality.Name</h2>
+                <button class="close-btn" @onclick="ShowAllSpecies">← All Species</button>
+            </div>
+
+            <div class="sidebar-content">
+                @if (species.Count == 0)
+                {
+                    <p class="no-data">No species data available for this municipality.</p>
+                }
+                else
+                {
+                    <p class="species-count">@species.Count species found</p>
+                    <div class="species-list">
+                        @foreach (var s in species)
+                        {
+                            <div class="species-card @(expandedSpeciesId == s.Id ? "expanded" : "")">
+                                <div class="species-header" @onclick="() => ToggleSpecies(s.Id)">
+                                    <div class="species-info">
+                                        <h3 class="species-name">@s.CommonName</h3>
+                                        <p class="scientific-name"><em>@s.ScientificName</em></p>
+                                    </div>
+                                    <span class="expand-icon">@(expandedSpeciesId == s.Id ? "-" : "+")</span>
+                                </div>
+
+                                @if (expandedSpeciesId == s.Id && s.FwsLinks.Any())
+                                {
+                                    <div class="species-details">
+                                        <h4>Conservation Links</h4>
+                                        @foreach (var link in s.FwsLinks)
+                                        {
+                                            <div class="fws-link">
+                                                <div class="practice">
+                                                    <span class="badge practice-badge">NRCS @link.NrcsPractice.Code</span>
+                                                    <span>@link.NrcsPractice.Name</span>
+                                                </div>
+                                                <div class="action">
+                                                    <span class="badge action-badge">FWS @link.FwsAction.Code</span>
+                                                    <span>@link.FwsAction.Name</span>
+                                                </div>
+                                                @if (!string.IsNullOrEmpty(link.Justification))
+                                                {
+                                                    <div class="justification">@link.Justification</div>
+                                                }
+                                            </div>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        }
+        else if (showAllSpecies)
+        {
+            <div class="sidebar-header">
+                <h2>All Species</h2>
+                <button class="close-btn" @onclick="CloseAllSpecies">×</button>
+            </div>
+
+            <div class="sidebar-content">
+                <p class="species-count">@allSpecies.Count species in database</p>
+                <div class="species-list">
+                    @foreach (var s in allSpecies)
+                    {
+                        <div class="species-card">
+                            <div class="species-header">
+                                <div class="species-info">
+                                    <h3 class="species-name">@s.CommonName</h3>
+                                    <p class="scientific-name"><em>@s.ScientificName</em></p>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="sidebar-header">
+                <h2>FaunaFinder</h2>
+            </div>
+            <div class="sidebar-content">
+                <p class="instructions">Click on a municipality on the map to view species and conservation information.</p>
+                <button class="view-all-btn" @onclick="LoadAllSpecies">View All Species</button>
+            </div>
+        }
+    </aside>
+</div>
+
+@code {
+    private Municipality? selectedMunicipality;
+    private IReadOnlyList<Species> species = [];
+    private IReadOnlyList<Species> allSpecies = [];
+    private IReadOnlyList<Municipality> municipalities = [];
+    private bool isLoading = false;
+    private bool showAllSpecies = false;
+    private int? expandedSpeciesId;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            municipalities = await Repository.GetAllMunicipalitiesAsync();
+            await JS.InvokeVoidAsync("leafletInterop.initMap", DotNetObjectReference.Create(this));
+        }
+    }
+
+    [JSInvokable]
+    public async Task OnMunicipalityClick(string geoJsonId)
+    {
+        var municipality = municipalities.FirstOrDefault(m => m.GeoJsonId == geoJsonId);
+        if (municipality == null) return;
+
+        isLoading = true;
+        selectedMunicipality = municipality;
+        showAllSpecies = false;
+        expandedSpeciesId = null;
+        await InvokeAsync(StateHasChanged);
+
+        try
+        {
+            species = await Repository.GetSpeciesByMunicipalityAsync(municipality.Id);
+        }
+        catch
+        {
+            species = [];
+        }
+        finally
+        {
+            isLoading = false;
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private async Task LoadAllSpecies()
+    {
+        isLoading = true;
+        showAllSpecies = true;
+        selectedMunicipality = null;
+        StateHasChanged();
+
+        try
+        {
+            allSpecies = await Repository.SearchSpeciesAsync("");
+        }
+        catch
+        {
+            allSpecies = [];
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private void ShowAllSpecies()
+    {
+        selectedMunicipality = null;
+        species = [];
+        expandedSpeciesId = null;
+    }
+
+    private void CloseAllSpecies()
+    {
+        showAllSpecies = false;
+        allSpecies = [];
+    }
+
+    private void ToggleSpecies(int speciesId)
+    {
+        expandedSpeciesId = expandedSpeciesId == speciesId ? null : speciesId;
+    }
+}
