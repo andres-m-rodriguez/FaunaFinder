@@ -1,0 +1,25 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {"type": "Feature", "properties": {"NAME": "San Juan", "GEOID": "72127"}, "geometry": {"type": "Polygon", "coordinates": [[[-66.12, 18.47], [-66.05, 18.47], [-66.05, 18.40], [-66.12, 18.40], [-66.12, 18.47]]]}},
+    {"type": "Feature", "properties": {"NAME": "Bayamon", "GEOID": "72021"}, "geometry": {"type": "Polygon", "coordinates": [[[-66.18, 18.43], [-66.12, 18.43], [-66.12, 18.37], [-66.18, 18.37], [-66.18, 18.43]]]}},
+    {"type": "Feature", "properties": {"NAME": "Carolina", "GEOID": "72031"}, "geometry": {"type": "Polygon", "coordinates": [[[-66.00, 18.43], [-65.93, 18.43], [-65.93, 18.37], [-66.00, 18.37], [-66.00, 18.43]]]}},
+    {"type": "Feature", "properties": {"NAME": "Ponce", "GEOID": "72113"}, "geometry": {"type": "Polygon", "coordinates": [[[-66.68, 18.07], [-66.58, 18.07], [-66.58, 17.97], [-66.68, 17.97], [-66.68, 18.07]]]}},
+    {"type": "Feature", "properties": {"NAME": "Mayaguez", "GEOID": "72097"}, "geometry": {"type": "Polygon", "coordinates": [[[-67.18, 18.23], [-67.08, 18.23], [-67.08, 18.13], [-67.18, 18.13], [-67.18, 18.23]]]}},
+    {"type": "Feature", "properties": {"NAME": "Caguas", "GEOID": "72025"}, "geometry": {"type": "Polygon", "coordinates": [[[-66.08, 18.27], [-65.98, 18.27], [-65.98, 18.17], [-66.08, 18.17], [-66.08, 18.27]]]}},
+    {"type": "Feature", "properties": {"NAME": "Arecibo", "GEOID": "72013"}, "geometry": {"type": "Polygon", "coordinates": [[[-66.75, 18.50], [-66.65, 18.50], [-66.65, 18.40], [-66.75, 18.40], [-66.75, 18.50]]]}},
+    {"type": "Feature", "properties": {"NAME": "Guaynabo", "GEOID": "72061"}, "geometry": {"type": "Polygon", "coordinates": [[[-66.15, 18.40], [-66.08, 18.40], [-66.08, 18.33], [-66.15, 18.33], [-66.15, 18.40]]]}},
+    {"type": "Feature", "properties": {"NAME": "Aguadilla", "GEOID": "72003"}, "geometry": {"type": "Polygon", "coordinates": [[[-67.18, 18.48], [-67.08, 18.48], [-67.08, 18.38], [-67.18, 18.38], [-67.18, 18.48]]]}},
+    {"type": "Feature", "properties": {"NAME": "Humacao", "GEOID": "72069"}, "geometry": {"type": "Polygon", "coordinates": [[[-65.85, 18.18], [-65.75, 18.18], [-65.75, 18.08], [-65.85, 18.08], [-65.85, 18.18]]]}},
+    {"type": "Feature", "properties": {"NAME": "Fajardo", "GEOID": "72053"}, "geometry": {"type": "Polygon", "coordinates": [[[-65.68, 18.37], [-65.58, 18.37], [-65.58, 18.27], [-65.68, 18.27], [-65.68, 18.37]]]}},
+    {"type": "Feature", "properties": {"NAME": "Vega Baja", "GEOID": "72145"}, "geometry": {"type": "Polygon", "coordinates": [[[-66.42, 18.47], [-66.32, 18.47], [-66.32, 18.37], [-66.42, 18.37], [-66.42, 18.47]]]}},
+    {"type": "Feature", "properties": {"NAME": "Manati", "GEOID": "72091"}, "geometry": {"type": "Polygon", "coordinates": [[[-66.52, 18.47], [-66.42, 18.47], [-66.42, 18.37], [-66.52, 18.37], [-66.52, 18.47]]]}},
+    {"type": "Feature", "properties": {"NAME": "Yauco", "GEOID": "72153"}, "geometry": {"type": "Polygon", "coordinates": [[[-66.88, 18.07], [-66.78, 18.07], [-66.78, 17.97], [-66.88, 17.97], [-66.88, 18.07]]]}},
+    {"type": "Feature", "properties": {"NAME": "Guayama", "GEOID": "72057"}, "geometry": {"type": "Polygon", "coordinates": [[[-66.15, 18.03], [-66.05, 18.03], [-66.05, 17.93], [-66.15, 17.93], [-66.15, 18.03]]]}},
+    {"type": "Feature", "properties": {"NAME": "Cabo Rojo", "GEOID": "72023"}, "geometry": {"type": "Polygon", "coordinates": [[[-67.22, 18.12], [-67.12, 18.12], [-67.12, 18.02], [-67.22, 18.02], [-67.22, 18.12]]]}},
+    {"type": "Feature", "properties": {"NAME": "Rincon", "GEOID": "72117"}, "geometry": {"type": "Polygon", "coordinates": [[[-67.30, 18.37], [-67.20, 18.37], [-67.20, 18.27], [-67.30, 18.27], [-67.30, 18.37]]]}},
+    {"type": "Feature", "properties": {"NAME": "Isabela", "GEOID": "72071"}, "geometry": {"type": "Polygon", "coordinates": [[[-67.08, 18.52], [-66.98, 18.52], [-66.98, 18.42], [-67.08, 18.42], [-67.08, 18.52]]]}},
+    {"type": "Feature", "properties": {"NAME": "Vieques", "GEOID": "72147"}, "geometry": {"type": "Polygon", "coordinates": [[[-65.52, 18.15], [-65.32, 18.15], [-65.32, 18.05], [-65.52, 18.05], [-65.52, 18.15]]]}},
+    {"type": "Feature", "properties": {"NAME": "Culebra", "GEOID": "72049"}, "geometry": {"type": "Polygon", "coordinates": [[[-65.33, 18.33], [-65.23, 18.33], [-65.23, 18.28], [-65.33, 18.28], [-65.33, 18.33]]]}}
+  ]
+}
