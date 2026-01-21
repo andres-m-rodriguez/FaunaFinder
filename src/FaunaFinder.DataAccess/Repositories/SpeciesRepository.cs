@@ -107,14 +107,18 @@ public sealed class SpeciesRepository(
             query = query.Where(s => s.Id > parameters.FromCursor.Value);
         }
 
-        // Project and return
+        // Project and return with municipality names
         return await query
             .OrderBy(static s => s.CommonName)
             .Take(parameters.Limit ?? 50)
             .Select(static s => new SpeciesForSearchDto(
                 s.Id,
                 s.CommonName,
-                s.ScientificName
+                s.ScientificName,
+                s.MunicipalitySpecies
+                    .Select(ms => ms.Municipality.Name)
+                    .OrderBy(n => n)
+                    .ToList()
             ))
             .ToListAsync(cancellationToken);
     }
