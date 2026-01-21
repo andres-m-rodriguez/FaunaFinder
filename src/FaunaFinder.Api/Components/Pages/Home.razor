@@ -1,4 +1,5 @@
 @page "/"
+@using BlazingSingularity.Commands
 @inject IFaunaFinderRepository Repository
 @inject IJSRuntime JS
 
@@ -10,7 +11,7 @@
     </div>
 
     <aside class="sidebar open">
-        @if (isLoading)
+        @if (LoadMunicipalitySpeciesCommand.IsLoading || LoadAllSpeciesCommand.IsLoading)
         {
             <div class="loading">
                 <div class="spinner"></div>
@@ -104,7 +105,7 @@
             </div>
             <div class="sidebar-content">
                 <p class="instructions">Click on a municipality on the map to view species and conservation information.</p>
-                <button class="view-all-btn" @onclick="LoadAllSpecies">View All Species</button>
+                <button class="view-all-btn" @onclick="() => LoadAllSpeciesCommand.ExecuteAsync(CancellationToken.None)">View All Species</button>
             </div>
         }
     </aside>
@@ -115,9 +116,9 @@
     private IReadOnlyList<Species> species = [];
     private IReadOnlyList<Species> allSpecies = [];
     private IReadOnlyList<Municipality> municipalities = [];
-    private bool isLoading = false;
     private bool showAllSpecies = false;
     private int? expandedSpeciesId;
+    private string? pendingGeoJsonId;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -131,50 +132,30 @@
     [JSInvokable]
     public async Task OnMunicipalityClick(string geoJsonId)
     {
-        var municipality = municipalities.FirstOrDefault(m => m.GeoJsonId == geoJsonId);
+        pendingGeoJsonId = geoJsonId;
+        await LoadMunicipalitySpeciesCommand.ExecuteAsync(CancellationToken.None);
+    }
+
+    [RelayCommand]
+    private async Task LoadMunicipalitySpecies(CancellationToken cancellationToken)
+    {
+        var municipality = municipalities.FirstOrDefault(m => m.GeoJsonId == pendingGeoJsonId);
         if (municipality == null) return;
 
-        isLoading = true;
         selectedMunicipality = municipality;
         showAllSpecies = false;
         expandedSpeciesId = null;
-        await InvokeAsync(StateHasChanged);
 
-        try
-        {
-            species = await Repository.GetSpeciesByMunicipalityAsync(municipality.Id);
-        }
-        catch
-        {
-            species = [];
-        }
-        finally
-        {
-            isLoading = false;
-            await InvokeAsync(StateHasChanged);
-        }
+        species = await Repository.GetSpeciesByMunicipalityAsync(municipality.Id);
     }
 
-    private async Task LoadAllSpecies()
+    [RelayCommand]
+    private async Task LoadAllSpecies(CancellationToken cancellationToken)
     {
-        isLoading = true;
         showAllSpecies = true;
         selectedMunicipality = null;
-        StateHasChanged();
 
-        try
-        {
-            allSpecies = await Repository.SearchSpeciesAsync("");
-        }
-        catch
-        {
-            allSpecies = [];
-        }
-        finally
-        {
-            isLoading = false;
-            StateHasChanged();
-        }
+        allSpecies = await Repository.SearchSpeciesAsync("");
     }
 
     private void ShowAllSpecies()
