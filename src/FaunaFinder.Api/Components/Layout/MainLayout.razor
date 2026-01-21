@@ -7,13 +7,32 @@
 
 <MudLayout>
     <MudAppBar Color="Color.Primary" Fixed="true" Dense="true">
+        <MudIconButton Icon="@Icons.Material.Filled.Menu"
+                       Color="Color.Inherit"
+                       Edge="Edge.Start"
+                       OnClick="ToggleDrawer"
+                       Class="d-flex d-sm-none" />
         <MudText Typo="Typo.h6" Class="ml-2">FaunaFinder</MudText>
         <MudSpacer />
-        <MudButton Href="/" Color="Color.Inherit" Variant="Variant.Text">Map</MudButton>
-        <MudButton Href="/species" Color="Color.Inherit" Variant="Variant.Text">Species</MudButton>
-        <MudButton Href="/pueblos" Color="Color.Inherit" Variant="Variant.Text">Pueblos</MudButton>
-        <MudButton Href="/about" Color="Color.Inherit" Variant="Variant.Text">About</MudButton>
+        <div class="d-none d-sm-flex">
+            <MudButton Href="/" Color="Color.Inherit" Variant="Variant.Text">Map</MudButton>
+            <MudButton Href="/species" Color="Color.Inherit" Variant="Variant.Text">Species</MudButton>
+            <MudButton Href="/pueblos" Color="Color.Inherit" Variant="Variant.Text">Pueblos</MudButton>
+            <MudButton Href="/about" Color="Color.Inherit" Variant="Variant.Text">About</MudButton>
+        </div>
     </MudAppBar>
+
+    <MudDrawer @bind-Open="_drawerOpen"
+               Elevation="1"
+               Variant="DrawerVariant.Temporary"
+               ClipMode="DrawerClipMode.Always">
+        <MudNavMenu>
+            <MudNavLink Href="/" Icon="@Icons.Material.Filled.Map" OnClick="CloseDrawer">Map</MudNavLink>
+            <MudNavLink Href="/species" Icon="@Icons.Material.Filled.Pets" OnClick="CloseDrawer">Species</MudNavLink>
+            <MudNavLink Href="/pueblos" Icon="@Icons.Material.Filled.LocationCity" OnClick="CloseDrawer">Pueblos</MudNavLink>
+            <MudNavLink Href="/about" Icon="@Icons.Material.Filled.Info" OnClick="CloseDrawer">About</MudNavLink>
+        </MudNavMenu>
+    </MudDrawer>
 
     <MudMainContent Class="pt-14">
         <ErrorBoundary @ref="errorBoundary">
@@ -40,6 +59,7 @@
 
 @code {
     private ErrorBoundary? errorBoundary;
+    private bool _drawerOpen;
 
     private readonly MudTheme _theme = new()
     {
@@ -55,6 +75,16 @@
             DrawerBackground = "#ffffff"
         }
     };
+
+    private void ToggleDrawer()
+    {
+        _drawerOpen = !_drawerOpen;
+    }
+
+    private void CloseDrawer()
+    {
+        _drawerOpen = false;
+    }
 
     private void RecoverFromError()
     {
