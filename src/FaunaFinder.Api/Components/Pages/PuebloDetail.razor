@@ -1,0 +1,154 @@
+@page "/pueblos/{Id:int}"
+@inject IMunicipalityRepository MunicipalityRepository
+@inject ISpeciesRepository SpeciesRepository
+@inject NavigationManager NavigationManager
+
+<PageTitle>@(municipality?.Name ?? "Pueblo") - FaunaFinder</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="py-6">
+    @* Back Navigation *@
+    <MudButton Variant="Variant.Text"
+               Color="Color.Primary"
+               StartIcon="@Icons.Material.Filled.ArrowBack"
+               OnClick="NavigateBack"
+               Class="mb-4">
+        Back to Pueblos
+    </MudButton>
+
+    @if (isLoading)
+    {
+        <MudContainer Class="d-flex justify-center py-8">
+            <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+        </MudContainer>
+    }
+    else if (municipality == null)
+    {
+        <MudAlert Severity="Severity.Warning" Variant="Variant.Filled" Class="mb-4">
+            Municipality not found.
+        </MudAlert>
+    }
+    else
+    {
+        @* Municipality Header *@
+        <MudPaper Elevation="2" Class="pa-4 mb-6">
+            <MudText Typo="Typo.h4" Color="Color.Primary" GutterBottom="true">@municipality.Name</MudText>
+            <div class="d-flex align-center">
+                <MudIcon Icon="@Icons.Material.Filled.Pets" Size="Size.Medium" Color="Color.Secondary" Class="mr-2" />
+                <MudText Typo="Typo.h6" Color="Color.Secondary">
+                    @municipality.SpeciesCount @(municipality.SpeciesCount == 1 ? "species" : "species")
+                </MudText>
+            </div>
+        </MudPaper>
+
+        @* Species List *@
+        <MudText Typo="Typo.h5" Color="Color.Primary" GutterBottom="true" Class="mb-4">Species in this Municipality</MudText>
+
+        @if (species.Count == 0)
+        {
+            <MudAlert Severity="Severity.Info" Variant="Variant.Text" Class="mb-4">
+                No species data available for this municipality.
+            </MudAlert>
+        }
+        else
+        {
+            <MudExpansionPanels MultiExpansion="false" Elevation="1">
+                @foreach (var s in species)
+                {
+                    <MudExpansionPanel Expanded="@(expandedSpeciesId == s.Id)"
+                                       ExpandedChanged="@((bool expanded) => ToggleSpecies(s.Id, expanded))"
+                                       Class="mb-2">
+                        <TitleContent>
+                            <div class="d-flex flex-column flex-sm-row align-start align-sm-center">
+                                <MudText Typo="Typo.subtitle1" Color="Color.Primary" Class="mr-4">@s.CommonName</MudText>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">
+                                    <em>@s.ScientificName</em>
+                                </MudText>
+                            </div>
+                        </TitleContent>
+                        <ChildContent>
+                            @if (s.FwsLinks.Any())
+                            {
+                                <MudText Typo="Typo.overline" Color="Color.Primary" Class="mb-3">Conservation Links</MudText>
+                                <MudGrid Spacing="2">
+                                    @foreach (var link in s.FwsLinks)
+                                    {
+                                        <MudItem xs="12" md="6">
+                                            <MudPaper Elevation="0" Class="pa-3" Style="background-color: #f5f5f5;">
+                                                <div class="d-flex flex-wrap align-start gap-2 mb-2">
+                                                    <MudChip T="string" Size="Size.Small" Color="Color.Primary" Variant="Variant.Filled">
+                                                        NRCS @link.NrcsPractice.Code
+                                                    </MudChip>
+                                                    <MudText Typo="Typo.body2">@link.NrcsPractice.Name</MudText>
+                                                </div>
+                                                <div class="d-flex flex-wrap align-start gap-2 mb-2">
+                                                    <MudChip T="string" Size="Size.Small" Color="Color.Secondary" Variant="Variant.Filled">
+                                                        FWS @link.FwsAction.Code
+                                                    </MudChip>
+                                                    <MudText Typo="Typo.body2">@link.FwsAction.Name</MudText>
+                                                </div>
+                                                @if (!string.IsNullOrEmpty(link.Justification))
+                                                {
+                                                    <MudDivider Class="my-2" />
+                                                    <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                                        @link.Justification
+                                                    </MudText>
+                                                }
+                                            </MudPaper>
+                                        </MudItem>
+                                    }
+                                </MudGrid>
+                            }
+                            else
+                            {
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">
+                                    No conservation links available for this species.
+                                </MudText>
+                            }
+                        </ChildContent>
+                    </MudExpansionPanel>
+                }
+            </MudExpansionPanels>
+        }
+    }
+</MudContainer>
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private MunicipalityForDetailDto? municipality;
+    private IReadOnlyList<SpeciesForListDto> species = [];
+    private bool isLoading = true;
+    private int? expandedSpeciesId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        isLoading = true;
+        StateHasChanged();
+
+        municipality = await MunicipalityRepository.GetMunicipalityDetailAsync(Id);
+
+        if (municipality != null)
+        {
+            species = await SpeciesRepository.GetSpeciesByMunicipalityAsync(Id);
+        }
+
+        isLoading = false;
+        StateHasChanged();
+    }
+
+    private void ToggleSpecies(int speciesId, bool expanded)
+    {
+        expandedSpeciesId = expanded ? speciesId : null;
+    }
+
+    private void NavigateBack()
+    {
+        NavigationManager.NavigateTo("/pueblos");
+    }
+}
