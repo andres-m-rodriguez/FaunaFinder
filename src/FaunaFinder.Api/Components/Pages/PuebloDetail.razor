@@ -2,7 +2,6 @@
 @inject IMunicipalityRepository MunicipalityRepository
 @inject ISpeciesRepository SpeciesRepository
 @inject NavigationManager NavigationManager
-@inject IJSRuntime JSRuntime
 
 <PageTitle>@(municipality?.Name ?? "Pueblo") - FaunaFinder</PageTitle>
 
@@ -128,6 +127,9 @@
     [Parameter]
     public int Id { get; set; }
 
+    [SupplyParameterFromQuery]
+    public string? ReturnUrl { get; set; }
+
     private MunicipalityForDetailDto? municipality;
     private IReadOnlyList<SpeciesForListDto> species = [];
     private bool isLoading = true;
@@ -159,23 +161,13 @@
         expandedSpeciesId = expanded ? speciesId : null;
     }
 
-    private async Task NavigateBack()
+    private void NavigateBack()
     {
-        var canGoBack = await JSRuntime.InvokeAsync<bool>("eval",
-            "document.referrer && new URL(document.referrer).origin === window.location.origin");
-
-        if (canGoBack)
-        {
-            await JSRuntime.InvokeVoidAsync("history.back");
-        }
-        else
-        {
-            NavigationManager.NavigateTo("/pueblos");
-        }
+        NavigationManager.NavigateTo(string.IsNullOrEmpty(ReturnUrl) ? "/pueblos" : ReturnUrl);
     }
 
     private void NavigateToSpecies(int speciesId)
     {
-        NavigationManager.NavigateTo($"/species/{speciesId}");
+        NavigationManager.NavigateTo($"/species/{speciesId}?returnUrl=/pueblos/{Id}");
     }
 }
