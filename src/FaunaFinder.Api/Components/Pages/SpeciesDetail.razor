@@ -147,7 +147,17 @@
 
     private async Task NavigateBack()
     {
-        await JSRuntime.InvokeVoidAsync("history.back");
+        var canGoBack = await JSRuntime.InvokeAsync<bool>("eval",
+            "document.referrer && new URL(document.referrer).origin === window.location.origin");
+
+        if (canGoBack)
+        {
+            await JSRuntime.InvokeVoidAsync("history.back");
+        }
+        else
+        {
+            NavigationManager.NavigateTo("/species");
+        }
     }
 
     private void NavigateToMunicipality(int municipalityId)
