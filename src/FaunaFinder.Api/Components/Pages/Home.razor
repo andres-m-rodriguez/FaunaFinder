@@ -1,6 +1,7 @@
 @page "/"
 @using BlazingSingularity.Commands
-@inject IFaunaFinderRepository Repository
+@inject IMunicipalityRepository MunicipalityRepository
+@inject ISpeciesRepository SpeciesRepository
 @inject IJSRuntime JS
 
 <PageTitle>FaunaFinder - Puerto Rico</PageTitle>
@@ -112,10 +113,10 @@
 </div>
 
 @code {
-    private Municipality? selectedMunicipality;
-    private IReadOnlyList<Species> species = [];
-    private IReadOnlyList<Species> allSpecies = [];
-    private IReadOnlyList<Municipality> municipalities = [];
+    private MunicipalityForListDto? selectedMunicipality;
+    private IReadOnlyList<SpeciesForListDto> species = [];
+    private IReadOnlyList<SpeciesForSearchDto> allSpecies = [];
+    private IReadOnlyList<MunicipalityForListDto> municipalities = [];
     private bool showAllSpecies = false;
     private int? expandedSpeciesId;
     private string? pendingGeoJsonId;
@@ -124,7 +125,7 @@
     {
         if (firstRender)
         {
-            municipalities = await Repository.GetAllMunicipalitiesAsync();
+            municipalities = await MunicipalityRepository.GetAllMunicipalitiesAsync();
             await JS.InvokeVoidAsync("leafletInterop.initMap", DotNetObjectReference.Create(this));
         }
     }
@@ -146,7 +147,7 @@
         showAllSpecies = false;
         expandedSpeciesId = null;
 
-        species = await Repository.GetSpeciesByMunicipalityAsync(municipality.Id);
+        species = await SpeciesRepository.GetSpeciesByMunicipalityAsync(municipality.Id, cancellationToken);
     }
 
     [RelayCommand]
@@ -155,7 +156,7 @@
         showAllSpecies = true;
         selectedMunicipality = null;
 
-        allSpecies = await Repository.SearchSpeciesAsync("");
+        allSpecies = await SpeciesRepository.SearchSpeciesAsync(new SpeciesParameters(), cancellationToken);
     }
 
     private void ShowAllSpecies()
