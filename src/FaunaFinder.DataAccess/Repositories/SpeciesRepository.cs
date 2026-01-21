@@ -72,7 +72,14 @@ public sealed class SpeciesRepository(
                         fl.FwsAction.Name
                     ),
                     fl.Justification
-                )).ToList()
+                )).ToList(),
+                s.MunicipalitySpecies
+                    .OrderBy(ms => ms.Municipality.Name)
+                    .Select(ms => new SpeciesMunicipalityDto(
+                        ms.Municipality.Id,
+                        ms.Municipality.Name
+                    ))
+                    .ToList()
             ))
             .FirstOrDefaultAsync(cancellationToken);
     }

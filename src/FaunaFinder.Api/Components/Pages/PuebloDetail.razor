@@ -12,7 +12,7 @@
                StartIcon="@Icons.Material.Filled.ArrowBack"
                OnClick="NavigateBack"
                Class="mb-4">
-        Back to Pueblos
+        Back
     </MudButton>
 
     @if (isLoading)
@@ -58,11 +58,22 @@
                                        ExpandedChanged="@((bool expanded) => ToggleSpecies(s.Id, expanded))"
                                        Class="mb-2 pa-2">
                         <TitleContent>
-                            <div class="d-flex flex-column flex-sm-row align-start align-sm-center">
-                                <MudText Typo="Typo.subtitle1" Color="Color.Primary" Class="mr-4">@s.CommonName</MudText>
-                                <MudText Typo="Typo.body2" Color="Color.Secondary">
-                                    <em>@s.ScientificName</em>
-                                </MudText>
+                            <div class="d-flex flex-column flex-sm-row align-start align-sm-center justify-space-between" style="width: 100%;">
+                                <div class="d-flex flex-column flex-sm-row align-start align-sm-center">
+                                    <MudText Typo="Typo.subtitle1" Color="Color.Primary" Class="mr-4">@s.CommonName</MudText>
+                                    <MudText Typo="Typo.body2" Color="Color.Secondary">
+                                        <em>@s.ScientificName</em>
+                                    </MudText>
+                                </div>
+                                <div @onclick:stopPropagation="true">
+                                    <MudButton Variant="Variant.Text"
+                                               Color="Color.Primary"
+                                               Size="Size.Small"
+                                               EndIcon="@Icons.Material.Filled.OpenInNew"
+                                               OnClick="@(() => NavigateToSpecies(s.Id))">
+                                        View Details
+                                    </MudButton>
+                                </div>
                             </div>
                         </TitleContent>
                         <ChildContent>
@@ -116,6 +127,9 @@
     [Parameter]
     public int Id { get; set; }
 
+    [SupplyParameterFromQuery]
+    public string? ReturnUrl { get; set; }
+
     private MunicipalityForDetailDto? municipality;
     private IReadOnlyList<SpeciesForListDto> species = [];
     private bool isLoading = true;
@@ -149,6 +163,11 @@
 
     private void NavigateBack()
     {
-        NavigationManager.NavigateTo("/pueblos");
+        NavigationManager.NavigateTo(string.IsNullOrEmpty(ReturnUrl) ? "/pueblos" : ReturnUrl);
+    }
+
+    private void NavigateToSpecies(int speciesId)
+    {
+        NavigationManager.NavigateTo($"/species/{speciesId}?returnUrl=/pueblos/{Id}");
     }
 }
