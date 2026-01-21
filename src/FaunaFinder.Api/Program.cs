@@ -1,6 +1,7 @@
 using FaunaFinder.Api.Components;
-using FaunaFinder.Infrastructure.Data;
-using FaunaFinder.Infrastructure.Extensions;
+using FaunaFinder.Database;
+using FaunaFinder.Database.Extensions;
+using FaunaFinder.DataAccess.Extensions;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -12,11 +13,11 @@ builder.AddServiceDefaults();
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
-// Add Aspire PostgreSQL DbContext
-builder.AddNpgsqlDbContext<FaunaFinderDbContext>("faunafinder");
+// Add FaunaFinder Database (with snake_case naming and NoTracking)
+builder.AddFaunaFinderDatabase();
 
-// Add FaunaFinder services
-builder.Services.AddFaunaFinderInfrastructure();
+// Add FaunaFinder DataAccess (repositories)
+builder.Services.AddFaunaFinderDataAccess();
 
 var app = builder.Build();
 
@@ -36,13 +37,5 @@ app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
 app.MapDefaultEndpoints();
-
-// Auto-migrate and seed database
-using (var scope = app.Services.CreateScope())
-{
-    var db = scope.ServiceProvider.GetRequiredService<FaunaFinderDbContext>();
-    await db.Database.MigrateAsync();
-    await DatabaseSeeder.SeedAsync(db);
-}
 
 app.Run();
