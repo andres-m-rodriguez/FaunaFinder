@@ -6,5 +6,11 @@ public sealed record SpeciesForDetailDto(
     int Id,
     string CommonName,
     string ScientificName,
-    List<FwsLinkDto> FwsLinks
+    List<FwsLinkDto> FwsLinks,
+    List<SpeciesMunicipalityDto> Municipalities
+);
+
+public sealed record SpeciesMunicipalityDto(
+    int Id,
+    string Name
 );

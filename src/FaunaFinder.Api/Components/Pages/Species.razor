@@ -1,5 +1,6 @@
 @page "/species"
 @inject ISpeciesRepository SpeciesRepository
+@inject NavigationManager NavigationManager
 
 <PageTitle>Species - FaunaFinder</PageTitle>
 
@@ -37,7 +38,7 @@
             @foreach (var s in species)
             {
                 <MudItem xs="12" sm="6" md="4" lg="3">
-                    <MudCard Elevation="2" Class="species-card">
+                    <MudCard Elevation="2" Class="species-card" @onclick="() => NavigateToSpecies(s.Id)">
                         <MudCardContent>
                             <MudText Typo="Typo.h6" Color="Color.Primary">@s.CommonName</MudText>
                             <MudText Typo="Typo.body2" Color="Color.Secondary" Class="font-italic">
@@ -75,6 +76,7 @@
     .species-card {
         transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
         height: 100%;
+        cursor: pointer;
     }
 
     .species-card:hover {
@@ -128,5 +130,10 @@
     {
         currentPage = page - 1;
         await LoadSpecies();
+    }
+
+    private void NavigateToSpecies(int speciesId)
+    {
+        NavigationManager.NavigateTo($"/species/{speciesId}");
     }
 }
