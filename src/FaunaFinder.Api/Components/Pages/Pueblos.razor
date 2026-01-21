@@ -1,0 +1,131 @@
+@page "/pueblos"
+@using FaunaFinder.Contracts.Dtos.Municipalities
+@using FaunaFinder.Contracts.Parameters
+@inject IMunicipalityRepository MunicipalityRepository
+
+<PageTitle>Pueblos - FaunaFinder</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="py-6">
+    <MudText Typo="Typo.h4" Color="Color.Primary" GutterBottom="true">Pueblos de Puerto Rico</MudText>
+    <MudText Typo="Typo.body1" Color="Color.Secondary" Class="mb-4">
+        Explore the municipalities of Puerto Rico and discover their biodiversity.
+    </MudText>
+
+    <MudTextField @bind-Value="searchTerm"
+                  Placeholder="Search municipalities..."
+                  Adornment="Adornment.Start"
+                  AdornmentIcon="@Icons.Material.Filled.Search"
+                  Variant="Variant.Outlined"
+                  Immediate="true"
+                  DebounceInterval="300"
+                  OnDebounceIntervalElapsed="OnSearchChanged"
+                  Class="mb-4" />
+
+    @if (isLoading)
+    {
+        <MudContainer Class="d-flex justify-center py-8">
+            <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+        </MudContainer>
+    }
+    else if (municipalities.Count == 0)
+    {
+        <MudAlert Severity="Severity.Info" Variant="Variant.Text" Class="mb-4">
+            No municipalities found matching your search.
+        </MudAlert>
+    }
+    else
+    {
+        <MudGrid Spacing="3">
+            @foreach (var municipality in municipalities)
+            {
+                <MudItem xs="12" sm="6" md="4" lg="3">
+                    <MudCard Elevation="2" Class="municipality-card">
+                        <MudCardContent>
+                            <MudText Typo="Typo.h6" Color="Color.Primary">@municipality.Name</MudText>
+                            <div class="d-flex align-center mt-2">
+                                <MudIcon Icon="@Icons.Material.Filled.Pets" Size="Size.Small" Color="Color.Secondary" Class="mr-2" />
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">
+                                    @municipality.SpeciesCount @(municipality.SpeciesCount == 1 ? "species" : "species")
+                                </MudText>
+                            </div>
+                        </MudCardContent>
+                    </MudCard>
+                </MudItem>
+            }
+        </MudGrid>
+
+        <div class="d-flex justify-center mt-6">
+            <MudPagination Count="@totalPages"
+                          Selected="@(currentPage + 1)"
+                          SelectedChanged="OnPageChanged"
+                          Color="Color.Primary"
+                          Variant="Variant.Filled"
+                          ShowFirstButton="true"
+                          ShowLastButton="true" />
+        </div>
+
+        <MudText Typo="Typo.caption" Color="Color.Secondary" Align="Align.Center" Class="mt-2">
+            Showing @((currentPage * pageSize) + 1)-@Math.Min((currentPage + 1) * pageSize, totalCount) of @totalCount municipalities
+        </MudText>
+    }
+</MudContainer>
+
+<style>
+    .municipality-card {
+        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        height: 100%;
+    }
+
+    .municipality-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15) !important;
+    }
+</style>
+
+@code {
+    private IReadOnlyList<MunicipalityCardDto> municipalities = [];
+    private string searchTerm = string.Empty;
+    private int currentPage = 0;
+    private int pageSize = 12;
+    private int totalCount = 0;
+    private int totalPages = 0;
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadMunicipalities();
+    }
+
+    private async Task LoadMunicipalities()
+    {
+        isLoading = true;
+        StateHasChanged();
+
+        var parameters = new MunicipalityParameters(
+            PageSize: pageSize,
+            Page: currentPage,
+            Search: string.IsNullOrWhiteSpace(searchTerm) ? null : searchTerm
+        );
+
+        municipalities = await MunicipalityRepository.GetMunicipalitiesWithSpeciesCountAsync(parameters);
+        totalCount = await MunicipalityRepository.GetTotalMunicipalitiesCountAsync(
+            string.IsNullOrWhiteSpace(searchTerm) ? null : searchTerm
+        );
+        totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
+
+        isLoading = false;
+        StateHasChanged();
+    }
+
+    private async Task OnSearchChanged()
+    {
+        currentPage = 0;
+        await LoadMunicipalities();
+    }
+
+    private async Task OnPageChanged(int page)
+    {
+        currentPage = page - 1;
+        await LoadMunicipalities();
+    }
+}
