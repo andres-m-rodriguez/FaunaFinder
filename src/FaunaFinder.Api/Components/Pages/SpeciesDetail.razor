@@ -1,0 +1,159 @@
+@page "/species/{Id:int}"
+@inject ISpeciesRepository SpeciesRepository
+@inject NavigationManager NavigationManager
+
+<PageTitle>@(species?.CommonName ?? "Species") - FaunaFinder</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="py-6">
+    @* Back Navigation *@
+    <MudButton Variant="Variant.Text"
+               Color="Color.Primary"
+               StartIcon="@Icons.Material.Filled.ArrowBack"
+               OnClick="NavigateBack"
+               Class="mb-4">
+        Back
+    </MudButton>
+
+    @if (isLoading)
+    {
+        <MudContainer Class="d-flex justify-center py-8">
+            <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+        </MudContainer>
+    }
+    else if (species == null)
+    {
+        <MudAlert Severity="Severity.Warning" Variant="Variant.Filled" Class="mb-4">
+            Species not found.
+        </MudAlert>
+    }
+    else
+    {
+        @* Species Header *@
+        <MudPaper Elevation="2" Class="pa-4 mb-6">
+            <MudText Typo="Typo.h4" Color="Color.Primary" GutterBottom="true">@species.CommonName</MudText>
+            <MudText Typo="Typo.h6" Color="Color.Secondary" Class="font-italic">@species.ScientificName</MudText>
+            <div class="d-flex align-center mt-3">
+                <MudIcon Icon="@Icons.Material.Filled.LocationOn" Size="Size.Medium" Color="Color.Secondary" Class="mr-2" />
+                <MudText Typo="Typo.body1" Color="Color.Secondary">
+                    Found in @species.Municipalities.Count @(species.Municipalities.Count == 1 ? "municipality" : "municipalities")
+                </MudText>
+            </div>
+        </MudPaper>
+
+        @* Municipalities Section *@
+        <MudText Typo="Typo.h5" Color="Color.Primary" GutterBottom="true" Class="mb-4">Municipalities</MudText>
+
+        @if (species.Municipalities.Count == 0)
+        {
+            <MudAlert Severity="Severity.Info" Variant="Variant.Text" Class="mb-6">
+                No municipality data available for this species.
+            </MudAlert>
+        }
+        else
+        {
+            <MudGrid Spacing="3" Class="mb-6">
+                @foreach (var municipality in species.Municipalities)
+                {
+                    <MudItem xs="6" sm="4" md="3">
+                        <MudCard Elevation="2" Class="municipality-card" @onclick="() => NavigateToMunicipality(municipality.Id)">
+                            <MudCardContent Class="d-flex align-center justify-center pa-3">
+                                <MudIcon Icon="@Icons.Material.Filled.LocationCity" Size="Size.Small" Color="Color.Primary" Class="mr-2" />
+                                <MudText Typo="Typo.body1" Color="Color.Primary">@municipality.Name</MudText>
+                            </MudCardContent>
+                        </MudCard>
+                    </MudItem>
+                }
+            </MudGrid>
+        }
+
+        @* Conservation Links Section *@
+        <MudText Typo="Typo.h5" Color="Color.Primary" GutterBottom="true" Class="mb-4">Conservation Links</MudText>
+
+        @if (species.FwsLinks.Count == 0)
+        {
+            <MudAlert Severity="Severity.Info" Variant="Variant.Text" Class="mb-4">
+                No conservation links available for this species.
+            </MudAlert>
+        }
+        else
+        {
+            <MudGrid Spacing="3">
+                @foreach (var link in species.FwsLinks)
+                {
+                    <MudItem xs="12" md="6">
+                        <MudPaper Elevation="1" Class="pa-4">
+                            <div class="d-flex flex-wrap align-start gap-2 mb-2">
+                                <MudChip T="string" Size="Size.Small" Color="Color.Primary" Variant="Variant.Filled">
+                                    NRCS @link.NrcsPractice.Code
+                                </MudChip>
+                                <MudText Typo="Typo.body1">@link.NrcsPractice.Name</MudText>
+                            </div>
+                            <div class="d-flex flex-wrap align-start gap-2 mb-2">
+                                <MudChip T="string" Size="Size.Small" Color="Color.Secondary" Variant="Variant.Filled">
+                                    FWS @link.FwsAction.Code
+                                </MudChip>
+                                <MudText Typo="Typo.body1">@link.FwsAction.Name</MudText>
+                            </div>
+                            @if (!string.IsNullOrEmpty(link.Justification))
+                            {
+                                <MudDivider Class="my-3" />
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">
+                                    @link.Justification
+                                </MudText>
+                            }
+                        </MudPaper>
+                    </MudItem>
+                }
+            </MudGrid>
+        }
+    }
+</MudContainer>
+
+<style>
+    .municipality-card {
+        cursor: pointer;
+        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    }
+
+    .municipality-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+    }
+</style>
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    [SupplyParameterFromQuery]
+    public string? ReturnUrl { get; set; }
+
+    private SpeciesForDetailDto? species;
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        isLoading = true;
+        StateHasChanged();
+
+        species = await SpeciesRepository.GetSpeciesDetailAsync(Id);
+
+        isLoading = false;
+        StateHasChanged();
+    }
+
+    private void NavigateBack()
+    {
+        NavigationManager.NavigateTo(string.IsNullOrEmpty(ReturnUrl) ? "/species" : ReturnUrl);
+    }
+
+    private void NavigateToMunicipality(int municipalityId)
+    {
+        NavigationManager.NavigateTo($"/pueblos/{municipalityId}?returnUrl=/species/{Id}");
+    }
+}
