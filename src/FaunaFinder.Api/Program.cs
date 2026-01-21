@@ -1,8 +1,7 @@
 using FaunaFinder.Api.Components;
-using FaunaFinder.Database;
 using FaunaFinder.Database.Extensions;
 using FaunaFinder.DataAccess.Extensions;
-using Microsoft.EntityFrameworkCore;
+using MudBlazor.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +11,9 @@ builder.AddServiceDefaults();
 // Add Blazor Server
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+
+// Add MudBlazor
+builder.Services.AddMudServices();
 
 // Add FaunaFinder Database (with snake_case naming and NoTracking)
 builder.AddFaunaFinderDatabase();
