@@ -3,6 +3,7 @@
 @inject IMunicipalityRepository MunicipalityRepository
 @inject ISpeciesRepository SpeciesRepository
 @inject IJSRuntime JS
+@inject ISnackbar Snackbar
 
 <PageTitle>FaunaFinder - Puerto Rico</PageTitle>
 
@@ -303,6 +304,12 @@
     {
         var municipality = municipalities?.FirstOrDefault(m => m.GeoJsonId == geoJsonId);
 
+        if (municipality == null)
+        {
+            Snackbar.Add("No data available for this municipality.", Severity.Info);
+            return;
+        }
+
         isLoading = true;
         showAllSpecies = false;
         expandedSpeciesId = null;
@@ -316,10 +323,7 @@
         sheetOpen = true;
         StateHasChanged();
 
-        if (municipality != null)
-        {
-            species = await SpeciesRepository.GetSpeciesByMunicipalityAsync(municipality.Id);
-        }
+        species = await SpeciesRepository.GetSpeciesByMunicipalityAsync(municipality.Id);
 
         isLoading = false;
         StateHasChanged();
