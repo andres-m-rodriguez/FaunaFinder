@@ -1,3 +1,7 @@
 namespace FaunaFinder.Contracts.Dtos.Species;
 
-public sealed record SpeciesForSearchDto(int Id, string CommonName, string ScientificName);
+public sealed record SpeciesForSearchDto(
+    int Id,
+    string CommonName,
+    string ScientificName,
+    IReadOnlyList<string> MunicipalityNames);
