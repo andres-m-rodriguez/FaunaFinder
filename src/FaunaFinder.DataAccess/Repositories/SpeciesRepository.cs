@@ -19,15 +19,15 @@ public sealed class SpeciesRepository(
     {
         await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
 
-        // NO .Include() - Direct projection via .Select()
         return await context.MunicipalitySpecies
             .AsNoTracking()
             .Where(ms => ms.MunicipalityId == municipalityId)
-            .Select(static ms => new SpeciesForListDto(
+            .OrderBy(ms => ms.Species.CommonName)
+            .Select(ms => new SpeciesForListDto(
                 ms.Species.Id,
                 ms.Species.CommonName,
                 ms.Species.ScientificName,
-                ms.Species.FwsLinks.Select(static fl => new FwsLinkDto(
+                ms.Species.FwsLinks.Select(fl => new FwsLinkDto(
                     fl.Id,
                     new NrcsPracticeDto(
                         fl.NrcsPractice.Id,
@@ -42,7 +42,6 @@ public sealed class SpeciesRepository(
                     fl.Justification
                 )).ToList()
             ))
-            .OrderBy(static s => s.CommonName)
             .ToListAsync(cancellationToken);
     }
 
