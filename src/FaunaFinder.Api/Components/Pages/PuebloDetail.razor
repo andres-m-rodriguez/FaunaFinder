@@ -56,7 +56,7 @@
                 {
                     <MudExpansionPanel Expanded="@(expandedSpeciesId == s.Id)"
                                        ExpandedChanged="@((bool expanded) => ToggleSpecies(s.Id, expanded))"
-                                       Class="mb-2">
+                                       Class="mb-2 pa-2">
                         <TitleContent>
                             <div class="d-flex flex-column flex-sm-row align-start align-sm-center">
                                 <MudText Typo="Typo.subtitle1" Color="Color.Primary" Class="mr-4">@s.CommonName</MudText>
