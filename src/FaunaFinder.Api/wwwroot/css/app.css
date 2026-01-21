@@ -1,9 +1,9 @@
-/* Map-specific styles - required for Leaflet integration */
+/* Map Layout */
 .map-page {
     display: flex;
     flex: 1;
     position: relative;
-    height: calc(100vh - 48px);
+    height: calc(100vh - 64px);
 }
 
 .map-container {
@@ -18,9 +18,82 @@
 }
 
 .sidebar-drawer {
-    height: calc(100vh - 48px) !important;
-    top: 48px !important;
+    height: calc(100vh - 64px) !important;
+    top: 64px !important;
     overflow-y: auto;
+}
+
+/* Leaflet Overrides */
+.leaflet-container {
+    width: 100% !important;
+    height: 100% !important;
+    z-index: 1 !important;
+}
+
+.leaflet-popup-content-wrapper {
+    border-radius: 8px;
+    padding: 0;
+}
+
+.municipality-tooltip {
+    background: white;
+    border: 1px solid #9ca3af;
+    border-radius: 4px;
+    font-weight: 500;
+}
+
+/* Mobile Bottom Sheet */
+.mobile-sheet-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0);
+    z-index: 100;
+    pointer-events: none;
+    transition: background 0.3s ease-out;
+}
+
+.mobile-sheet-backdrop.open {
+    background: rgba(0, 0, 0, 0.5);
+    pointer-events: auto;
+}
+
+.mobile-sheet {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: white;
+    border-radius: 16px 16px 0 0;
+    z-index: 101;
+    height: 90vh;
+    overflow-y: auto;
+    transform: translateY(100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.mobile-sheet.open {
+    transform: translateY(0);
+}
+
+.mobile-sheet-header {
+    display: flex;
+    align-items: center;
+    padding: 12px 4px 12px 0;
+    border-bottom: 1px solid #e0e0e0;
+    position: sticky;
+    top: 0;
+    background: white;
+    z-index: 1;
+    border-radius: 16px 16px 0 0;
+}
+
+/* Mobile FAB */
+.mobile-fab {
+    position: fixed !important;
+    bottom: 16px;
+    right: 16px;
+    z-index: 50;
 }
 
 @media (max-width: 960px) {
