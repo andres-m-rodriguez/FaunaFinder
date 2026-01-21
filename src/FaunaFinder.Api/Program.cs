@@ -8,9 +8,12 @@ var builder = WebApplication.CreateBuilder(args);
 // Add Aspire service defaults
 builder.AddServiceDefaults();
 
-// Add Blazor Server
+// Add Blazor Server with circuit error handling
 builder.Services.AddRazorComponents()
-    .AddInteractiveServerComponents();
+    .AddInteractiveServerComponents(options =>
+    {
+        options.DetailedErrors = builder.Environment.IsDevelopment();
+    });
 
 // Add MudBlazor
 builder.Services.AddMudServices();
