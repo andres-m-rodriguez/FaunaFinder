@@ -74,11 +74,11 @@ public sealed class SpeciesRepository(
                     fl.Justification
                 )).ToList(),
                 s.MunicipalitySpecies
+                    .OrderBy(ms => ms.Municipality.Name)
                     .Select(ms => new SpeciesMunicipalityDto(
                         ms.Municipality.Id,
                         ms.Municipality.Name
                     ))
-                    .OrderBy(m => m.Name)
                     .ToList()
             ))
             .FirstOrDefaultAsync(cancellationToken);
