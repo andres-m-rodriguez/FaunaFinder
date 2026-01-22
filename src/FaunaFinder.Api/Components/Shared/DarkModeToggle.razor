@@ -32,11 +32,15 @@
                 }
 
                 DarkModeService.SetDarkMode(_isDarkMode);
+
+                // Sync the map if it exists
+                await JS.InvokeVoidAsync("leafletInterop.setDarkMode", _isDarkMode);
+
                 StateHasChanged();
             }
             catch
             {
-                // Ignore JS interop errors during prerendering
+                // Ignore JS interop errors during prerendering or if map not initialized
             }
         }
     }
