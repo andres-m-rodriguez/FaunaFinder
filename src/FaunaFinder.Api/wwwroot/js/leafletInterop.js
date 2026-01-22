@@ -13,16 +13,16 @@ window.leafletInterop = {
 
     // Theme colors
     lightTheme: {
-        fillColor: '#e5e7eb',
-        borderColor: '#9ca3af',
+        fillColor: '#d8f3dc',
+        borderColor: '#52b788',
         highlightFill: '#40916c',
         highlightBorder: '#1b4332'
     },
     darkTheme: {
-        fillColor: '#9ca3af',
-        borderColor: '#d1d5db',
-        highlightFill: '#52b788',
-        highlightBorder: '#86efac'
+        fillColor: '#52b788',
+        borderColor: '#95d5b2',
+        highlightFill: '#b7e4c7',
+        highlightBorder: '#d8f3dc'
     },
 
     initMap: function (dotNetHelper) {
@@ -31,14 +31,12 @@ window.leafletInterop = {
 
         // Check initial dark mode state from localStorage or system preference
         const savedDarkMode = localStorage.getItem('faunafinder-darkmode');
-        console.log('initMap - savedDarkMode from localStorage:', savedDarkMode);
         if (savedDarkMode !== null) {
             this.isDarkMode = savedDarkMode === 'true';
         } else {
             // Fall back to system preference
             this.isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
         }
-        console.log('initMap - isDarkMode resolved to:', this.isDarkMode);
 
         // Puerto Rico bounds (from hayluz)
         const PR_BOUNDS = [
@@ -79,8 +77,6 @@ window.leafletInterop = {
     },
 
     setDarkMode: function (isDark) {
-        console.log('setDarkMode called:', isDark, 'map:', !!this.map, 'tileLayer:', !!this.tileLayer);
-
         this.isDarkMode = isDark;
 
         // Update tile layer if map exists
@@ -103,9 +99,6 @@ window.leafletInterop = {
 
             // Move tile layer to back so GeoJSON stays on top
             this.tileLayer.bringToBack();
-            console.log('Tile layer switched to:', isDark ? this.darkTileUrl : this.lightTileUrl);
-        } else {
-            console.log('Map not initialized yet');
         }
 
         // Update GeoJSON layer styles
