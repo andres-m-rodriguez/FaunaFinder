@@ -46,6 +46,9 @@ interface LeafletInteropObject {
     locationCircles: L.Circle[];
     tileLayer: L.TileLayer | null;
     isDarkMode: boolean;
+    userLocationMarker: L.Marker | null;
+    locateControl: HTMLElement | null;
+    isLocating: boolean;
     lightTileUrl: string;
     darkTileUrl: string;
     lightTheme: ThemeColors;
@@ -62,6 +65,10 @@ interface LeafletInteropObject {
     clearSpeciesLocations(): void;
     focusOnLocation(index: number): void;
     focusAllLocations(): void;
+    createLocateControl(): void;
+    locateUser(): void;
+    setLocateControlState(state: string): void;
+    showLocationError(errorType: string): void;
 }
 
 interface Window {
