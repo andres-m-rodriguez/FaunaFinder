@@ -23,6 +23,18 @@
     overflow-y: auto;
 }
 
+/* Location List Items */
+.location-list-item {
+    cursor: pointer;
+    border: 1px solid #e0e0e0;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.location-list-item:hover {
+    background-color: #fef2f2;
+    border-color: #dc2626;
+}
+
 /* Leaflet Overrides */
 .leaflet-container {
     width: 100% !important;
@@ -94,6 +106,55 @@
     bottom: 16px;
     right: 16px;
     z-index: 50;
+}
+
+/* Bottom Location Navigator Overlay */
+.location-nav-overlay {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 500px;
+    background: white;
+    border-radius: 16px 16px 0 0;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+.location-nav-header {
+    display: flex;
+    align-items: center;
+    padding: 12px 8px 8px 16px;
+    border-bottom: 1px solid #e0e0e0;
+    background-color: #fef2f2;
+    border-radius: 16px 16px 0 0;
+    color: #dc2626;
+}
+
+.location-nav-content {
+    display: flex;
+    align-items: center;
+    padding: 12px 8px;
+    gap: 4px;
+}
+
+.location-nav-info {
+    flex: 1;
+    text-align: center;
+    cursor: pointer;
+    padding: 12px 8px;
+    border-radius: 8px;
+    transition: background-color 0.2s ease;
+}
+
+.location-nav-info:hover {
+    background-color: #fef2f2;
+}
+
+.location-nav-info:active {
+    background-color: #fee2e2;
 }
 
 @media (max-width: 960px) {
