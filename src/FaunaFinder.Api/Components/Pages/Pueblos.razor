@@ -1,19 +1,18 @@
 @page "/pueblos"
-@using FaunaFinder.Contracts.Dtos.Municipalities
-@using FaunaFinder.Contracts.Parameters
 @inject IMunicipalityRepository MunicipalityRepository
 @inject NavigationManager NavigationManager
+@inject IAppLocalizer L
 
-<PageTitle>Pueblos - FaunaFinder</PageTitle>
+<PageTitle>@L["PageTitle_Pueblos"]</PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.Large" Class="py-6">
-    <MudText Typo="Typo.h4" Color="Color.Primary" GutterBottom="true">Pueblos de Puerto Rico</MudText>
+    <MudText Typo="Typo.h4" Color="Color.Primary" GutterBottom="true">@L["Pueblos_Title"]</MudText>
     <MudText Typo="Typo.body1" Color="Color.Secondary" Class="mb-4">
-        Explore the municipalities of Puerto Rico and discover their biodiversity.
+        @L["Pueblos_Description"]
     </MudText>
 
     <MudTextField @bind-Value="searchTerm"
-                  Placeholder="Search municipalities..."
+                  Placeholder="@L["Pueblos_SearchPlaceholder"]"
                   Adornment="Adornment.Start"
                   AdornmentIcon="@Icons.Material.Filled.Search"
                   Variant="Variant.Outlined"
@@ -31,7 +30,7 @@
     else if (municipalities.Count == 0)
     {
         <MudAlert Severity="Severity.Info" Variant="Variant.Text" Class="mb-4">
-            No municipalities found matching your search.
+            @L["Pueblos_NoResults"]
         </MudAlert>
     }
     else
@@ -46,7 +45,7 @@
                             <div class="d-flex align-center mt-2">
                                 <MudIcon Icon="@Icons.Material.Filled.Pets" Size="Size.Small" Color="Color.Secondary" Class="mr-2" />
                                 <MudText Typo="Typo.body2" Color="Color.Secondary">
-                                    @municipality.SpeciesCount @(municipality.SpeciesCount == 1 ? "species" : "species")
+                                    @municipality.SpeciesCount @L["Pueblos_Species"]
                                 </MudText>
                             </div>
                         </MudCardContent>
@@ -66,7 +65,7 @@
         </div>
 
         <MudText Typo="Typo.caption" Color="Color.Secondary" Align="Align.Center" Class="mt-2">
-            Showing @((currentPage * pageSize) + 1)-@Math.Min((currentPage + 1) * pageSize, totalCount) of @totalCount municipalities
+            @L["Pueblos_Showing", (currentPage * pageSize) + 1, Math.Min((currentPage + 1) * pageSize, totalCount), totalCount]
         </MudText>
     }
 </MudContainer>

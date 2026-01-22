@@ -2,6 +2,7 @@
 @inject IMunicipalityRepository MunicipalityRepository
 @inject ISpeciesRepository SpeciesRepository
 @inject NavigationManager NavigationManager
+@inject IAppLocalizer L
 
 <PageTitle>@(municipality?.Name ?? "Pueblo") - FaunaFinder</PageTitle>
 
@@ -12,7 +13,7 @@
                StartIcon="@Icons.Material.Filled.ArrowBack"
                OnClick="NavigateBack"
                Class="mb-4">
-        Back
+        @L["Back"]
     </MudButton>
 
     @if (isLoading)
@@ -24,7 +25,7 @@
     else if (municipality == null)
     {
         <MudAlert Severity="Severity.Warning" Variant="Variant.Filled" Class="mb-4">
-            Municipality not found.
+            @L["Error_MunicipalityNotFound"]
         </MudAlert>
     }
     else
@@ -35,18 +36,18 @@
             <div class="d-flex align-center">
                 <MudIcon Icon="@Icons.Material.Filled.Pets" Size="Size.Medium" Color="Color.Secondary" Class="mr-2" />
                 <MudText Typo="Typo.h6" Color="Color.Secondary">
-                    @municipality.SpeciesCount @(municipality.SpeciesCount == 1 ? "species" : "species")
+                    @municipality.SpeciesCount @L["Pueblos_Species"]
                 </MudText>
             </div>
         </MudPaper>
 
         @* Species List *@
-        <MudText Typo="Typo.h5" Color="Color.Primary" GutterBottom="true" Class="mb-4">Species in this Municipality</MudText>
+        <MudText Typo="Typo.h5" Color="Color.Primary" GutterBottom="true" Class="mb-4">@L["PuebloDetail_SpeciesInMunicipality"]</MudText>
 
         @if (species.Count == 0)
         {
             <MudAlert Severity="Severity.Info" Variant="Variant.Text" Class="mb-4">
-                No species data available for this municipality.
+                @L["PuebloDetail_NoSpeciesData"]
             </MudAlert>
         }
         else
@@ -71,7 +72,7 @@
                                                Size="Size.Small"
                                                EndIcon="@Icons.Material.Filled.OpenInNew"
                                                OnClick="@(() => NavigateToSpecies(s.Id))">
-                                        View Details
+                                        @L["ViewDetails"]
                                     </MudButton>
                                 </div>
                             </div>
@@ -79,7 +80,7 @@
                         <ChildContent>
                             @if (s.FwsLinks.Any())
                             {
-                                <MudText Typo="Typo.overline" Color="Color.Primary" Class="mb-3">Conservation Links</MudText>
+                                <MudText Typo="Typo.overline" Color="Color.Primary" Class="mb-3">@L["Home_ConservationLinks"]</MudText>
                                 <MudGrid Spacing="2">
                                     @foreach (var link in s.FwsLinks)
                                     {
@@ -112,7 +113,7 @@
                             else
                             {
                                 <MudText Typo="Typo.body2" Color="Color.Secondary">
-                                    No conservation links available for this species.
+                                    @L["PuebloDetail_NoConservationLinks"]
                                 </MudText>
                             }
                         </ChildContent>

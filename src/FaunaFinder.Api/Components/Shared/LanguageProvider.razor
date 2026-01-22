@@ -1,0 +1,29 @@
+@inject IAppLocalizer Localizer
+@implements IDisposable
+
+<CascadingValue Value="@_refreshToken" Name="LanguageRefresh">
+    @ChildContent
+</CascadingValue>
+
+@code {
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    private int _refreshToken;
+
+    protected override void OnInitialized()
+    {
+        Localizer.OnLanguageChanged += OnLanguageChanged;
+    }
+
+    private void OnLanguageChanged()
+    {
+        _refreshToken++;
+        InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        Localizer.OnLanguageChanged -= OnLanguageChanged;
+    }
+}
