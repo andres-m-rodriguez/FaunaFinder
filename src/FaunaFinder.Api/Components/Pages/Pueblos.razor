@@ -1,4 +1,5 @@
 @page "/pueblos"
+@using BlazingSingularity.Commands
 @inject IMunicipalityRepository MunicipalityRepository
 @inject NavigationManager NavigationManager
 @inject IAppLocalizer L
@@ -21,7 +22,7 @@
                   OnDebounceIntervalElapsed="OnSearchChanged"
                   Class="mb-4" />
 
-    @if (isLoading)
+    @if (LoadMunicipalitiesCommand.IsLoading)
     {
         <MudContainer Class="d-flex justify-center py-8">
             <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
@@ -89,18 +90,15 @@
     private int pageSize = 12;
     private int totalCount = 0;
     private int totalPages = 0;
-    private bool isLoading = true;
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadMunicipalities();
+        await LoadMunicipalitiesCommand.ExecuteAsync();
     }
 
+    [RelayCommand]
     private async Task LoadMunicipalities()
     {
-        isLoading = true;
-        StateHasChanged();
-
         var parameters = new MunicipalityParameters(
             PageSize: pageSize,
             Page: currentPage,
@@ -112,21 +110,18 @@
             string.IsNullOrWhiteSpace(searchTerm) ? null : searchTerm
         );
         totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
-
-        isLoading = false;
-        StateHasChanged();
     }
 
     private async Task OnSearchChanged()
     {
         currentPage = 0;
-        await LoadMunicipalities();
+        await LoadMunicipalitiesCommand.ExecuteAsync();
     }
 
     private async Task OnPageChanged(int page)
     {
         currentPage = page - 1;
-        await LoadMunicipalities();
+        await LoadMunicipalitiesCommand.ExecuteAsync();
     }
 
     private void NavigateToDetail(int municipalityId)
