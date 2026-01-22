@@ -19,19 +19,24 @@ window.leafletInterop = {
         highlightBorder: '#1b4332'
     },
     darkTheme: {
-        fillColor: '#374151',
-        borderColor: '#4b5563',
-        highlightFill: '#40916c',
-        highlightBorder: '#52b788'
+        fillColor: '#9ca3af',
+        borderColor: '#d1d5db',
+        highlightFill: '#52b788',
+        highlightBorder: '#86efac'
     },
 
     initMap: function (dotNetHelper) {
         this.dotNetHelper = dotNetHelper;
         this.isMobile = window.innerWidth < 640;
 
-        // Check initial dark mode state from localStorage
+        // Check initial dark mode state from localStorage or system preference
         const savedDarkMode = localStorage.getItem('faunafinder-darkmode');
-        this.isDarkMode = savedDarkMode === 'true';
+        if (savedDarkMode !== null) {
+            this.isDarkMode = savedDarkMode === 'true';
+        } else {
+            // Fall back to system preference
+            this.isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        }
 
         // Puerto Rico bounds (from hayluz)
         const PR_BOUNDS = [
@@ -72,8 +77,6 @@ window.leafletInterop = {
     },
 
     setDarkMode: function (isDark) {
-        console.log('setDarkMode called with:', isDark, 'current:', this.isDarkMode, 'map exists:', !!this.map);
-
         this.isDarkMode = isDark;
 
         // Update tile layer if map exists
@@ -96,8 +99,6 @@ window.leafletInterop = {
 
             // Move tile layer to back so GeoJSON stays on top
             this.tileLayer.bringToBack();
-
-            console.log('Tile layer updated to:', isDark ? 'dark' : 'light');
         }
 
         // Update GeoJSON layer styles
