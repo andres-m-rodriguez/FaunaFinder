@@ -49,10 +49,12 @@
         try
         {
             await JS.InvokeVoidAsync("localStorage.setItem", "faunafinder-darkmode", _isDarkMode.ToString().ToLower());
+            // Update the map if it exists
+            await JS.InvokeVoidAsync("leafletInterop.setDarkMode", _isDarkMode);
         }
         catch
         {
-            // Ignore JS interop errors
+            // Ignore JS interop errors (map might not be initialized on non-map pages)
         }
     }
 }
