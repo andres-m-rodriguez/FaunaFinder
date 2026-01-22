@@ -22,4 +22,20 @@
     <ProjectReference Include="..\FaunaFinder.ServiceDefaults\FaunaFinder.ServiceDefaults.csproj" />
   </ItemGroup>
 
+  <!-- TypeScript Build Integration -->
+  <ItemGroup>
+    <Content Remove="Scripts\**\*.ts" />
+    <TypeScriptCompile Include="Scripts\**\*.ts" />
+    <None Include="package.json" />
+    <None Include="tsconfig.json" />
+  </ItemGroup>
+
+  <Target Name="NpmInstall" BeforeTargets="TypeScriptCompile" Condition="!Exists('node_modules')">
+    <Exec Command="npm install" WorkingDirectory="$(MSBuildProjectDirectory)" />
+  </Target>
+
+  <Target Name="TypeScriptCompile" BeforeTargets="BeforeBuild">
+    <Exec Command="npm run build" WorkingDirectory="$(MSBuildProjectDirectory)" />
+  </Target>
+
 </Project>
