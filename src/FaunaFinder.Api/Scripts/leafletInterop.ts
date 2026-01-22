@@ -11,6 +11,9 @@ window.leafletInterop = {
     locationCircles: [],
     tileLayer: null,
     isDarkMode: false,
+    userLocationMarker: null,
+    locateControl: null,
+    isLocating: false,
 
     // Tile layer URLs
     lightTileUrl: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
@@ -75,10 +78,152 @@ window.leafletInterop = {
 
         this.loadGeoJson();
 
+        // Add locate control
+        this.createLocateControl();
+
         // Handle resize
         window.addEventListener('resize', () => {
             this.isMobile = window.innerWidth < 640;
         });
+    },
+
+    createLocateControl: function (): void {
+        const self = this;
+
+        // Create custom locate control
+        const LocateControl = L.Control.extend({
+            options: {
+                position: 'topleft'
+            },
+
+            onAdd: function (): HTMLElement {
+                const container = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-locate');
+                const button = L.DomUtil.create('a', 'leaflet-control-locate-button', container);
+                button.href = '#';
+                button.title = 'Locate me';
+                button.setAttribute('role', 'button');
+                button.setAttribute('aria-label', 'Locate me');
+                button.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3A8.994 8.994 0 0 0 13 3.06V1h-2v2.06A8.994 8.994 0 0 0 3.06 11H1v2h2.06A8.994 8.994 0 0 0 11 20.94V23h2v-2.06A8.994 8.994 0 0 0 20.94 13H23v-2h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/></svg>';
+
+                L.DomEvent.disableClickPropagation(container);
+                L.DomEvent.on(button, 'click', function (e: Event) {
+                    L.DomEvent.preventDefault(e);
+                    self.locateUser();
+                });
+
+                self.locateControl = container;
+                return container;
+            }
+        });
+
+        new LocateControl().addTo(this.map!);
+    },
+
+    locateUser: function (): void {
+        if (this.isLocating) return;
+
+        const self = this;
+
+        if (!navigator.geolocation) {
+            self.showLocationError('geolocation_unsupported');
+            return;
+        }
+
+        this.isLocating = true;
+        this.setLocateControlState('loading');
+
+        navigator.geolocation.getCurrentPosition(
+            function (position: GeolocationPosition) {
+                self.isLocating = false;
+                self.setLocateControlState('default');
+
+                const lat = position.coords.latitude;
+                const lng = position.coords.longitude;
+                const accuracy = position.coords.accuracy;
+
+                // Remove existing user location marker if present
+                if (self.userLocationMarker) {
+                    self.map!.removeLayer(self.userLocationMarker);
+                }
+
+                // Create custom icon for user location
+                const userIcon = L.divIcon({
+                    className: 'user-location-marker',
+                    html: '<div class="user-location-pulse"></div><div class="user-location-dot"></div>',
+                    iconSize: [24, 24],
+                    iconAnchor: [12, 12]
+                });
+
+                // Add marker at user location
+                self.userLocationMarker = L.marker([lat, lng], { icon: userIcon })
+                    .addTo(self.map!)
+                    .bindPopup('You are here');
+
+                // Fly to user location with animation
+                self.map!.flyTo([lat, lng], 14, {
+                    duration: 1.5
+                });
+            },
+            function (error: GeolocationPositionError) {
+                self.isLocating = false;
+                self.setLocateControlState('default');
+
+                switch (error.code) {
+                    case error.PERMISSION_DENIED:
+                        self.showLocationError('permission_denied');
+                        break;
+                    case error.POSITION_UNAVAILABLE:
+                        self.showLocationError('position_unavailable');
+                        break;
+                    case error.TIMEOUT:
+                        self.showLocationError('timeout');
+                        break;
+                    default:
+                        self.showLocationError('unknown');
+                        break;
+                }
+            },
+            {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 60000
+            }
+        );
+    },
+
+    setLocateControlState: function (state: string): void {
+        if (!this.locateControl) return;
+
+        const button = this.locateControl.querySelector('.leaflet-control-locate-button');
+        if (!button) return;
+
+        if (state === 'loading') {
+            button.classList.add('loading');
+            button.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="currentColor" class="spin"><path d="M12 4V2A10 10 0 0 0 2 12h2a8 8 0 0 1 8-8z"/></svg>';
+        } else {
+            button.classList.remove('loading');
+            button.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3A8.994 8.994 0 0 0 13 3.06V1h-2v2.06A8.994 8.994 0 0 0 3.06 11H1v2h2.06A8.994 8.994 0 0 0 11 20.94V23h2v-2.06A8.994 8.994 0 0 0 20.94 13H23v-2h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/></svg>';
+        }
+    },
+
+    showLocationError: function (errorType: string): void {
+        const messages: { [key: string]: string } = {
+            'geolocation_unsupported': 'Geolocation is not supported by your browser.',
+            'permission_denied': 'Location access was denied. Please enable location permissions.',
+            'position_unavailable': 'Unable to determine your location.',
+            'timeout': 'Location request timed out. Please try again.',
+            'unknown': 'An unknown error occurred while getting your location.'
+        };
+
+        const message = messages[errorType] || messages['unknown'];
+
+        // Show error popup at map center
+        if (this.map) {
+            L.popup()
+                .setLatLng(this.map.getCenter())
+                .setContent('<div class="location-error-popup"><strong>Location Error</strong><br/>' + message + '</div>')
+                .openOn(this.map);
+        }
     },
 
     setDarkMode: function (isDark: boolean): void {
