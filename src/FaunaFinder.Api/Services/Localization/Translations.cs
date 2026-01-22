@@ -32,6 +32,11 @@ public static class Translations
         ["Home_SpeciesFound"] = "{0} species found",
         ["Home_SpeciesInDatabase"] = "{0} species in database",
         ["Home_ConservationLinks"] = "Conservation Links",
+        ["Home_ClearLocations"] = "Clear",
+        ["Home_LocationsFound"] = "{0} location(s) found",
+        ["Home_ViewAllLocations"] = "View All Locations",
+        ["Home_BackToSpecies"] = "Back to Species Details",
+        ["Home_UnnamedLocation"] = "Location",
 
         // Species Page
         ["Species_Title"] = "Species",
@@ -48,6 +53,7 @@ public static class Translations
         ["SpeciesDetail_NoMunicipalityData"] = "No municipality data available for this species.",
         ["SpeciesDetail_ConservationLinksTitle"] = "Conservation Links",
         ["SpeciesDetail_NoConservationLinks"] = "No conservation links available for this species.",
+        ["SpeciesDetail_ViewLocations"] = "View Locations",
 
         // Pueblos Page
         ["Pueblos_Title"] = "Municipalities of Puerto Rico",
@@ -111,6 +117,11 @@ public static class Translations
         ["Home_SpeciesFound"] = "{0} especies encontradas",
         ["Home_SpeciesInDatabase"] = "{0} especies en la base de datos",
         ["Home_ConservationLinks"] = "Enlaces de conservación",
+        ["Home_ClearLocations"] = "Cerrar",
+        ["Home_LocationsFound"] = "{0} ubicación(es) encontrada(s)",
+        ["Home_ViewAllLocations"] = "Ver todas las ubicaciones",
+        ["Home_BackToSpecies"] = "Volver a detalles de especie",
+        ["Home_UnnamedLocation"] = "Ubicación",
 
         // Species Page
         ["Species_Title"] = "Especies",
@@ -127,6 +138,7 @@ public static class Translations
         ["SpeciesDetail_NoMunicipalityData"] = "No hay datos de municipios disponibles para esta especie.",
         ["SpeciesDetail_ConservationLinksTitle"] = "Enlaces de conservación",
         ["SpeciesDetail_NoConservationLinks"] = "No hay enlaces de conservación disponibles para esta especie.",
+        ["SpeciesDetail_ViewLocations"] = "Ver ubicaciones",
 
         // Pueblos Page
         ["Pueblos_Title"] = "Pueblos de Puerto Rico",

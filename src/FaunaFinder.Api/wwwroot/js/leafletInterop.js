@@ -3,6 +3,7 @@ window.leafletInterop = {
     geojsonLayer: null,
     dotNetHelper: null,
     isMobile: false,
+    locationCircles: [],
 
     initMap: function (dotNetHelper) {
         this.dotNetHelper = dotNetHelper;
@@ -109,5 +110,61 @@ window.leafletInterop = {
                 this.geojsonLayer.resetStyle(layer);
             }
         });
+    },
+
+    showSpeciesLocations: function (speciesName, locations) {
+        // Clear existing location circles
+        this.clearSpeciesLocations();
+
+        if (!locations || locations.length === 0) return;
+
+        // Create circles for each location
+        locations.forEach(loc => {
+            const circle = L.circle([loc.latitude, loc.longitude], {
+                radius: loc.radiusMeters,
+                fillColor: '#ef4444',
+                color: '#dc2626',
+                weight: 2,
+                fillOpacity: 0.35
+            }).addTo(this.map);
+
+            // Add popup with species name and description
+            const popupContent = loc.description
+                ? `<strong>${speciesName}</strong><br/>${loc.description}`
+                : `<strong>${speciesName}</strong>`;
+            circle.bindPopup(popupContent);
+
+            this.locationCircles.push(circle);
+        });
+
+        // Fit map bounds to show all circles
+        if (this.locationCircles.length > 0) {
+            const group = L.featureGroup(this.locationCircles);
+            this.map.fitBounds(group.getBounds(), { padding: [50, 50] });
+        }
+    },
+
+    clearSpeciesLocations: function () {
+        this.locationCircles.forEach(circle => {
+            this.map.removeLayer(circle);
+        });
+        this.locationCircles = [];
+    },
+
+    focusOnLocation: function (index) {
+        if (index >= 0 && index < this.locationCircles.length) {
+            const circle = this.locationCircles[index];
+            this.map.fitBounds(circle.getBounds(), { padding: [50, 50], maxZoom: 14 });
+            circle.openPopup();
+        }
+    },
+
+    focusAllLocations: function () {
+        if (this.locationCircles.length > 0) {
+            const group = L.featureGroup(this.locationCircles);
+            this.map.fitBounds(group.getBounds(), { padding: [50, 50] });
+            // Close any open popups
+            this.locationCircles.forEach(circle => circle.closePopup());
+        }
     }
 };
