@@ -205,16 +205,7 @@ body {
     border: 1px solid var(--mud-palette-lines-default) !important;
 }
 
-/* Dark mode map tiles filter */
-.mud-theme-dark .leaflet-tile-pane {
-    filter: brightness(0.6) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3) brightness(0.7);
-}
-
+/* Dark mode map background (for when tiles are loading) */
 .mud-theme-dark .leaflet-container {
     background-color: #121212;
-}
-
-/* Ensure location circles remain visible in dark mode */
-.mud-theme-dark .leaflet-overlay-pane {
-    filter: none;
 }
