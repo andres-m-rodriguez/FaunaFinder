@@ -1,4 +1,5 @@
 @inherits LayoutComponentBase
+@inject IAppLocalizer L
 
 <MudThemeProvider Theme="_theme" />
 <MudPopoverProvider />
@@ -12,13 +13,19 @@
                        Edge="Edge.Start"
                        OnClick="ToggleDrawer"
                        Class="d-flex d-sm-none" />
-        <MudText Typo="Typo.h6" Class="ml-2">FaunaFinder</MudText>
+        <MudText Typo="Typo.h6" Class="ml-2">@L["AppTitle"]</MudText>
         <MudSpacer />
-        <div class="d-none d-sm-flex">
-            <MudButton Href="/" Color="Color.Inherit" Variant="Variant.Text">Map</MudButton>
-            <MudButton Href="/species" Color="Color.Inherit" Variant="Variant.Text">Species</MudButton>
-            <MudButton Href="/pueblos" Color="Color.Inherit" Variant="Variant.Text">Pueblos</MudButton>
-            <MudButton Href="/about" Color="Color.Inherit" Variant="Variant.Text">About</MudButton>
+        <div class="d-none d-sm-flex align-center">
+            <MudButton Href="/" Color="Color.Inherit" Variant="Variant.Text">@L["Nav_Map"]</MudButton>
+            <MudButton Href="/species" Color="Color.Inherit" Variant="Variant.Text">@L["Nav_Species"]</MudButton>
+            <MudButton Href="/pueblos" Color="Color.Inherit" Variant="Variant.Text">@L["Nav_Pueblos"]</MudButton>
+            <MudButton Href="/about" Color="Color.Inherit" Variant="Variant.Text">@L["Nav_About"]</MudButton>
+            <div class="ml-2">
+                <LanguageToggle />
+            </div>
+        </div>
+        <div class="d-flex d-sm-none">
+            <LanguageToggle />
         </div>
     </MudAppBar>
 
@@ -27,10 +34,10 @@
                Variant="DrawerVariant.Temporary"
                ClipMode="DrawerClipMode.Always">
         <MudNavMenu>
-            <MudNavLink Href="/" Icon="@Icons.Material.Filled.Map" OnClick="CloseDrawer">Map</MudNavLink>
-            <MudNavLink Href="/species" Icon="@Icons.Material.Filled.Pets" OnClick="CloseDrawer">Species</MudNavLink>
-            <MudNavLink Href="/pueblos" Icon="@Icons.Material.Filled.LocationCity" OnClick="CloseDrawer">Pueblos</MudNavLink>
-            <MudNavLink Href="/about" Icon="@Icons.Material.Filled.Info" OnClick="CloseDrawer">About</MudNavLink>
+            <MudNavLink Href="/" Icon="@Icons.Material.Filled.Map" OnClick="CloseDrawer">@L["Nav_Map"]</MudNavLink>
+            <MudNavLink Href="/species" Icon="@Icons.Material.Filled.Pets" OnClick="CloseDrawer">@L["Nav_Species"]</MudNavLink>
+            <MudNavLink Href="/pueblos" Icon="@Icons.Material.Filled.LocationCity" OnClick="CloseDrawer">@L["Nav_Pueblos"]</MudNavLink>
+            <MudNavLink Href="/about" Icon="@Icons.Material.Filled.Info" OnClick="CloseDrawer">@L["Nav_About"]</MudNavLink>
         </MudNavMenu>
     </MudDrawer>
 
@@ -43,12 +50,12 @@
                 <MudContainer MaxWidth="MaxWidth.Small" Class="d-flex flex-column align-center justify-center" Style="height: calc(100vh - 64px);">
                     <MudPaper Elevation="3" Class="pa-6 text-center">
                         <MudIcon Icon="@Icons.Material.Filled.Error" Color="Color.Error" Size="Size.Large" Class="mb-4" />
-                        <MudText Typo="Typo.h5" Class="mb-2">Something went wrong</MudText>
+                        <MudText Typo="Typo.h5" Class="mb-2">@L["Error_SomethingWentWrong"]</MudText>
                         <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-4">
-                            An unexpected error occurred. Please try again.
+                            @L["Error_UnexpectedError"]
                         </MudText>
                         <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="RecoverFromError">
-                            Try Again
+                            @L["TryAgain"]
                         </MudButton>
                     </MudPaper>
                 </MudContainer>
