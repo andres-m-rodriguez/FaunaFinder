@@ -39,6 +39,16 @@
                     @L["SpeciesDetail_FoundIn", species.Municipalities.Count, species.Municipalities.Count == 1 ? L["Species_Municipality"] : L["Species_Municipalities"]]
                 </MudText>
             </div>
+            @if (species.Locations.Count > 0)
+            {
+                <MudButton Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           StartIcon="@Icons.Material.Filled.Map"
+                           OnClick="ViewLocations"
+                           Class="mt-4">
+                    @L["SpeciesDetail_ViewLocations"]
+                </MudButton>
+            }
         </MudPaper>
 
         @* Municipalities Section *@
@@ -156,5 +166,10 @@
     private void NavigateToMunicipality(int municipalityId)
     {
         NavigationManager.NavigateTo($"/pueblos/{municipalityId}?returnUrl=/species/{Id}");
+    }
+
+    private void ViewLocations()
+    {
+        NavigationManager.NavigateTo($"/?speciesId={Id}");
     }
 }
