@@ -1,4 +1,5 @@
 @page "/species"
+@using BlazingSingularity.Commands
 @inject ISpeciesRepository SpeciesRepository
 @inject NavigationManager NavigationManager
 @inject IAppLocalizer L
@@ -21,7 +22,7 @@
                   OnDebounceIntervalElapsed="OnSearchChanged"
                   Class="mb-4" />
 
-    @if (isLoading)
+    @if (LoadSpeciesCommand.IsLoading)
     {
         <MudContainer Class="d-flex justify-center py-8">
             <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
@@ -93,18 +94,15 @@
     private int pageSize = 12;
     private int totalCount = 0;
     private int totalPages = 0;
-    private bool isLoading = true;
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadSpecies();
+        await LoadSpeciesCommand.ExecuteAsync();
     }
 
+    [RelayCommand]
     private async Task LoadSpecies()
     {
-        isLoading = true;
-        StateHasChanged();
-
         var parameters = new SpeciesParameters(
             PageSize: pageSize,
             Page: currentPage,
@@ -116,21 +114,18 @@
             string.IsNullOrWhiteSpace(searchTerm) ? null : searchTerm
         );
         totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
-
-        isLoading = false;
-        StateHasChanged();
     }
 
     private async Task OnSearchChanged()
     {
         currentPage = 0;
-        await LoadSpecies();
+        await LoadSpeciesCommand.ExecuteAsync();
     }
 
     private async Task OnPageChanged(int page)
     {
         currentPage = page - 1;
-        await LoadSpecies();
+        await LoadSpeciesCommand.ExecuteAsync();
     }
 
     private void NavigateToSpecies(int speciesId)
