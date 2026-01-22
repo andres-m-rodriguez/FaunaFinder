@@ -39,6 +39,65 @@
                     </div>
                 </MudPaper>
 
+                @* Filter/Sort Toolbar *@
+                @if (species.Count > 0)
+                {
+                    <MudPaper Class="px-3 py-2" Square="true" Elevation="0">
+                        <div class="d-flex align-center gap-2 flex-wrap">
+                            <MudSelect T="SortOption" Value="currentSort" ValueChanged="OnSortChanged"
+                                       Dense="true" Margin="Margin.Dense" Variant="Variant.Outlined"
+                                       Style="max-width: 150px;" Label="@L["Filter_Sort"]">
+                                <MudSelectItem Value="SortOption.NameAZ">@L["Filter_NameAZ"]</MudSelectItem>
+                                <MudSelectItem Value="SortOption.NameZA">@L["Filter_NameZA"]</MudSelectItem>
+                                <MudSelectItem Value="SortOption.ScientificAZ">@L["Filter_ScientificAZ"]</MudSelectItem>
+                                <MudSelectItem Value="SortOption.ScientificZA">@L["Filter_ScientificZA"]</MudSelectItem>
+                            </MudSelect>
+
+                            <MudMenu Icon="@Icons.Material.Filled.FilterList" Size="Size.Small" Dense="true"
+                                     AnchorOrigin="Origin.BottomLeft" TransformOrigin="Origin.TopLeft">
+                                <MudMenuItem OnClick="OpenFilterDialog">
+                                    <div class="d-flex align-center gap-2">
+                                        <MudIcon Icon="@Icons.Material.Filled.Tune" Size="Size.Small" />
+                                        <span>@L["Filter_Filters"]</span>
+                                        @if (ActiveFilterCount > 0)
+                                        {
+                                            <MudChip T="string" Size="Size.Small" Color="Color.Primary">@ActiveFilterCount</MudChip>
+                                        }
+                                    </div>
+                                </MudMenuItem>
+                                @if (ActiveFilterCount > 0)
+                                {
+                                    <MudMenuItem OnClick="ClearAllFilters">
+                                        <div class="d-flex align-center gap-2">
+                                            <MudIcon Icon="@Icons.Material.Filled.Clear" Size="Size.Small" />
+                                            <span>@L["Filter_ClearAll"]</span>
+                                        </div>
+                                    </MudMenuItem>
+                                }
+                            </MudMenu>
+                        </div>
+
+                        @* Active filter chips *@
+                        @if (ActiveFilterCount > 0)
+                        {
+                            <div class="d-flex flex-wrap gap-1 mt-2">
+                                @foreach (var practice in selectedNrcsPractices)
+                                {
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Primary" OnClose="() => RemoveNrcsPracticeFilter(practice)">
+                                        NRCS @practice
+                                    </MudChip>
+                                }
+                                @foreach (var action in selectedFwsActions)
+                                {
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Secondary" OnClose="() => RemoveFwsActionFilter(action)">
+                                        FWS @action
+                                    </MudChip>
+                                }
+                            </div>
+                        }
+                    </MudPaper>
+                }
+
                 <MudContainer Class="pa-3" MaxWidth="MaxWidth.False">
                     @if (species.Count == 0)
                     {
@@ -49,11 +108,25 @@
                     else
                     {
                         <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mb-2">
-                            @string.Format(L["Home_SpeciesFound"], species.Count)
+                            @if (ActiveFilterCount > 0)
+                            {
+                                @string.Format(L["Filter_ShowingFiltered"], FilteredSpecies.Count, species.Count)
+                            }
+                            else
+                            {
+                                @string.Format(L["Home_SpeciesFound"], species.Count)
+                            }
                         </MudText>
 
+                        @if (FilteredSpecies.Count == 0)
+                        {
+                            <MudAlert Severity="Severity.Warning" Variant="Variant.Text" Class="mb-2">
+                                @L["Filter_NoMatches"]
+                            </MudAlert>
+                        }
+
                         <MudExpansionPanels MultiExpansion="false" Elevation="0">
-                            @foreach (var s in species)
+                            @foreach (var s in FilteredSpecies)
                             {
                                 <MudExpansionPanel Expanded="@(expandedSpeciesId == s.Id)"
                                                    ExpandedChanged="@((bool expanded) => ToggleSpecies(s.Id, expanded))"
@@ -161,10 +234,59 @@
                         @(clickedMunicipalityName ?? L["AllSpecies"])
                     </MudText>
                     <MudSpacer />
+                    @if (clickedMunicipalityName != null && species.Count > 0)
+                    {
+                        <MudIconButton Icon="@Icons.Material.Filled.FilterList"
+                                       Size="Size.Small"
+                                       OnClick="OpenFilterDialog"
+                                       Color="@(ActiveFilterCount > 0 ? Color.Primary : Color.Default)" />
+                    }
                     <MudIconButton Icon="@Icons.Material.Filled.Close"
                                    Size="Size.Medium"
                                    OnClick="CloseSheet" />
                 </div>
+
+                @* Mobile Sort/Filter Bar *@
+                @if (clickedMunicipalityName != null && species.Count > 0)
+                {
+                    <div class="px-3 py-2">
+                        <div class="d-flex align-center gap-2">
+                            <MudSelect T="SortOption" Value="currentSort" ValueChanged="OnSortChanged"
+                                       Dense="true" Margin="Margin.Dense" Variant="Variant.Outlined"
+                                       Style="flex: 1;" Label="@L["Filter_Sort"]">
+                                <MudSelectItem Value="SortOption.NameAZ">@L["Filter_NameAZ"]</MudSelectItem>
+                                <MudSelectItem Value="SortOption.NameZA">@L["Filter_NameZA"]</MudSelectItem>
+                                <MudSelectItem Value="SortOption.ScientificAZ">@L["Filter_ScientificAZ"]</MudSelectItem>
+                                <MudSelectItem Value="SortOption.ScientificZA">@L["Filter_ScientificZA"]</MudSelectItem>
+                            </MudSelect>
+                            @if (ActiveFilterCount > 0)
+                            {
+                                <MudButton Variant="Variant.Text" Size="Size.Small" OnClick="ClearAllFilters">
+                                    @L["Filter_ClearAll"]
+                                </MudButton>
+                            }
+                        </div>
+
+                        @if (ActiveFilterCount > 0)
+                        {
+                            <div class="d-flex flex-wrap gap-1 mt-2">
+                                @foreach (var practice in selectedNrcsPractices)
+                                {
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Primary" OnClose="() => RemoveNrcsPracticeFilter(practice)">
+                                        NRCS @practice
+                                    </MudChip>
+                                }
+                                @foreach (var action in selectedFwsActions)
+                                {
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Secondary" OnClose="() => RemoveFwsActionFilter(action)">
+                                        FWS @action
+                                    </MudChip>
+                                }
+                            </div>
+                        }
+                    </div>
+                }
+
                 @if (LoadMunicipalitySpeciesCommand.IsLoading || LoadAllSpeciesCommand.IsLoading)
                 {
                     <MudContainer Class="d-flex flex-column align-center justify-center" Style="height: 200px;">
@@ -184,11 +306,25 @@
                         else
                         {
                             <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mb-2">
-                                @string.Format(L["Home_SpeciesFound"], species.Count)
+                                @if (ActiveFilterCount > 0)
+                                {
+                                    @string.Format(L["Filter_ShowingFiltered"], FilteredSpecies.Count, species.Count)
+                                }
+                                else
+                                {
+                                    @string.Format(L["Home_SpeciesFound"], species.Count)
+                                }
                             </MudText>
 
+                            @if (FilteredSpecies.Count == 0)
+                            {
+                                <MudAlert Severity="Severity.Warning" Variant="Variant.Text" Class="mb-2">
+                                    @L["Filter_NoMatches"]
+                                </MudAlert>
+                            }
+
                             <MudExpansionPanels MultiExpansion="false" Elevation="0">
-                                @foreach (var s in species)
+                                @foreach (var s in FilteredSpecies)
                                 {
                                     <MudExpansionPanel Expanded="@(expandedSpeciesId == s.Id)"
                                                        ExpandedChanged="@((bool expanded) => ToggleSpecies(s.Id, expanded))"
@@ -314,6 +450,44 @@
     }
 </div>
 
+@* Filter Dialog *@
+<MudDialog @bind-Visible="filterDialogVisible" Options="new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true }">
+    <TitleContent>
+        <MudText Typo="Typo.h6">@L["Filter_Filters"]</MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudText Typo="Typo.subtitle2" Class="mb-2">@L["Filter_NrcsPractices"]</MudText>
+        <div class="d-flex flex-wrap gap-1 mb-4">
+            @foreach (var practice in AvailableNrcsPractices)
+            {
+                <MudChip T="string"
+                         Color="@(selectedNrcsPractices.Contains(practice) ? Color.Primary : Color.Default)"
+                         Variant="@(selectedNrcsPractices.Contains(practice) ? Variant.Filled : Variant.Outlined)"
+                         OnClick="() => ToggleNrcsPracticeFilter(practice)">
+                    @practice
+                </MudChip>
+            }
+        </div>
+
+        <MudText Typo="Typo.subtitle2" Class="mb-2">@L["Filter_FwsActions"]</MudText>
+        <div class="d-flex flex-wrap gap-1">
+            @foreach (var action in AvailableFwsActions)
+            {
+                <MudChip T="string"
+                         Color="@(selectedFwsActions.Contains(action) ? Color.Secondary : Color.Default)"
+                         Variant="@(selectedFwsActions.Contains(action) ? Variant.Filled : Variant.Outlined)"
+                         OnClick="() => ToggleFwsActionFilter(action)">
+                    @action
+                </MudChip>
+            }
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="ClearAllFilters" Color="Color.Default">@L["Filter_ClearAll"]</MudButton>
+        <MudButton OnClick="CloseFilterDialog" Color="Color.Primary" Variant="Variant.Filled">@L["Filter_Apply"]</MudButton>
+    </DialogActions>
+</MudDialog>
+
 @code {
     [SupplyParameterFromQuery]
     public int? SpeciesId { get; set; }
@@ -328,6 +502,113 @@
     private bool showAllSpecies = false;
     private bool sheetOpen = false;
     private int? expandedSpeciesId;
+
+    // Sort and Filter state
+    private SortOption currentSort = SortOption.NameAZ;
+    private HashSet<string> selectedNrcsPractices = new();
+    private HashSet<string> selectedFwsActions = new();
+    private bool filterDialogVisible = false;
+
+    private enum SortOption
+    {
+        NameAZ,
+        NameZA,
+        ScientificAZ,
+        ScientificZA
+    }
+
+    private int ActiveFilterCount => selectedNrcsPractices.Count + selectedFwsActions.Count;
+
+    private IEnumerable<string> AvailableNrcsPractices => species
+        .SelectMany(s => s.FwsLinks)
+        .Select(l => l.NrcsPractice.Code)
+        .Distinct()
+        .OrderBy(c => c);
+
+    private IEnumerable<string> AvailableFwsActions => species
+        .SelectMany(s => s.FwsLinks)
+        .Select(l => l.FwsAction.Code)
+        .Distinct()
+        .OrderBy(c => c);
+
+    private IReadOnlyList<SpeciesForListDto> FilteredSpecies
+    {
+        get
+        {
+            var filtered = species.AsEnumerable();
+
+            // Apply NRCS Practice filter
+            if (selectedNrcsPractices.Count > 0)
+            {
+                filtered = filtered.Where(s => s.FwsLinks.Any(l => selectedNrcsPractices.Contains(l.NrcsPractice.Code)));
+            }
+
+            // Apply FWS Action filter
+            if (selectedFwsActions.Count > 0)
+            {
+                filtered = filtered.Where(s => s.FwsLinks.Any(l => selectedFwsActions.Contains(l.FwsAction.Code)));
+            }
+
+            // Apply sorting
+            filtered = currentSort switch
+            {
+                SortOption.NameAZ => filtered.OrderBy(s => s.CommonName),
+                SortOption.NameZA => filtered.OrderByDescending(s => s.CommonName),
+                SortOption.ScientificAZ => filtered.OrderBy(s => s.ScientificName),
+                SortOption.ScientificZA => filtered.OrderByDescending(s => s.ScientificName),
+                _ => filtered
+            };
+
+            return filtered.ToList();
+        }
+    }
+
+    private void OnSortChanged(SortOption newSort)
+    {
+        currentSort = newSort;
+    }
+
+    private void ToggleNrcsPracticeFilter(string practice)
+    {
+        if (!selectedNrcsPractices.Remove(practice))
+        {
+            selectedNrcsPractices.Add(practice);
+        }
+    }
+
+    private void ToggleFwsActionFilter(string action)
+    {
+        if (!selectedFwsActions.Remove(action))
+        {
+            selectedFwsActions.Add(action);
+        }
+    }
+
+    private void RemoveNrcsPracticeFilter(string practice)
+    {
+        selectedNrcsPractices.Remove(practice);
+    }
+
+    private void RemoveFwsActionFilter(string action)
+    {
+        selectedFwsActions.Remove(action);
+    }
+
+    private void ClearAllFilters()
+    {
+        selectedNrcsPractices.Clear();
+        selectedFwsActions.Clear();
+    }
+
+    private void OpenFilterDialog()
+    {
+        filterDialogVisible = true;
+    }
+
+    private void CloseFilterDialog()
+    {
+        filterDialogVisible = false;
+    }
 
     private void ToggleSpecies(int speciesId, bool expanded)
     {
@@ -419,6 +700,11 @@
         clickedMunicipalityName = name;
         species = [];
         sheetOpen = false;
+
+        // Reset filters when switching municipalities
+        ClearAllFilters();
+        currentSort = SortOption.NameAZ;
+
         StateHasChanged();
 
         // Small delay to allow DOM to render before triggering animation
@@ -482,6 +768,7 @@
         species = [];
         allSpecies = [];
         expandedSpeciesId = null;
+        ClearAllFilters();
         StateHasChanged();
     }
 }
