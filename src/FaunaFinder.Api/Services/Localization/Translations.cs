@@ -80,6 +80,20 @@ public static class Translations
         ["About_SpeciesData"] = "Species Data:",
         ["About_SpeciesDataDesc"] = "Species occurrence and habitat information for Puerto Rico",
 
+        // Filter and Sort
+        ["Filter_Sort"] = "Sort",
+        ["Filter_NameAZ"] = "Name (A-Z)",
+        ["Filter_NameZA"] = "Name (Z-A)",
+        ["Filter_ScientificAZ"] = "Scientific (A-Z)",
+        ["Filter_ScientificZA"] = "Scientific (Z-A)",
+        ["Filter_Filters"] = "Filters",
+        ["Filter_ClearAll"] = "Clear All",
+        ["Filter_Apply"] = "Apply",
+        ["Filter_NrcsPractices"] = "NRCS Practices",
+        ["Filter_FwsActions"] = "FWS Actions",
+        ["Filter_ShowingFiltered"] = "Showing {0} of {1} species",
+        ["Filter_NoMatches"] = "No species match the selected filters.",
+
         // Page Titles
         ["PageTitle_Home"] = "FaunaFinder - Puerto Rico",
         ["PageTitle_Species"] = "Species - FaunaFinder",
@@ -164,6 +178,20 @@ public static class Translations
         ["About_FwsActionsDesc"] = "Acciones de conservación recomendadas por el Servicio de Pesca y Vida Silvestre de EE.UU.",
         ["About_SpeciesData"] = "Datos de especies:",
         ["About_SpeciesDataDesc"] = "Información sobre ocurrencia y hábitat de especies en Puerto Rico",
+
+        // Filter and Sort
+        ["Filter_Sort"] = "Ordenar",
+        ["Filter_NameAZ"] = "Nombre (A-Z)",
+        ["Filter_NameZA"] = "Nombre (Z-A)",
+        ["Filter_ScientificAZ"] = "Científico (A-Z)",
+        ["Filter_ScientificZA"] = "Científico (Z-A)",
+        ["Filter_Filters"] = "Filtros",
+        ["Filter_ClearAll"] = "Limpiar",
+        ["Filter_Apply"] = "Aplicar",
+        ["Filter_NrcsPractices"] = "Prácticas NRCS",
+        ["Filter_FwsActions"] = "Acciones FWS",
+        ["Filter_ShowingFiltered"] = "Mostrando {0} de {1} especies",
+        ["Filter_NoMatches"] = "Ninguna especie coincide con los filtros seleccionados.",
 
         // Page Titles
         ["PageTitle_Home"] = "FaunaFinder - Puerto Rico",
