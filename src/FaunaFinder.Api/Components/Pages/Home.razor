@@ -15,14 +15,15 @@
 
     @* Desktop Sidebar *@
     <MudHidden Breakpoint="Breakpoint.SmAndDown">
-        <MudDrawer Open="@(clickedMunicipalityName != null || showAllSpecies)"
-                   Anchor="Anchor.End"
-                   Variant="DrawerVariant.Persistent"
-                   Width="360px"
-                   Elevation="2"
-                   Class="sidebar-drawer">
+        <div class="desktop-sidebar @(sidebarOpen ? "open" : "")">
             @if (LoadMunicipalitySpeciesCommand.IsLoading || LoadAllSpeciesCommand.IsLoading)
             {
+                <MudPaper Class="pa-3 mud-theme-primary" Square="true" Elevation="0">
+                    <div class="d-flex justify-space-between align-center">
+                        <MudText Typo="Typo.subtitle1">@(clickedMunicipalityName ?? L["AllSpecies"])</MudText>
+                        <MudIconButton Icon="@Icons.Material.Filled.Close" Color="Color.Inherit" Size="Size.Small" OnClick="CloseSidebar" />
+                    </div>
+                </MudPaper>
                 <MudContainer Class="d-flex flex-column align-center justify-center" Style="height: 200px;">
                     <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
                     <MudText Typo="Typo.body2" Class="mt-3">@L["Loading"]</MudText>
@@ -33,9 +34,7 @@
                 <MudPaper Class="pa-3 mud-theme-primary" Square="true" Elevation="0">
                     <div class="d-flex justify-space-between align-center">
                         <MudText Typo="Typo.subtitle1">@clickedMunicipalityName</MudText>
-                        <MudButton Variant="Variant.Text" Color="Color.Inherit" Size="Size.Small" OnClick="ShowAllSpecies">
-                            @L["AllSpecies"]
-                        </MudButton>
+                        <MudIconButton Icon="@Icons.Material.Filled.Close" Color="Color.Inherit" Size="Size.Small" OnClick="CloseSidebar" />
                     </div>
                 </MudPaper>
 
@@ -98,93 +97,95 @@
                     </MudPaper>
                 }
 
-                <MudContainer Class="pa-3" MaxWidth="MaxWidth.False">
+                <div class="sidebar-content">
                     @if (species.Count == 0)
                     {
-                        <MudAlert Severity="Severity.Info" Variant="Variant.Text">
+                        <MudAlert Severity="Severity.Info" Variant="Variant.Text" Class="ma-3">
                             @L["Home_NoSpeciesData"]
                         </MudAlert>
                     }
                     else
                     {
-                        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mb-2">
-                            @if (ActiveFilterCount > 0)
-                            {
-                                @string.Format(L["Filter_ShowingFiltered"], FilteredSpecies.Count, species.Count)
-                            }
-                            else
-                            {
-                                @string.Format(L["Home_SpeciesFound"], species.Count)
-                            }
-                        </MudText>
+                        <div class="pa-3">
+                            <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mb-2">
+                                @if (ActiveFilterCount > 0)
+                                {
+                                    @string.Format(L["Filter_ShowingFiltered"], FilteredSpecies.Count, species.Count)
+                                }
+                                else
+                                {
+                                    @string.Format(L["Home_SpeciesFound"], species.Count)
+                                }
+                            </MudText>
 
-                        @if (FilteredSpecies.Count == 0)
-                        {
-                            <MudAlert Severity="Severity.Warning" Variant="Variant.Text" Class="mb-2">
-                                @L["Filter_NoMatches"]
-                            </MudAlert>
-                        }
-
-                        <MudExpansionPanels MultiExpansion="false" Elevation="0">
-                            @foreach (var s in FilteredSpecies)
+                            @if (FilteredSpecies.Count == 0)
                             {
-                                <MudExpansionPanel Expanded="@(expandedSpeciesId == s.Id)"
-                                                   ExpandedChanged="@((bool expanded) => ToggleSpecies(s.Id, expanded))"
-                                                   Class="mb-2 border-default">
-                                    <TitleContent>
-                                        <div>
-                                            <MudText Typo="Typo.subtitle2" Color="Color.Primary">@s.CommonName</MudText>
-                                            <MudText Typo="Typo.caption" Color="Color.Secondary">
-                                                <em>@s.ScientificName</em>
-                                            </MudText>
-                                        </div>
-                                    </TitleContent>
-                                    <ChildContent>
-                                        @if (s.FwsLinks.Any())
-                                        {
-                                            <MudText Typo="Typo.overline" Color="Color.Primary" Class="mb-2">@L["Home_ConservationLinks"]</MudText>
-                                            @foreach (var link in s.FwsLinks)
+                                <MudAlert Severity="Severity.Warning" Variant="Variant.Text" Class="mb-2">
+                                    @L["Filter_NoMatches"]
+                                </MudAlert>
+                            }
+
+                            <MudExpansionPanels MultiExpansion="false" Elevation="0">
+                                @foreach (var s in FilteredSpecies)
+                                {
+                                    <MudExpansionPanel Expanded="@(expandedSpeciesId == s.Id)"
+                                                       ExpandedChanged="@((bool expanded) => ToggleSpecies(s.Id, expanded))"
+                                                       Class="mb-2 border-default">
+                                        <TitleContent>
+                                            <div>
+                                                <MudText Typo="Typo.subtitle2" Color="Color.Primary">@s.CommonName</MudText>
+                                                <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                                    <em>@s.ScientificName</em>
+                                                </MudText>
+                                            </div>
+                                        </TitleContent>
+                                        <ChildContent>
+                                            @if (s.FwsLinks.Any())
                                             {
-                                                <MudPaper Elevation="0" Class="pa-2 mb-2 bg-subtle">
-                                                    <div class="d-flex align-start gap-2 mb-1">
-                                                        <MudChip T="string" Size="Size.Small" Color="Color.Primary" Variant="Variant.Filled">
-                                                            NRCS @link.NrcsPractice.Code
-                                                        </MudChip>
-                                                        <MudText Typo="Typo.body2">@link.NrcsPractice.Name</MudText>
-                                                    </div>
-                                                    <div class="d-flex align-start gap-2 mb-1">
-                                                        <MudChip T="string" Size="Size.Small" Color="Color.Secondary" Variant="Variant.Filled">
-                                                            FWS @link.FwsAction.Code
-                                                        </MudChip>
-                                                        <MudText Typo="Typo.body2">@link.FwsAction.Name</MudText>
-                                                    </div>
-                                                    @if (!string.IsNullOrEmpty(link.Justification))
-                                                    {
-                                                        <MudDivider Class="my-2" />
-                                                        <MudText Typo="Typo.caption" Color="Color.Secondary">
-                                                            @link.Justification
-                                                        </MudText>
-                                                    }
-                                                </MudPaper>
+                                                <MudText Typo="Typo.overline" Color="Color.Primary" Class="mb-2">@L["Home_ConservationLinks"]</MudText>
+                                                @foreach (var link in s.FwsLinks)
+                                                {
+                                                    <MudPaper Elevation="0" Class="pa-2 mb-2 bg-subtle">
+                                                        <div class="d-flex align-start gap-2 mb-1">
+                                                            <MudChip T="string" Size="Size.Small" Color="Color.Primary" Variant="Variant.Filled">
+                                                                NRCS @link.NrcsPractice.Code
+                                                            </MudChip>
+                                                            <MudText Typo="Typo.body2">@link.NrcsPractice.Name</MudText>
+                                                        </div>
+                                                        <div class="d-flex align-start gap-2 mb-1">
+                                                            <MudChip T="string" Size="Size.Small" Color="Color.Secondary" Variant="Variant.Filled">
+                                                                FWS @link.FwsAction.Code
+                                                            </MudChip>
+                                                            <MudText Typo="Typo.body2">@link.FwsAction.Name</MudText>
+                                                        </div>
+                                                        @if (!string.IsNullOrEmpty(link.Justification))
+                                                        {
+                                                            <MudDivider Class="my-2" />
+                                                            <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                                                @link.Justification
+                                                            </MudText>
+                                                        }
+                                                    </MudPaper>
+                                                }
                                             }
-                                        }
-                                    </ChildContent>
-                                </MudExpansionPanel>
-                            }
-                        </MudExpansionPanels>
+                                        </ChildContent>
+                                    </MudExpansionPanel>
+                                }
+                            </MudExpansionPanels>
+                        </div>
                     }
-                </MudContainer>
+                </div>
             }
             else if (showAllSpecies)
             {
                 <MudPaper Class="pa-3 mud-theme-primary" Square="true" Elevation="0">
                     <div class="d-flex justify-space-between align-center">
                         <MudText Typo="Typo.subtitle1">@L["AllSpecies"]</MudText>
-                        <MudIconButton Icon="@Icons.Material.Filled.Close" Color="Color.Inherit" Size="Size.Small" OnClick="CloseAllSpecies" />
+                        <MudIconButton Icon="@Icons.Material.Filled.Close" Color="Color.Inherit" Size="Size.Small" OnClick="CloseSidebar" />
                     </div>
                 </MudPaper>
 
-                <MudContainer Class="pa-3" MaxWidth="MaxWidth.False">
+                <div class="sidebar-content pa-3">
                     <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mb-2">
                         @string.Format(L["Home_SpeciesInDatabase"], allSpecies.Count)
                     </MudText>
@@ -200,7 +201,7 @@
                             </MudListItem>
                         }
                     </MudList>
-                </MudContainer>
+                </div>
             }
             else
             {
@@ -208,7 +209,7 @@
                     <MudText Typo="Typo.subtitle1">@L["AppTitle"]</MudText>
                 </MudPaper>
 
-                <MudContainer Class="pa-4" MaxWidth="MaxWidth.False">
+                <div class="pa-4">
                     <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-4">
                         @L["Home_ClickMunicipality"]
                     </MudText>
@@ -218,9 +219,9 @@
                                OnClick="@(() => LoadAllSpeciesCommand.ExecuteAsync(CancellationToken.None))">
                         @L["ViewAllSpecies"]
                     </MudButton>
-                </MudContainer>
+                </div>
             }
-        </MudDrawer>
+        </div>
     </MudHidden>
 
     @* Mobile Bottom Sheet *@
@@ -501,6 +502,7 @@
     private int currentLocationIndex = 0;
     private bool showAllSpecies = false;
     private bool sheetOpen = false;
+    private bool sidebarOpen = true;
     private int? expandedSpeciesId;
 
     // Sort and Filter state
@@ -700,6 +702,7 @@
         clickedMunicipalityName = name;
         species = [];
         sheetOpen = false;
+        sidebarOpen = true;
 
         // Reset filters when switching municipalities
         ClearAllFilters();
@@ -730,6 +733,7 @@
         showAllSpecies = true;
         selectedMunicipality = null;
         sheetOpen = false;
+        sidebarOpen = true;
         StateHasChanged();
 
         await Task.Delay(10);
@@ -750,13 +754,27 @@
     private void CloseAllSpecies()
     {
         sheetOpen = false;
+        sidebarOpen = false;
         allSpecies = [];
         showAllSpecies = false;
+    }
+
+    private void CloseSidebar()
+    {
+        sidebarOpen = false;
+        selectedMunicipality = null;
+        clickedMunicipalityName = null;
+        showAllSpecies = false;
+        species = [];
+        allSpecies = [];
+        expandedSpeciesId = null;
+        ClearAllFilters();
     }
 
     private async Task CloseSheet()
     {
         sheetOpen = false;
+        sidebarOpen = false;
         StateHasChanged();
 
         // Wait for close animation
