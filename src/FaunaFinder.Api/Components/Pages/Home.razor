@@ -21,7 +21,7 @@
                    Width="360px"
                    Elevation="2"
                    Class="sidebar-drawer">
-            @if (isLoading || LoadAllSpeciesCommand.IsLoading)
+            @if (LoadMunicipalitySpeciesCommand.IsLoading || LoadAllSpeciesCommand.IsLoading)
             {
                 <MudContainer Class="d-flex flex-column align-center justify-center" Style="height: 200px;">
                     <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
@@ -166,7 +166,7 @@
                                    Size="Size.Medium"
                                    OnClick="CloseSheet" />
                 </div>
-                @if (isLoading || LoadAllSpeciesCommand.IsLoading)
+                @if (LoadMunicipalitySpeciesCommand.IsLoading || LoadAllSpeciesCommand.IsLoading)
                 {
                     <MudContainer Class="d-flex flex-column align-center justify-center" Style="height: 200px;">
                         <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
@@ -329,7 +329,6 @@
     private int currentLocationIndex = 0;
     private bool showAllSpecies = false;
     private bool sheetOpen = false;
-    private bool isLoading = false;
     private int? expandedSpeciesId;
 
     private void ToggleSpecies(int speciesId, bool expanded)
@@ -416,7 +415,6 @@
     {
         var municipality = municipalities?.FirstOrDefault(m => m.GeoJsonId == geoJsonId);
 
-        isLoading = true;
         showAllSpecies = false;
         expandedSpeciesId = null;
         selectedMunicipality = municipality;
@@ -430,19 +428,16 @@
         sheetOpen = true;
         StateHasChanged();
 
-        if (municipality != null)
-        {
-            species = await SpeciesRepository.GetSpeciesByMunicipalityAsync(municipality.Id);
-        }
-
-        isLoading = false;
-        StateHasChanged();
+        await LoadMunicipalitySpeciesCommand.ExecuteAsync();
     }
 
     [RelayCommand]
-    private async Task LoadMunicipalitySpecies(CancellationToken cancellationToken)
+    private async Task LoadMunicipalitySpecies()
     {
-        // Not used
+        if (selectedMunicipality != null)
+        {
+            species = await SpeciesRepository.GetSpeciesByMunicipalityAsync(selectedMunicipality.Id);
+        }
     }
 
     [RelayCommand]
