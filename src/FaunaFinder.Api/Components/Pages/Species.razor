@@ -1,17 +1,18 @@
 @page "/species"
 @inject ISpeciesRepository SpeciesRepository
 @inject NavigationManager NavigationManager
+@inject IAppLocalizer L
 
-<PageTitle>Species - FaunaFinder</PageTitle>
+<PageTitle>@L["PageTitle_Species"]</PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.Large" Class="py-6">
-    <MudText Typo="Typo.h4" Color="Color.Primary" GutterBottom="true">Species</MudText>
+    <MudText Typo="Typo.h4" Color="Color.Primary" GutterBottom="true">@L["Species_Title"]</MudText>
     <MudText Typo="Typo.body1" Color="Color.Secondary" Class="mb-4">
-        Explore the species of Puerto Rico and discover where they can be found.
+        @L["Species_Description"]
     </MudText>
 
     <MudTextField @bind-Value="searchTerm"
-                  Placeholder="Search species..."
+                  Placeholder="@L["Species_SearchPlaceholder"]"
                   Adornment="Adornment.Start"
                   AdornmentIcon="@Icons.Material.Filled.Search"
                   Variant="Variant.Outlined"
@@ -29,7 +30,7 @@
     else if (species.Count == 0)
     {
         <MudAlert Severity="Severity.Info" Variant="Variant.Text" Class="mb-4">
-            No species found matching your search.
+            @L["Species_NoResults"]
         </MudAlert>
     }
     else
@@ -47,7 +48,7 @@
                             <div class="d-flex align-center mt-2">
                                 <MudIcon Icon="@Icons.Material.Filled.LocationOn" Size="Size.Small" Color="Color.Secondary" Class="mr-2" />
                                 <MudText Typo="Typo.body2" Color="Color.Secondary">
-                                    @s.MunicipalityNames.Count @(s.MunicipalityNames.Count == 1 ? "municipality" : "municipalities")
+                                    @s.MunicipalityNames.Count @(s.MunicipalityNames.Count == 1 ? L["Species_Municipality"] : L["Species_Municipalities"])
                                 </MudText>
                             </div>
                         </MudCardContent>
@@ -67,7 +68,7 @@
         </div>
 
         <MudText Typo="Typo.caption" Color="Color.Secondary" Align="Align.Center" Class="mt-2">
-            Showing @((currentPage * pageSize) + 1)-@Math.Min((currentPage + 1) * pageSize, totalCount) of @totalCount species
+            @L["Species_Showing", (currentPage * pageSize) + 1, Math.Min((currentPage + 1) * pageSize, totalCount), totalCount]
         </MudText>
     }
 </MudContainer>

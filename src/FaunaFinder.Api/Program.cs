@@ -1,4 +1,5 @@
 using FaunaFinder.Api.Components;
+using FaunaFinder.Api.Services.Localization;
 using FaunaFinder.Database.Extensions;
 using FaunaFinder.DataAccess.Extensions;
 using MudBlazor.Services;
@@ -17,6 +18,9 @@ builder.Services.AddRazorComponents()
 
 // Add MudBlazor
 builder.Services.AddMudServices();
+
+// Add Localization
+builder.Services.AddScoped<IAppLocalizer, AppLocalizer>();
 
 // Add FaunaFinder Database (with snake_case naming and NoTracking)
 builder.AddFaunaFinderDatabase();
