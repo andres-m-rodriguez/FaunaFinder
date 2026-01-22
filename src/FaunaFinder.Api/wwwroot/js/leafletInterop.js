@@ -4,10 +4,39 @@ window.leafletInterop = {
     dotNetHelper: null,
     isMobile: false,
     locationCircles: [],
+    tileLayer: null,
+    isDarkMode: false,
+
+    // Tile layer URLs
+    lightTileUrl: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+    darkTileUrl: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+
+    // Theme colors
+    lightTheme: {
+        fillColor: '#d8f3dc',
+        borderColor: '#52b788',
+        highlightFill: '#40916c',
+        highlightBorder: '#1b4332'
+    },
+    darkTheme: {
+        fillColor: '#52b788',
+        borderColor: '#95d5b2',
+        highlightFill: '#b7e4c7',
+        highlightBorder: '#d8f3dc'
+    },
 
     initMap: function (dotNetHelper) {
         this.dotNetHelper = dotNetHelper;
         this.isMobile = window.innerWidth < 640;
+
+        // Check initial dark mode state from localStorage or system preference
+        const savedDarkMode = localStorage.getItem('faunafinder-darkmode');
+        if (savedDarkMode !== null) {
+            this.isDarkMode = savedDarkMode === 'true';
+        } else {
+            // Fall back to system preference
+            this.isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        }
 
         // Puerto Rico bounds (from hayluz)
         const PR_BOUNDS = [
@@ -26,8 +55,14 @@ window.leafletInterop = {
             scrollWheelZoom: !this.isMobile
         });
 
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; OpenStreetMap',
+        // Add initial tile layer based on dark mode state
+        const tileUrl = this.isDarkMode ? this.darkTileUrl : this.lightTileUrl;
+        const attribution = this.isDarkMode
+            ? '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
+            : '&copy; OpenStreetMap';
+
+        this.tileLayer = L.tileLayer(tileUrl, {
+            attribution: attribution,
             noWrap: true,
             minZoom: 7,
             maxZoom: 16
@@ -41,6 +76,37 @@ window.leafletInterop = {
         });
     },
 
+    setDarkMode: function (isDark) {
+        this.isDarkMode = isDark;
+
+        // Update tile layer if map exists
+        if (this.map) {
+            if (this.tileLayer) {
+                this.map.removeLayer(this.tileLayer);
+            }
+
+            const tileUrl = isDark ? this.darkTileUrl : this.lightTileUrl;
+            const attribution = isDark
+                ? '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
+                : '&copy; OpenStreetMap';
+
+            this.tileLayer = L.tileLayer(tileUrl, {
+                attribution: attribution,
+                noWrap: true,
+                minZoom: 7,
+                maxZoom: 16
+            }).addTo(this.map);
+
+            // Move tile layer to back so GeoJSON stays on top
+            this.tileLayer.bringToBack();
+        }
+
+        // Update GeoJSON layer styles
+        if (this.geojsonLayer) {
+            this.geojsonLayer.setStyle(this.getDefaultStyle());
+        }
+    },
+
     loadGeoJson: function () {
         fetch('/data/pr-municipios.geojson')
             .then(r => {
@@ -49,7 +115,7 @@ window.leafletInterop = {
             })
             .then(data => {
                 this.geojsonLayer = L.geoJSON(data, {
-                    style: this.defaultStyle,
+                    style: () => this.getDefaultStyle(),
                     onEachFeature: (feature, layer) => {
                         const name = feature.properties.NAME;
                         const county = feature.properties.COUNTY;
@@ -74,20 +140,26 @@ window.leafletInterop = {
             });
     },
 
-    defaultStyle: function () {
+    getDefaultStyle: function () {
+        const theme = this.isDarkMode ? this.darkTheme : this.lightTheme;
         return {
-            fillColor: '#e5e7eb',
+            fillColor: theme.fillColor,
             weight: 1,
-            color: '#9ca3af',
+            color: theme.borderColor,
             fillOpacity: 0.3
         };
     },
 
+    defaultStyle: function () {
+        return this.getDefaultStyle();
+    },
+
     highlightFeature: function (e) {
+        const theme = this.isDarkMode ? this.darkTheme : this.lightTheme;
         e.target.setStyle({
-            fillColor: '#40916c',
+            fillColor: theme.highlightFill,
             weight: 2,
-            color: '#1b4332',
+            color: theme.highlightBorder,
             fillOpacity: 0.6
         });
     },
@@ -98,12 +170,13 @@ window.leafletInterop = {
 
     highlightMunicipality: function (county) {
         if (!this.geojsonLayer) return;
+        const theme = this.isDarkMode ? this.darkTheme : this.lightTheme;
         this.geojsonLayer.eachLayer(layer => {
             if (layer.feature.properties.COUNTY === county) {
                 layer.setStyle({
-                    fillColor: '#40916c',
+                    fillColor: theme.highlightFill,
                     weight: 2,
-                    color: '#1b4332',
+                    color: theme.highlightBorder,
                     fillOpacity: 0.6
                 });
             } else {

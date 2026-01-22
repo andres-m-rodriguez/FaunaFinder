@@ -1,4 +1,5 @@
 using FaunaFinder.Api.Components;
+using FaunaFinder.Api.Services.DarkMode;
 using FaunaFinder.Api.Services.Localization;
 using FaunaFinder.Database.Extensions;
 using FaunaFinder.DataAccess.Extensions;
@@ -21,6 +22,9 @@ builder.Services.AddMudServices();
 
 // Add Localization
 builder.Services.AddScoped<IAppLocalizer, AppLocalizer>();
+
+// Add Dark Mode
+builder.Services.AddScoped<IDarkModeService, DarkModeService>();
 
 // Add FaunaFinder Database (with snake_case naming and NoTracking)
 builder.AddFaunaFinderDatabase();
