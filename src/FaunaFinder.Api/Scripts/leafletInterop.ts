@@ -1,3 +1,8 @@
+/**
+ * Leaflet Interop for FaunaFinder Blazor Application
+ * Provides map functionality with TypeScript type safety
+ */
+
 window.leafletInterop = {
     map: null,
     geojsonLayer: null,
@@ -25,7 +30,7 @@ window.leafletInterop = {
         highlightBorder: '#d8f3dc'
     },
 
-    initMap: function (dotNetHelper) {
+    initMap: function (dotNetHelper: DotNetObjectReference): void {
         this.dotNetHelper = dotNetHelper;
         this.isMobile = window.innerWidth < 640;
 
@@ -38,8 +43,8 @@ window.leafletInterop = {
             this.isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
         }
 
-        // Puerto Rico bounds (from hayluz)
-        const PR_BOUNDS = [
+        // Puerto Rico bounds
+        const PR_BOUNDS: L.LatLngBoundsExpression = [
             [17.1176, -67.9426],  // SW
             [19.42, -64.9007]     // NE
         ];
@@ -76,7 +81,7 @@ window.leafletInterop = {
         });
     },
 
-    setDarkMode: function (isDark) {
+    setDarkMode: function (isDark: boolean): void {
         this.isDarkMode = isDark;
 
         // Update tile layer if map exists
@@ -107,18 +112,20 @@ window.leafletInterop = {
         }
     },
 
-    loadGeoJson: function () {
+    loadGeoJson: function (): void {
+        const self = this;
         fetch('/data/pr-municipios.geojson')
             .then(r => {
                 if (!r.ok) throw new Error('HTTP ' + r.status + ': ' + r.statusText);
                 return r.json();
             })
-            .then(data => {
-                this.geojsonLayer = L.geoJSON(data, {
-                    style: () => this.getDefaultStyle(),
+            .then((data: GeoJSON.FeatureCollection) => {
+                self.geojsonLayer = L.geoJSON(data, {
+                    style: () => self.getDefaultStyle(),
                     onEachFeature: (feature, layer) => {
-                        const name = feature.properties.NAME;
-                        const county = feature.properties.COUNTY;
+                        const props = feature.properties as MunicipalityProperties;
+                        const name = props.NAME;
+                        const county = props.COUNTY;
 
                         layer.bindTooltip(name, {
                             direction: 'center',
@@ -126,21 +133,23 @@ window.leafletInterop = {
                         });
 
                         layer.on({
-                            mouseover: e => this.highlightFeature(e),
-                            mouseout: e => this.resetHighlight(e),
-                            click: () => this.dotNetHelper?.invokeMethodAsync('OnMunicipalityClick', county, name)
+                            mouseover: (e: L.LeafletMouseEvent) => self.highlightFeature(e),
+                            mouseout: (e: L.LeafletMouseEvent) => self.resetHighlight(e),
+                            click: () => self.dotNetHelper?.invokeMethodAsync('OnMunicipalityClick', county, name)
                         });
                     }
-                }).addTo(this.map);
+                }).addTo(self.map!);
                 console.log('GeoJSON loaded successfully with', data.features.length, 'features');
             })
-            .catch(err => {
+            .catch((err: Error) => {
                 console.error('GeoJSON load error:', err);
-                L.marker([18.15, -66.5]).addTo(this.map).bindPopup('GeoJSON error: ' + err.message).openPopup();
+                if (self.map) {
+                    L.marker([18.15, -66.5]).addTo(self.map).bindPopup('GeoJSON error: ' + err.message).openPopup();
+                }
             });
     },
 
-    getDefaultStyle: function () {
+    getDefaultStyle: function (): L.PathOptions {
         const theme = this.isDarkMode ? this.darkTheme : this.lightTheme;
         return {
             fillColor: theme.fillColor,
@@ -150,13 +159,14 @@ window.leafletInterop = {
         };
     },
 
-    defaultStyle: function () {
+    defaultStyle: function (): L.PathOptions {
         return this.getDefaultStyle();
     },
 
-    highlightFeature: function (e) {
+    highlightFeature: function (e: L.LeafletMouseEvent): void {
         const theme = this.isDarkMode ? this.darkTheme : this.lightTheme;
-        e.target.setStyle({
+        const layer = e.target as L.Path;
+        layer.setStyle({
             fillColor: theme.highlightFill,
             weight: 2,
             color: theme.highlightBorder,
@@ -164,33 +174,42 @@ window.leafletInterop = {
         });
     },
 
-    resetHighlight: function (e) {
-        this.geojsonLayer.resetStyle(e.target);
+    resetHighlight: function (e: L.LeafletMouseEvent): void {
+        if (this.geojsonLayer) {
+            this.geojsonLayer.resetStyle(e.target as L.Path);
+        }
     },
 
-    highlightMunicipality: function (county) {
+    highlightMunicipality: function (county: string): void {
         if (!this.geojsonLayer) return;
         const theme = this.isDarkMode ? this.darkTheme : this.lightTheme;
-        this.geojsonLayer.eachLayer(layer => {
-            if (layer.feature.properties.COUNTY === county) {
-                layer.setStyle({
-                    fillColor: theme.highlightFill,
-                    weight: 2,
-                    color: theme.highlightBorder,
-                    fillOpacity: 0.6
-                });
-            } else {
-                this.geojsonLayer.resetStyle(layer);
+        const self = this;
+        this.geojsonLayer.eachLayer((layer: L.Layer) => {
+            const geoLayer = layer as L.GeoJSON;
+            const feature = (geoLayer as unknown as { feature: GeoJSON.Feature }).feature;
+            if (feature && feature.properties) {
+                const props = feature.properties as MunicipalityProperties;
+                if (props.COUNTY === county) {
+                    (layer as L.Path).setStyle({
+                        fillColor: theme.highlightFill,
+                        weight: 2,
+                        color: theme.highlightBorder,
+                        fillOpacity: 0.6
+                    });
+                } else {
+                    self.geojsonLayer!.resetStyle(layer as L.Path);
+                }
             }
         });
     },
 
-    showSpeciesLocations: function (speciesName, locations) {
+    showSpeciesLocations: function (speciesName: string, locations: SpeciesLocation[]): void {
         // Clear existing location circles
         this.clearSpeciesLocations();
 
         if (!locations || locations.length === 0) return;
 
+        const self = this;
         // Create circles for each location
         locations.forEach(loc => {
             const circle = L.circle([loc.latitude, loc.longitude], {
@@ -199,7 +218,7 @@ window.leafletInterop = {
                 color: '#dc2626',
                 weight: 2,
                 fillOpacity: 0.35
-            }).addTo(this.map);
+            }).addTo(self.map!);
 
             // Add popup with species name and description
             const popupContent = loc.description
@@ -207,37 +226,38 @@ window.leafletInterop = {
                 : `<strong>${speciesName}</strong>`;
             circle.bindPopup(popupContent);
 
-            this.locationCircles.push(circle);
+            self.locationCircles.push(circle);
         });
 
         // Fit map bounds to show all circles
         if (this.locationCircles.length > 0) {
             const group = L.featureGroup(this.locationCircles);
-            this.map.fitBounds(group.getBounds(), { padding: [50, 50] });
+            this.map!.fitBounds(group.getBounds(), { padding: [50, 50] });
         }
     },
 
-    clearSpeciesLocations: function () {
-        this.locationCircles.forEach(circle => {
-            this.map.removeLayer(circle);
+    clearSpeciesLocations: function (): void {
+        const self = this;
+        this.locationCircles.forEach((circle: L.Circle) => {
+            self.map!.removeLayer(circle);
         });
         this.locationCircles = [];
     },
 
-    focusOnLocation: function (index) {
+    focusOnLocation: function (index: number): void {
         if (index >= 0 && index < this.locationCircles.length) {
             const circle = this.locationCircles[index];
-            this.map.fitBounds(circle.getBounds(), { padding: [50, 50], maxZoom: 14 });
+            this.map!.fitBounds(circle.getBounds(), { padding: [50, 50], maxZoom: 14 });
             circle.openPopup();
         }
     },
 
-    focusAllLocations: function () {
+    focusAllLocations: function (): void {
         if (this.locationCircles.length > 0) {
             const group = L.featureGroup(this.locationCircles);
-            this.map.fitBounds(group.getBounds(), { padding: [50, 50] });
+            this.map!.fitBounds(group.getBounds(), { padding: [50, 50] });
             // Close any open popups
-            this.locationCircles.forEach(circle => circle.closePopup());
+            this.locationCircles.forEach((circle: L.Circle) => circle.closePopup());
         }
     }
 };

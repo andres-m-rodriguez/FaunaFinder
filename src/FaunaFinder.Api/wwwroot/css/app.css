@@ -1,9 +1,9 @@
-/* Map Layout */
+/* Map Layout - AppBar is 48px when Dense="true" */
 .map-page {
     display: flex;
     flex: 1;
     position: relative;
-    height: calc(100vh - 64px);
+    height: calc(100vh - 48px);
 }
 
 .map-container {
@@ -17,9 +17,28 @@
     z-index: 1;
 }
 
-.sidebar-drawer {
-    height: calc(100vh - 64px) !important;
-    top: 64px !important;
+/* Desktop Sidebar */
+.desktop-sidebar {
+    position: fixed;
+    right: 0;
+    top: 48px;
+    width: 360px;
+    height: calc(100vh - 48px);
+    background: var(--mud-palette-surface);
+    box-shadow: -2px 0 8px rgba(0, 0, 0, 0.1);
+    z-index: 1100;
+    display: flex;
+    flex-direction: column;
+    transform: translateX(100%);
+    transition: transform 0.3s ease;
+}
+
+.desktop-sidebar.open {
+    transform: translateX(0);
+}
+
+.sidebar-content {
+    flex: 1;
     overflow-y: auto;
 }
 
@@ -186,8 +205,8 @@
 }
 
 @media (max-width: 960px) {
-    .sidebar-drawer {
-        width: 100% !important;
+    .desktop-sidebar {
+        width: 100%;
     }
 }
 
@@ -208,4 +227,43 @@ body {
 /* Dark mode map background (for when tiles are loading) */
 .mud-theme-dark .leaflet-container {
     background-color: #121212;
+}
+
+/* ==========================================================================
+   Card Components (Municipality, Species)
+   ========================================================================== */
+
+/* Municipality Card */
+.municipality-card {
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    height: 100%;
+    cursor: pointer;
+}
+
+.municipality-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Species Card */
+.species-card {
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    height: 100%;
+    cursor: pointer;
+}
+
+.species-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Municipality Card (compact version for species detail) */
+.municipality-card-compact {
+    cursor: pointer;
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.municipality-card-compact:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
 }
