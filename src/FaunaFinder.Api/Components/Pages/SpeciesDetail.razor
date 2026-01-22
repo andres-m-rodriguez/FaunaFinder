@@ -1,8 +1,9 @@
 @page "/species/{Id:int}"
 @inject ISpeciesRepository SpeciesRepository
 @inject NavigationManager NavigationManager
+@inject IAppLocalizer L
 
-<PageTitle>@(species?.CommonName ?? "Species") - FaunaFinder</PageTitle>
+<PageTitle>@(species?.CommonName ?? L["Nav_Species"]) - FaunaFinder</PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.Large" Class="py-6">
     @* Back Navigation *@
@@ -11,7 +12,7 @@
                StartIcon="@Icons.Material.Filled.ArrowBack"
                OnClick="NavigateBack"
                Class="mb-4">
-        Back
+        @L["Back"]
     </MudButton>
 
     @if (isLoading)
@@ -23,7 +24,7 @@
     else if (species == null)
     {
         <MudAlert Severity="Severity.Warning" Variant="Variant.Filled" Class="mb-4">
-            Species not found.
+            @L["Error_SpeciesNotFound"]
         </MudAlert>
     }
     else
@@ -35,18 +36,18 @@
             <div class="d-flex align-center mt-3">
                 <MudIcon Icon="@Icons.Material.Filled.LocationOn" Size="Size.Medium" Color="Color.Secondary" Class="mr-2" />
                 <MudText Typo="Typo.body1" Color="Color.Secondary">
-                    Found in @species.Municipalities.Count @(species.Municipalities.Count == 1 ? "municipality" : "municipalities")
+                    @L["SpeciesDetail_FoundIn", species.Municipalities.Count, species.Municipalities.Count == 1 ? L["Species_Municipality"] : L["Species_Municipalities"]]
                 </MudText>
             </div>
         </MudPaper>
 
         @* Municipalities Section *@
-        <MudText Typo="Typo.h5" Color="Color.Primary" GutterBottom="true" Class="mb-4">Municipalities</MudText>
+        <MudText Typo="Typo.h5" Color="Color.Primary" GutterBottom="true" Class="mb-4">@L["SpeciesDetail_MunicipalitiesTitle"]</MudText>
 
         @if (species.Municipalities.Count == 0)
         {
             <MudAlert Severity="Severity.Info" Variant="Variant.Text" Class="mb-6">
-                No municipality data available for this species.
+                @L["SpeciesDetail_NoMunicipalityData"]
             </MudAlert>
         }
         else
@@ -67,12 +68,12 @@
         }
 
         @* Conservation Links Section *@
-        <MudText Typo="Typo.h5" Color="Color.Primary" GutterBottom="true" Class="mb-4">Conservation Links</MudText>
+        <MudText Typo="Typo.h5" Color="Color.Primary" GutterBottom="true" Class="mb-4">@L["SpeciesDetail_ConservationLinksTitle"]</MudText>
 
         @if (species.FwsLinks.Count == 0)
         {
             <MudAlert Severity="Severity.Info" Variant="Variant.Text" Class="mb-4">
-                No conservation links available for this species.
+                @L["SpeciesDetail_NoConservationLinks"]
             </MudAlert>
         }
         else

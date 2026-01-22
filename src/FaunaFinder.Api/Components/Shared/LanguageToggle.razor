@@ -1,0 +1,56 @@
+@inject IAppLocalizer Localizer
+@inject IJSRuntime JS
+
+<MudToggleGroup T="string"
+                Value="@Localizer.CurrentLanguage"
+                ValueChanged="OnLanguageChanged"
+                Color="Color.Inherit"
+                CheckMark="false"
+                Size="Size.Small">
+    <MudToggleItem Value="@("en-US")" Text="EN" />
+    <MudToggleItem Value="@("es-PR")" Text="ES" />
+</MudToggleGroup>
+
+@code {
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                var savedLanguage = await JS.InvokeAsync<string?>("localStorage.getItem", "faunafinder-language");
+                if (!string.IsNullOrEmpty(savedLanguage))
+                {
+                    Localizer.SetLanguage(savedLanguage);
+                }
+                else
+                {
+                    var browserLanguage = await JS.InvokeAsync<string>("eval", "navigator.language || navigator.userLanguage");
+                    if (!string.IsNullOrEmpty(browserLanguage) && browserLanguage.StartsWith("es"))
+                    {
+                        Localizer.SetLanguage("es-PR");
+                        await JS.InvokeVoidAsync("localStorage.setItem", "faunafinder-language", "es-PR");
+                    }
+                }
+            }
+            catch
+            {
+                // Ignore JS interop errors during prerendering
+            }
+        }
+    }
+
+    private async Task OnLanguageChanged(string language)
+    {
+        Localizer.SetLanguage(language);
+
+        try
+        {
+            await JS.InvokeVoidAsync("localStorage.setItem", "faunafinder-language", language);
+        }
+        catch
+        {
+            // Ignore JS interop errors
+        }
+    }
+}

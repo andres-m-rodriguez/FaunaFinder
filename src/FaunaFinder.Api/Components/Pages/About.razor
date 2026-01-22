@@ -1,36 +1,34 @@
 @page "/about"
+@inject IAppLocalizer L
 
-<PageTitle>About - FaunaFinder</PageTitle>
+<PageTitle>@L["PageTitle_About"]</PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.Medium" Class="py-8">
-    <MudText Typo="Typo.h4" Color="Color.Primary" GutterBottom="true">About FaunaFinder</MudText>
+    <MudText Typo="Typo.h4" Color="Color.Primary" GutterBottom="true">@L["About_Title"]</MudText>
 
     <MudPaper Elevation="0" Class="pa-4 mb-4">
-        <MudText Typo="Typo.h6" Color="Color.Primary" GutterBottom="true">What is FaunaFinder?</MudText>
+        <MudText Typo="Typo.h6" Color="Color.Primary" GutterBottom="true">@L["About_WhatIsTitle"]</MudText>
         <MudText Typo="Typo.body1">
-            FaunaFinder is an interactive web application that helps users explore conservation
-            information for Puerto Rico's municipalities. Click on any municipality on the map
-            to discover the species that inhabit that region, along with relevant NRCS conservation
-            practices and FWS action recommendations.
+            @L["About_WhatIsDescription"]
         </MudText>
     </MudPaper>
 
     <MudPaper Elevation="0" Class="pa-4">
-        <MudText Typo="Typo.h6" Color="Color.Primary" GutterBottom="true">Data Sources</MudText>
+        <MudText Typo="Typo.h6" Color="Color.Primary" GutterBottom="true">@L["About_DataSourcesTitle"]</MudText>
         <MudList T="string" Dense="true">
             <MudListItem Icon="@Icons.Material.Filled.Agriculture">
                 <MudText Typo="Typo.body1">
-                    <strong>NRCS Practices:</strong> Natural Resources Conservation Service conservation practice standards
+                    <strong>@L["About_NrcsPractices"]</strong> @L["About_NrcsPracticesDesc"]
                 </MudText>
             </MudListItem>
             <MudListItem Icon="@Icons.Material.Filled.Pets">
                 <MudText Typo="Typo.body1">
-                    <strong>FWS Actions:</strong> U.S. Fish and Wildlife Service recommended conservation actions
+                    <strong>@L["About_FwsActions"]</strong> @L["About_FwsActionsDesc"]
                 </MudText>
             </MudListItem>
             <MudListItem Icon="@Icons.Material.Filled.Map">
                 <MudText Typo="Typo.body1">
-                    <strong>Species Data:</strong> Species occurrence and habitat information for Puerto Rico
+                    <strong>@L["About_SpeciesData"]</strong> @L["About_SpeciesDataDesc"]
                 </MudText>
             </MudListItem>
         </MudList>
