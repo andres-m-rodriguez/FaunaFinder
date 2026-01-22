@@ -72,13 +72,15 @@ window.leafletInterop = {
     },
 
     setDarkMode: function (isDark) {
-        if (this.isDarkMode === isDark) return;
+        console.log('setDarkMode called with:', isDark, 'current:', this.isDarkMode, 'map exists:', !!this.map);
 
         this.isDarkMode = isDark;
 
-        // Update tile layer
-        if (this.tileLayer && this.map) {
-            this.map.removeLayer(this.tileLayer);
+        // Update tile layer if map exists
+        if (this.map) {
+            if (this.tileLayer) {
+                this.map.removeLayer(this.tileLayer);
+            }
 
             const tileUrl = isDark ? this.darkTileUrl : this.lightTileUrl;
             const attribution = isDark
@@ -94,6 +96,8 @@ window.leafletInterop = {
 
             // Move tile layer to back so GeoJSON stays on top
             this.tileLayer.bringToBack();
+
+            console.log('Tile layer updated to:', isDark ? 'dark' : 'light');
         }
 
         // Update GeoJSON layer styles
