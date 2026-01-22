@@ -1,7 +1,9 @@
 @inherits LayoutComponentBase
 @inject IAppLocalizer L
+@inject IDarkModeService DarkModeService
+@implements IDisposable
 
-<MudThemeProvider Theme="_theme" />
+<MudThemeProvider Theme="_theme" IsDarkMode="_isDarkMode" />
 <MudPopoverProvider />
 <MudDialogProvider />
 <MudSnackbarProvider />
@@ -20,11 +22,13 @@
             <MudButton Href="/species" Color="Color.Inherit" Variant="Variant.Text">@L["Nav_Species"]</MudButton>
             <MudButton Href="/pueblos" Color="Color.Inherit" Variant="Variant.Text">@L["Nav_Pueblos"]</MudButton>
             <MudButton Href="/about" Color="Color.Inherit" Variant="Variant.Text">@L["Nav_About"]</MudButton>
-            <div class="ml-2">
+            <div class="ml-2 d-flex align-center">
+                <DarkModeToggle />
                 <LanguageToggle />
             </div>
         </div>
-        <div class="d-flex d-sm-none">
+        <div class="d-flex d-sm-none align-center">
+            <DarkModeToggle />
             <LanguageToggle />
         </div>
     </MudAppBar>
@@ -67,6 +71,7 @@
 @code {
     private ErrorBoundary? errorBoundary;
     private bool _drawerOpen;
+    private bool _isDarkMode;
 
     private readonly MudTheme _theme = new()
     {
@@ -80,8 +85,33 @@
             Background = "#f8f9fa",
             Surface = "#ffffff",
             DrawerBackground = "#ffffff"
+        },
+        PaletteDark = new PaletteDark
+        {
+            Primary = "#40916c",
+            PrimaryDarken = "#2d6a4f",
+            PrimaryLighten = "#52b788",
+            Secondary = "#52b788",
+            AppbarBackground = "#1b4332",
+            Background = "#121212",
+            Surface = "#1e1e1e",
+            DrawerBackground = "#1e1e1e",
+            TextPrimary = "#e0e0e0",
+            TextSecondary = "#a0a0a0"
         }
     };
+
+    protected override void OnInitialized()
+    {
+        DarkModeService.OnDarkModeChanged += OnDarkModeChanged;
+        _isDarkMode = DarkModeService.IsDarkMode;
+    }
+
+    private void OnDarkModeChanged()
+    {
+        _isDarkMode = DarkModeService.IsDarkMode;
+        InvokeAsync(StateHasChanged);
+    }
 
     private void ToggleDrawer()
     {
@@ -96,5 +126,10 @@
     private void RecoverFromError()
     {
         errorBoundary?.Recover();
+    }
+
+    public void Dispose()
+    {
+        DarkModeService.OnDarkModeChanged -= OnDarkModeChanged;
     }
 }

@@ -57,8 +57,7 @@
                             {
                                 <MudExpansionPanel Expanded="@(expandedSpeciesId == s.Id)"
                                                    ExpandedChanged="@((bool expanded) => ToggleSpecies(s.Id, expanded))"
-                                                   Class="mb-2"
-                                                   Style="border: 1px solid #e0e0e0;">
+                                                   Class="mb-2 border-default">
                                     <TitleContent>
                                         <div>
                                             <MudText Typo="Typo.subtitle2" Color="Color.Primary">@s.CommonName</MudText>
@@ -73,7 +72,7 @@
                                             <MudText Typo="Typo.overline" Color="Color.Primary" Class="mb-2">@L["Home_ConservationLinks"]</MudText>
                                             @foreach (var link in s.FwsLinks)
                                             {
-                                                <MudPaper Elevation="0" Class="pa-2 mb-2" Style="background-color: #f5f5f5;">
+                                                <MudPaper Elevation="0" Class="pa-2 mb-2 bg-subtle">
                                                     <div class="d-flex align-start gap-2 mb-1">
                                                         <MudChip T="string" Size="Size.Small" Color="Color.Primary" Variant="Variant.Filled">
                                                             NRCS @link.NrcsPractice.Code
@@ -193,8 +192,7 @@
                                 {
                                     <MudExpansionPanel Expanded="@(expandedSpeciesId == s.Id)"
                                                        ExpandedChanged="@((bool expanded) => ToggleSpecies(s.Id, expanded))"
-                                                       Class="mb-2"
-                                                       Style="border: 1px solid #e0e0e0;">
+                                                       Class="mb-2 border-default">
                                         <TitleContent>
                                             <div>
                                                 <MudText Typo="Typo.subtitle2" Color="Color.Primary">@s.CommonName</MudText>
@@ -209,7 +207,7 @@
                                                 <MudText Typo="Typo.overline" Color="Color.Primary" Class="mb-2">@L["Home_ConservationLinks"]</MudText>
                                                 @foreach (var link in s.FwsLinks)
                                                 {
-                                                    <MudPaper Elevation="0" Class="pa-2 mb-2" Style="background-color: #f5f5f5;">
+                                                    <MudPaper Elevation="0" Class="pa-2 mb-2 bg-subtle">
                                                         <div class="d-flex align-start gap-2 mb-1">
                                                             <MudChip T="string" Size="Size.Small" Color="Color.Primary" Variant="Variant.Filled">
                                                                 NRCS @link.NrcsPractice.Code
