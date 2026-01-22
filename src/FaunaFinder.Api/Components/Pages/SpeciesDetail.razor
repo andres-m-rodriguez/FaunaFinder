@@ -1,4 +1,5 @@
 @page "/species/{Id:int}"
+@using BlazingSingularity.Commands
 @inject ISpeciesRepository SpeciesRepository
 @inject NavigationManager NavigationManager
 @inject IAppLocalizer L
@@ -15,7 +16,7 @@
         @L["Back"]
     </MudButton>
 
-    @if (isLoading)
+    @if (LoadDataCommand.IsLoading)
     {
         <MudContainer Class="d-flex justify-center py-8">
             <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
@@ -140,22 +141,15 @@
     public string? ReturnUrl { get; set; }
 
     private SpeciesForDetailDto? species;
-    private bool isLoading = true;
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadData();
+        await this.LoadDataCommand.ExecuteAsync();
     }
-
+    [RelayCommand]
     private async Task LoadData()
     {
-        isLoading = true;
-        StateHasChanged();
-
         species = await SpeciesRepository.GetSpeciesDetailAsync(Id);
-
-        isLoading = false;
-        StateHasChanged();
     }
 
     private void NavigateBack()

@@ -1,4 +1,5 @@
 @page "/pueblos/{Id:int}"
+@using BlazingSingularity.Commands
 @inject IMunicipalityRepository MunicipalityRepository
 @inject ISpeciesRepository SpeciesRepository
 @inject NavigationManager NavigationManager
@@ -16,7 +17,7 @@
         @L["Back"]
     </MudButton>
 
-    @if (isLoading)
+    @if (LoadDataCommand.IsLoading)
     {
         <MudContainer Class="d-flex justify-center py-8">
             <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
@@ -133,28 +134,22 @@
 
     private MunicipalityForDetailDto? municipality;
     private IReadOnlyList<SpeciesForListDto> species = [];
-    private bool isLoading = true;
     private int? expandedSpeciesId;
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadData();
+        await LoadDataCommand.ExecuteAsync();
     }
 
+    [RelayCommand]
     private async Task LoadData()
     {
-        isLoading = true;
-        StateHasChanged();
-
         municipality = await MunicipalityRepository.GetMunicipalityDetailAsync(Id);
 
         if (municipality != null)
         {
             species = await SpeciesRepository.GetSpeciesByMunicipalityAsync(Id);
         }
-
-        isLoading = false;
-        StateHasChanged();
     }
 
     private void ToggleSpecies(int speciesId, bool expanded)
