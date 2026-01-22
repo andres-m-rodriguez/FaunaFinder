@@ -1,9 +1,14 @@
 var builder = DistributedApplication.CreateBuilder(args);
 
 // PostgreSQL database
-var postgres = builder.AddPostgres("postgres")
-    .WithDataVolume("faunafinder-postgres-data")
-    .WithPgAdmin();
+// - Uses container locally for development
+// - Uses Azure PostgreSQL Flexible Server when deployed to Azure
+var postgres = builder.AddAzurePostgresFlexibleServer("postgres")
+    .RunAsContainer(configureContainer: container =>
+    {
+        container.WithDataVolume("faunafinder-postgres-data");
+        container.WithPgAdmin();
+    });
 
 var db = postgres.AddDatabase("faunafinder");
 

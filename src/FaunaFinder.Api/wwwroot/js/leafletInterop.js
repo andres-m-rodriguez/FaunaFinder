@@ -61,7 +61,7 @@ window.leafletInterop = {
                         layer.on({
                             mouseover: e => this.highlightFeature(e),
                             mouseout: e => this.resetHighlight(e),
-                            click: () => this.dotNetHelper?.invokeMethodAsync('OnMunicipalityClick', county)
+                            click: () => this.dotNetHelper?.invokeMethodAsync('OnMunicipalityClick', county, name)
                         });
                     }
                 }).addTo(this.map);

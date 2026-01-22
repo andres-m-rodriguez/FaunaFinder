@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
@@ -10,17 +11,36 @@ public static class DatabaseConfigurator
         this IHostApplicationBuilder builder,
         string connectionName = "faunafinder")
     {
-        builder.AddNpgsqlDbContext<FaunaFinderContext>(connectionName, configureDbContextOptions: options =>
+        var connectionString = builder.Configuration.GetConnectionString(connectionName)
+            ?? throw new ArgumentException($"Connection string '{connectionName}' not found");
+
+        // Register DbContext pool
+        builder.Services.AddDbContextPool<FaunaFinderContext>(options =>
         {
-            options.UseSnakeCaseNamingConvention();
-            options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
+            ConfigureDbContext(connectionString, options);
         });
 
+        // Register pooled factory
         builder.Services.AddPooledDbContextFactory<FaunaFinderContext>(options =>
         {
-            // The connection string will be configured by Aspire
+            ConfigureDbContext(connectionString, options);
         });
 
+        // Enrich with Azure-specific configuration (SSL, health checks, telemetry)
+        builder.EnrichAzureNpgsqlDbContext<FaunaFinderContext>();
+
         return builder;
+    }
+
+    private static void ConfigureDbContext(string connectionString, DbContextOptionsBuilder options)
+    {
+        options.EnableThreadSafetyChecks(false);
+        options.UseNpgsql(connectionString, npgsqlOptions =>
+        {
+            npgsqlOptions.MigrationsAssembly("FaunaFinder.Database");
+            npgsqlOptions.EnableRetryOnFailure(maxRetryCount: 5);
+        });
+        options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
+        options.UseSnakeCaseNamingConvention();
     }
 }
