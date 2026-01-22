@@ -71,18 +71,6 @@
     }
 </MudContainer>
 
-<style>
-    .municipality-card {
-        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-        height: 100%;
-    }
-
-    .municipality-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15) !important;
-    }
-</style>
-
 @code {
     private IReadOnlyList<MunicipalityCardDto> municipalities = [];
     private string searchTerm = string.Empty;
