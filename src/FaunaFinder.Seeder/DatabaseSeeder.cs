@@ -184,7 +184,81 @@ public static class DatabaseSeeder
                 });
             }
             await context.SaveChangesAsync(cancellationToken);
+
+            // Add species locations for some species
+            var locations = GetSpeciesLocations(commonName);
+            foreach (var (lat, lng, radius, description) in locations)
+            {
+                context.SpeciesLocations.Add(new SpeciesLocation
+                {
+                    Id = 0,
+                    SpeciesId = species.Id,
+                    Latitude = lat,
+                    Longitude = lng,
+                    RadiusMeters = radius,
+                    Description = description
+                });
+            }
+            await context.SaveChangesAsync(cancellationToken);
         }
+    }
+
+    private static List<(double Lat, double Lng, double Radius, string Description)> GetSpeciesLocations(string speciesName)
+    {
+        return speciesName switch
+        {
+            // Puerto Rican Parrot - El Yunque and Rio Abajo populations
+            "Puerto Rican Parrot" =>
+            [
+                (18.2959, -65.7872, 5000, "El Yunque National Forest - Primary wild population"),
+                (18.3500, -66.7200, 4000, "Rio Abajo State Forest - Reintroduced population"),
+            ],
+
+            // Coqui Llanero - Very restricted to coastal wetlands
+            "Coqui Llanero" =>
+            [
+                (18.4450, -66.2500, 1500, "Sabana Seca wetlands - Only known population"),
+            ],
+
+            // Puerto Rican Crested Toad - Guánica and northern populations
+            "Puerto Rican Crested Toad" =>
+            [
+                (17.9700, -66.8600, 3000, "Guánica State Forest - Southern population"),
+                (18.4800, -67.0800, 2500, "Isabela region - Northern population"),
+            ],
+
+            // Leatherback Sea Turtle - Major nesting beaches
+            "Leatherback Sea Turtle" =>
+            [
+                (18.3100, -65.6300, 2000, "Fajardo beaches - Nesting area"),
+                (18.1500, -65.5000, 2500, "Humacao coast - Nesting area"),
+                (18.3400, -67.2500, 2000, "Rincón beaches - Nesting area"),
+            ],
+
+            // West Indian Manatee - Coastal areas
+            "West Indian Manatee" =>
+            [
+                (18.4200, -66.0500, 4000, "San Juan Bay - Regular sightings"),
+                (18.3300, -65.6500, 3500, "Fajardo coast - Seagrass foraging area"),
+                (17.9600, -66.6100, 3000, "Guayanilla Bay - Warm water refuge"),
+            ],
+
+            // Yellow-shouldered Blackbird - Southwest coast
+            "Yellow-shouldered Blackbird" =>
+            [
+                (17.9500, -67.1500, 2500, "Cabo Rojo mangroves - Breeding colony"),
+                (17.9700, -66.8500, 2000, "Roosevelt Roads area - Population cluster"),
+            ],
+
+            // Puerto Rican Nightjar - Dry forests
+            "Puerto Rican Nightjar" =>
+            [
+                (17.9800, -66.8800, 4000, "Guánica dry forest - Core habitat"),
+                (18.0200, -67.0500, 3000, "Cabo Rojo forests - Secondary habitat"),
+            ],
+
+            _ => []
+        };
     }
 
     private static List<(NrcsPractice, FwsAction, string)> GetConservationLinks(

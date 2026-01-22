@@ -2,6 +2,7 @@
 @using BlazingSingularity.Commands
 @inject IMunicipalityRepository MunicipalityRepository
 @inject ISpeciesRepository SpeciesRepository
+@inject NavigationManager NavigationManager
 @inject IJSRuntime JS
 @inject IAppLocalizer L
 
@@ -264,7 +265,7 @@
 
     @* Mobile FAB for "View All Species" when nothing selected *@
     <MudHidden Breakpoint="Breakpoint.MdAndUp">
-        @if (clickedMunicipalityName == null && !showAllSpecies)
+        @if (clickedMunicipalityName == null && !showAllSpecies && viewingSpeciesLocations == null)
         {
             <MudFab Color="Color.Primary"
                     StartIcon="@Icons.Material.Filled.List"
@@ -273,14 +274,59 @@
                     OnClick="@(() => LoadAllSpeciesCommand.ExecuteAsync(CancellationToken.None))" />
         }
     </MudHidden>
+
+    @* Bottom Location Navigator Overlay *@
+    @if (viewingSpeciesLocations != null)
+    {
+        <div class="location-nav-overlay">
+            <div class="location-nav-header">
+                <MudIcon Icon="@Icons.Material.Filled.MyLocation" Size="Size.Small" Class="mr-2" />
+                <MudText Typo="Typo.body2" Style="font-weight: 500;">@viewingSpeciesLocations.CommonName</MudText>
+                <MudSpacer />
+                <MudButton Variant="Variant.Text"
+                           Size="Size.Small"
+                           StartIcon="@Icons.Material.Filled.ArrowBack"
+                           Href="@($"/species/{viewingSpeciesLocations.Id}")"
+                           Class="mr-2">
+                    @L["ViewDetails"]
+                </MudButton>
+                <MudIconButton Icon="@Icons.Material.Filled.Close"
+                               Size="Size.Small"
+                               OnClick="ClearSpeciesLocations" />
+            </div>
+            <div class="location-nav-content">
+                <MudIconButton Icon="@Icons.Material.Filled.ChevronLeft"
+                               Size="Size.Large"
+                               Disabled="@(currentLocationIndex == 0)"
+                               OnClick="PreviousLocation" />
+                <div class="location-nav-info" @onclick="() => FocusOnLocation(currentLocationIndex)">
+                    <MudText Typo="Typo.body1" Align="Align.Center">
+                        @(viewingSpeciesLocations.Locations[currentLocationIndex].Description ?? L["Home_UnnamedLocation"])
+                    </MudText>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary" Align="Align.Center">
+                        @($"{currentLocationIndex + 1} / {viewingSpeciesLocations.Locations.Count}") &bull; @($"{viewingSpeciesLocations.Locations[currentLocationIndex].RadiusMeters:N0}m radius")
+                    </MudText>
+                </div>
+                <MudIconButton Icon="@Icons.Material.Filled.ChevronRight"
+                               Size="Size.Large"
+                               Disabled="@(currentLocationIndex >= viewingSpeciesLocations.Locations.Count - 1)"
+                               OnClick="NextLocation" />
+            </div>
+        </div>
+    }
 </div>
 
 @code {
+    [SupplyParameterFromQuery]
+    public int? SpeciesId { get; set; }
+
     private MunicipalityForListDto? selectedMunicipality;
     private string? clickedMunicipalityName;
     private IReadOnlyList<SpeciesForListDto> species = [];
     private IReadOnlyList<SpeciesForSearchDto> allSpecies = [];
     private IReadOnlyList<MunicipalityForListDto> municipalities = [];
+    private SpeciesForDetailDto? viewingSpeciesLocations;
+    private int currentLocationIndex = 0;
     private bool showAllSpecies = false;
     private bool sheetOpen = false;
     private bool isLoading = false;
@@ -297,6 +343,71 @@
         {
             municipalities = await MunicipalityRepository.GetAllMunicipalitiesAsync();
             await JS.InvokeVoidAsync("leafletInterop.initMap", DotNetObjectReference.Create(this));
+
+            // Check if we need to show species locations
+            if (SpeciesId.HasValue)
+            {
+                await LoadSpeciesLocations(SpeciesId.Value);
+            }
+        }
+    }
+
+    private async Task LoadSpeciesLocations(int speciesId)
+    {
+        viewingSpeciesLocations = await SpeciesRepository.GetSpeciesDetailAsync(speciesId);
+        currentLocationIndex = 0;
+        if (viewingSpeciesLocations?.Locations.Count > 0)
+        {
+            var locations = viewingSpeciesLocations.Locations.Select(l => new
+            {
+                latitude = l.Latitude,
+                longitude = l.Longitude,
+                radiusMeters = l.RadiusMeters,
+                description = l.Description
+            }).ToArray();
+
+            await JS.InvokeVoidAsync("leafletInterop.showSpeciesLocations", viewingSpeciesLocations.CommonName, locations);
+
+            // Focus on the first location
+            await JS.InvokeVoidAsync("leafletInterop.focusOnLocation", 0);
+        }
+        StateHasChanged();
+    }
+
+    private async Task ClearSpeciesLocations()
+    {
+        await JS.InvokeVoidAsync("leafletInterop.clearSpeciesLocations");
+        viewingSpeciesLocations = null;
+        currentLocationIndex = 0;
+        sheetOpen = false;
+        NavigationManager.NavigateTo("/", replace: true);
+    }
+
+    private async Task FocusOnLocation(int index)
+    {
+        await JS.InvokeVoidAsync("leafletInterop.focusOnLocation", index);
+    }
+
+    private async Task FocusAllLocations()
+    {
+        await JS.InvokeVoidAsync("leafletInterop.focusAllLocations");
+    }
+
+    private async Task PreviousLocation()
+    {
+        if (currentLocationIndex > 0)
+        {
+            currentLocationIndex--;
+            await FocusOnLocation(currentLocationIndex);
+        }
+    }
+
+    private async Task NextLocation()
+    {
+        if (viewingSpeciesLocations != null && currentLocationIndex < viewingSpeciesLocations.Locations.Count - 1)
+        {
+            currentLocationIndex++;
+            await FocusOnLocation(currentLocationIndex);
         }
     }
 

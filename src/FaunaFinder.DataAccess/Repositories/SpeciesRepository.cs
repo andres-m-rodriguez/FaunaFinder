@@ -79,6 +79,15 @@ public sealed class SpeciesRepository(
                         ms.Municipality.Id,
                         ms.Municipality.Name
                     ))
+                    .ToList(),
+                s.Locations
+                    .Select(static l => new SpeciesLocationDto(
+                        l.Id,
+                        l.Latitude,
+                        l.Longitude,
+                        l.RadiusMeters,
+                        l.Description
+                    ))
                     .ToList()
             ))
             .FirstOrDefaultAsync(cancellationToken);
