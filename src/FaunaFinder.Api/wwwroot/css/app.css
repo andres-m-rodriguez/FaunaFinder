@@ -351,3 +351,61 @@ body {
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
 }
+
+/* ==========================================================================
+   Species Near Me Feature
+   ========================================================================== */
+
+/* Nearby species list items */
+.nearby-species-item {
+    cursor: pointer;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.nearby-species-item:hover {
+    background-color: var(--mud-palette-info-lighten);
+    border-color: var(--mud-palette-info);
+}
+
+/* Nearby species popup on map */
+.nearby-species-popup {
+    padding: 4px;
+    color: var(--mud-palette-text-primary);
+}
+
+.nearby-species-popup .distance {
+    color: var(--mud-palette-info);
+    font-weight: 500;
+}
+
+/* Mobile FAB container for multiple FABs */
+.mobile-fab-container {
+    position: fixed;
+    bottom: 16px;
+    right: 16px;
+    z-index: 50;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.mobile-fab-item {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Search radius circle info theme */
+.mud-theme-info {
+    background-color: var(--mud-palette-info) !important;
+    color: var(--mud-palette-info-text) !important;
+}
+
+/* Species color indicator dot */
+.species-color-dot {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    min-width: 12px;
+    border-radius: 50%;
+    margin-top: 4px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
