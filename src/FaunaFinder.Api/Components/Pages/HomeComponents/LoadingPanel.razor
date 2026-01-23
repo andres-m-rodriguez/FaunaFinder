@@ -1,0 +1,9 @@
+<MudContainer Class="d-flex flex-column align-center justify-center" Style="height: 200px;">
+    <MudProgressCircular Color="@Color" Indeterminate="true" />
+    <MudText Typo="Typo.body2" Class="mt-3">@Message</MudText>
+</MudContainer>
+
+@code {
+    [Parameter] public string Message { get; set; } = "Loading...";
+    [Parameter] public Color Color { get; set; } = Color.Primary;
+}

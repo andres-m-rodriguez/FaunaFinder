@@ -1,0 +1,19 @@
+<MudPaper Class="@($"pa-3 {ThemeClass}")" Square="true" Elevation="0">
+    <div class="d-flex justify-space-between align-center">
+        <div class="d-flex align-center gap-2">
+            @if (!string.IsNullOrEmpty(Icon))
+            {
+                <MudIcon Icon="@Icon" Size="Size.Small" />
+            }
+            <MudText Typo="Typo.subtitle1">@Title</MudText>
+        </div>
+        <MudIconButton Icon="@Icons.Material.Filled.Close" Color="Color.Inherit" Size="Size.Small" OnClick="OnClose" />
+    </div>
+</MudPaper>
+
+@code {
+    [Parameter, EditorRequired] public string Title { get; set; } = "";
+    [Parameter] public string? Icon { get; set; }
+    [Parameter] public string ThemeClass { get; set; } = "mud-theme-primary";
+    [Parameter] public EventCallback OnClose { get; set; }
+}

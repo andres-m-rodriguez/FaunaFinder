@@ -1,0 +1,50 @@
+@inject IAppLocalizer L
+
+<MudExpansionPanel Expanded="@IsExpanded"
+                   ExpandedChanged="@OnExpandedChanged"
+                   Class="mb-2 border-default">
+    <TitleContent>
+        <div>
+            <MudText Typo="Typo.subtitle2" Color="Color.Primary">@Species.CommonName</MudText>
+            <MudText Typo="Typo.caption" Color="Color.Secondary">
+                <em>@Species.ScientificName</em>
+            </MudText>
+        </div>
+    </TitleContent>
+    <ChildContent>
+        @if (Species.FwsLinks.Any())
+        {
+            <MudText Typo="Typo.overline" Color="Color.Primary" Class="mb-2">@L["Home_ConservationLinks"]</MudText>
+            @foreach (var link in Species.FwsLinks)
+            {
+                <MudPaper Elevation="0" Class="pa-2 mb-2 bg-subtle">
+                    <div class="d-flex align-start gap-2 mb-1">
+                        <MudChip T="string" Size="Size.Small" Color="Color.Primary" Variant="Variant.Filled">
+                            NRCS @link.NrcsPractice.Code
+                        </MudChip>
+                        <MudText Typo="Typo.body2">@link.NrcsPractice.Name</MudText>
+                    </div>
+                    <div class="d-flex align-start gap-2 mb-1">
+                        <MudChip T="string" Size="Size.Small" Color="Color.Secondary" Variant="Variant.Filled">
+                            FWS @link.FwsAction.Code
+                        </MudChip>
+                        <MudText Typo="Typo.body2">@link.FwsAction.Name</MudText>
+                    </div>
+                    @if (!string.IsNullOrEmpty(link.Justification))
+                    {
+                        <MudDivider Class="my-2" />
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">
+                            @link.Justification
+                        </MudText>
+                    }
+                </MudPaper>
+            }
+        }
+    </ChildContent>
+</MudExpansionPanel>
+
+@code {
+    [Parameter, EditorRequired] public SpeciesForListDto Species { get; set; } = null!;
+    [Parameter] public bool IsExpanded { get; set; }
+    [Parameter] public EventCallback<bool> OnExpandedChanged { get; set; }
+}
