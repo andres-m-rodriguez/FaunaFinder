@@ -3,6 +3,7 @@ using FaunaFinder.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using NetTopologySuite.Geometries;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
@@ -133,6 +134,10 @@ namespace FaunaFinder.Database.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<Geometry>("Boundary")
+                        .HasColumnType("geometry(Geometry, 4326)")
+                        .HasColumnName("boundary");
+
                     b.Property<string>("GeoJsonId")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -147,6 +152,11 @@ namespace FaunaFinder.Database.Migrations
 
                     b.HasKey("Id")
                         .HasName("pk_municipalities");
+
+                    b.HasIndex("Boundary")
+                        .HasDatabaseName("municipalities_boundary_gist_idx");
+
+                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("Boundary"), "gist");
 
                     b.HasIndex("GeoJsonId")
                         .IsUnique()

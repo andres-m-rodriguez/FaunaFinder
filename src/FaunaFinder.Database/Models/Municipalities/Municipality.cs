@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using NetTopologySuite.Geometries;
 
 namespace FaunaFinder.Database.Models.Municipalities;
 
@@ -8,6 +9,7 @@ public sealed class Municipality
     public required int Id { get; set; }
     public required string Name { get; set; }
     public required string GeoJsonId { get; set; }
+    public Geometry? Boundary { get; set; }
 
     public ICollection<MunicipalitySpecies> MunicipalitySpecies { get; set; } = [];
 
@@ -33,6 +35,13 @@ public sealed class Municipality
             builder.HasIndex(static e => e.GeoJsonId)
                 .IsUnique()
                 .HasDatabaseName("municipalities_geojson_id_uidx");
+
+            builder.Property(static e => e.Boundary)
+                .HasColumnType("geometry(Geometry, 4326)");
+
+            builder.HasIndex(static e => e.Boundary)
+                .HasMethod("gist")
+                .HasDatabaseName("municipalities_boundary_gist_idx");
         }
     }
 }

@@ -39,6 +39,7 @@ public static class DatabaseConfigurator
         {
             npgsqlOptions.MigrationsAssembly("FaunaFinder.Database");
             npgsqlOptions.EnableRetryOnFailure(maxRetryCount: 5);
+            npgsqlOptions.UseNetTopologySuite();
         });
         options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
         options.UseSnakeCaseNamingConvention();
