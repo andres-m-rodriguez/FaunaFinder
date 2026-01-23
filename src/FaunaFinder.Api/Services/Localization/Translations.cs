@@ -26,6 +26,7 @@ public static class Translations
         ["Error_UnexpectedError"] = "An unexpected error occurred. Please try again.",
         ["Error_SpeciesNotFound"] = "Species not found.",
         ["Error_MunicipalityNotFound"] = "Municipality not found.",
+        ["MunicipalityNotFound"] = "Municipality '{0}' not found in database.",
 
         // Home Page
         ["Home_ClickMunicipality"] = "Click on a municipality on the map to view species and conservation information.",
@@ -143,6 +144,7 @@ public static class Translations
         ["Error_UnexpectedError"] = "Ocurrió un error inesperado. Por favor, inténtelo de nuevo.",
         ["Error_SpeciesNotFound"] = "Especie no encontrada.",
         ["Error_MunicipalityNotFound"] = "Municipio no encontrado.",
+        ["MunicipalityNotFound"] = "Municipio '{0}' no encontrado en la base de datos.",
 
         // Home Page
         ["Home_ClickMunicipality"] = "Haz clic en un municipio en el mapa para ver información sobre especies y conservación.",

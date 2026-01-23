@@ -7,6 +7,7 @@
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JS
 @inject IAppLocalizer L
+@inject ISnackbar Snackbar
 
 <PageTitle>@L["PageTitle_Home"]</PageTitle>
 
@@ -1023,10 +1024,13 @@
     [JSInvokable]
     public async Task OnMunicipalityClick(string geoJsonId, string name)
     {
-        // Try full geoJsonId first, then try county-only (strip "72" state prefix for Puerto Rico)
-        var countyOnly = geoJsonId.StartsWith("72") ? geoJsonId[2..] : geoJsonId;
-        var municipality = municipalities?.FirstOrDefault(m => m.GeoJsonId == geoJsonId)
-            ?? municipalities?.FirstOrDefault(m => m.GeoJsonId == countyOnly);
+        var municipality = municipalities?.FirstOrDefault(m => m.GeoJsonId == geoJsonId);
+
+        if (municipality is null)
+        {
+            Snackbar.Add(L["MunicipalityNotFound", name], Severity.Warning);
+            return;
+        }
 
         showAllSpecies = false;
         showNearbySpecies = false;

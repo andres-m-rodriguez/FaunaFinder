@@ -15,39 +15,40 @@ public static class DatabaseSeeder
 
         // === MUNICIPALITIES ===
         // Grouped by region for species distribution
+        // GeoJsonId uses full FIPS code format: STATE (72 = Puerto Rico) + COUNTY
         var municipalities = new List<Municipality>
         {
             // Northeast (San Juan Metro)
-            new() { Id = 0, Name = "San Juan", GeoJsonId = "127" },
-            new() { Id = 0, Name = "Bayamon", GeoJsonId = "021" },
-            new() { Id = 0, Name = "Carolina", GeoJsonId = "031" },
-            new() { Id = 0, Name = "Guaynabo", GeoJsonId = "061" },
+            new() { Id = 0, Name = "San Juan", GeoJsonId = "72127" },
+            new() { Id = 0, Name = "Bayamon", GeoJsonId = "72021" },
+            new() { Id = 0, Name = "Carolina", GeoJsonId = "72031" },
+            new() { Id = 0, Name = "Guaynabo", GeoJsonId = "72061" },
 
             // East
-            new() { Id = 0, Name = "Fajardo", GeoJsonId = "053" },
-            new() { Id = 0, Name = "Humacao", GeoJsonId = "069" },
-            new() { Id = 0, Name = "Caguas", GeoJsonId = "025" },
+            new() { Id = 0, Name = "Fajardo", GeoJsonId = "72053" },
+            new() { Id = 0, Name = "Humacao", GeoJsonId = "72069" },
+            new() { Id = 0, Name = "Caguas", GeoJsonId = "72025" },
 
             // South
-            new() { Id = 0, Name = "Ponce", GeoJsonId = "113" },
-            new() { Id = 0, Name = "Guayama", GeoJsonId = "057" },
-            new() { Id = 0, Name = "Yauco", GeoJsonId = "153" },
+            new() { Id = 0, Name = "Ponce", GeoJsonId = "72113" },
+            new() { Id = 0, Name = "Guayama", GeoJsonId = "72057" },
+            new() { Id = 0, Name = "Yauco", GeoJsonId = "72153" },
 
             // West
-            new() { Id = 0, Name = "Mayaguez", GeoJsonId = "097" },
-            new() { Id = 0, Name = "Cabo Rojo", GeoJsonId = "023" },
-            new() { Id = 0, Name = "Rincon", GeoJsonId = "117" },
-            new() { Id = 0, Name = "Aguadilla", GeoJsonId = "003" },
+            new() { Id = 0, Name = "Mayaguez", GeoJsonId = "72097" },
+            new() { Id = 0, Name = "Cabo Rojo", GeoJsonId = "72023" },
+            new() { Id = 0, Name = "Rincon", GeoJsonId = "72117" },
+            new() { Id = 0, Name = "Aguadilla", GeoJsonId = "72003" },
 
             // North
-            new() { Id = 0, Name = "Arecibo", GeoJsonId = "013" },
-            new() { Id = 0, Name = "Vega Baja", GeoJsonId = "145" },
-            new() { Id = 0, Name = "Manati", GeoJsonId = "091" },
-            new() { Id = 0, Name = "Isabela", GeoJsonId = "071" },
+            new() { Id = 0, Name = "Arecibo", GeoJsonId = "72013" },
+            new() { Id = 0, Name = "Vega Baja", GeoJsonId = "72145" },
+            new() { Id = 0, Name = "Manati", GeoJsonId = "72091" },
+            new() { Id = 0, Name = "Isabela", GeoJsonId = "72071" },
 
             // Islands
-            new() { Id = 0, Name = "Vieques", GeoJsonId = "147" },
-            new() { Id = 0, Name = "Culebra", GeoJsonId = "049" },
+            new() { Id = 0, Name = "Vieques", GeoJsonId = "72147" },
+            new() { Id = 0, Name = "Culebra", GeoJsonId = "72049" },
         };
         context.Municipalities.AddRange(municipalities);
         await context.SaveChangesAsync(cancellationToken);
