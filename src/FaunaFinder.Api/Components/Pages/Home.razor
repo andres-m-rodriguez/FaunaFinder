@@ -271,14 +271,17 @@
                                                     </MudText>
                                                 }
                                             </div>
-                                            <div class="text-right">
+                                            <div class="d-flex flex-column align-end gap-1">
                                                 <MudChip T="string" Size="Size.Small" Color="Color.Info" Variant="Variant.Text">
                                                     @FormatDistance(s.DistanceMeters)
                                                 </MudChip>
-                                                <MudIconButton Icon="@Icons.Material.Filled.Info"
-                                                               Size="Size.Small"
-                                                               Href="@($"/species/{s.Id}?returnUrl=/")"
-                                                               Color="Color.Primary" />
+                                                <MudButton Variant="Variant.Text"
+                                                           Size="Size.Small"
+                                                           EndIcon="@Icons.Material.Filled.ChevronRight"
+                                                           OnClick="() => NavigateToSpeciesDetail(s.Id)"
+                                                           Color="Color.Primary">
+                                                    @L["Details"]
+                                                </MudButton>
                                             </div>
                                         </div>
                                     </MudListItem>
@@ -547,14 +550,17 @@
                                                     <em>@s.ScientificName</em>
                                                 </MudText>
                                             </div>
-                                            <div class="text-right">
+                                            <div class="d-flex flex-column align-end gap-1">
                                                 <MudChip T="string" Size="Size.Small" Color="Color.Info" Variant="Variant.Text">
                                                     @FormatDistance(s.DistanceMeters)
                                                 </MudChip>
-                                                <MudIconButton Icon="@Icons.Material.Filled.Info"
-                                                               Size="Size.Small"
-                                                               Href="@($"/species/{s.Id}?returnUrl=/")"
-                                                               Color="Color.Primary" />
+                                                <MudButton Variant="Variant.Text"
+                                                           Size="Size.Small"
+                                                           EndIcon="@Icons.Material.Filled.ChevronRight"
+                                                           OnClick="() => NavigateToSpeciesDetail(s.Id)"
+                                                           Color="Color.Primary">
+                                                    @L["Details"]
+                                                </MudButton>
                                             </div>
                                         </div>
                                     </MudListItem>
@@ -671,6 +677,9 @@
 @code {
     [SupplyParameterFromQuery]
     public int? SpeciesId { get; set; }
+
+    [SupplyParameterFromQuery]
+    public bool RestoreNearMe { get; set; }
 
     private MunicipalityForListDto? selectedMunicipality;
     private string? clickedMunicipalityName;
@@ -816,6 +825,11 @@
             if (SpeciesId.HasValue)
             {
                 await LoadSpeciesLocations(SpeciesId.Value);
+            }
+            // Check if we need to restore nearby species state
+            else if (RestoreNearMe)
+            {
+                await RestoreNearbySpeciesState();
             }
         }
     }
@@ -1087,4 +1101,62 @@
         }
         return $"{meters / 1000:N1}km";
     }
+
+    // State preservation for Species Near Me
+    private async Task NavigateToSpeciesDetail(int speciesId)
+    {
+        // Save current state to sessionStorage before navigating
+        await SaveNearbySpeciesState();
+        NavigationManager.NavigateTo($"/species/{speciesId}?returnUrl=/?restoreNearMe=true");
+    }
+
+    private async Task SaveNearbySpeciesState()
+    {
+        if (userLatitude.HasValue && userLongitude.HasValue)
+        {
+            var state = new
+            {
+                latitude = userLatitude.Value,
+                longitude = userLongitude.Value,
+                radiusKm = selectedRadiusKm
+            };
+            await JS.InvokeVoidAsync("sessionStorage.setItem", "nearbySpeciesState", System.Text.Json.JsonSerializer.Serialize(state));
+        }
+    }
+
+    private async Task RestoreNearbySpeciesState()
+    {
+        try
+        {
+            var stateJson = await JS.InvokeAsync<string?>("sessionStorage.getItem", "nearbySpeciesState");
+            if (!string.IsNullOrEmpty(stateJson))
+            {
+                var state = System.Text.Json.JsonSerializer.Deserialize<NearbySpeciesState>(stateJson);
+                if (state != null)
+                {
+                    userLatitude = state.Latitude;
+                    userLongitude = state.Longitude;
+                    selectedRadiusKm = state.RadiusKm;
+
+                    // Clear the saved state
+                    await JS.InvokeVoidAsync("sessionStorage.removeItem", "nearbySpeciesState");
+
+                    // Clear the query parameter from URL
+                    NavigationManager.NavigateTo("/", replace: true);
+
+                    // Re-open the Species Near Me panel and search
+                    await OpenSpeciesNearMe();
+                }
+            }
+        }
+        catch
+        {
+            // Ignore errors when restoring state
+        }
+    }
+
+    private record NearbySpeciesState(
+        [property: System.Text.Json.Serialization.JsonPropertyName("latitude")] double Latitude,
+        [property: System.Text.Json.Serialization.JsonPropertyName("longitude")] double Longitude,
+        [property: System.Text.Json.Serialization.JsonPropertyName("radiusKm")] int RadiusKm);
 }
