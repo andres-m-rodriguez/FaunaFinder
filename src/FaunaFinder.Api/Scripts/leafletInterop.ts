@@ -17,6 +17,8 @@ window.leafletInterop = {
     userLocation: null,
     searchRadiusCircle: null,
     nearbySpeciesMarkers: [],
+    speciesLocationCircles: [],
+    speciesColorMap: new Map<number, string>(),
 
     // Tile layer URLs
     lightTileUrl: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
@@ -508,5 +510,110 @@ window.leafletInterop = {
             this.map!.fitBounds(circle.getBounds(), { padding: [50, 50], maxZoom: 14 });
             circle.openPopup();
         }
+    },
+
+    // Species location circles with unique colors
+    speciesColorPalette: [
+        '#e63946', // Red
+        '#f4a261', // Orange
+        '#2a9d8f', // Teal
+        '#e9c46a', // Yellow
+        '#264653', // Dark blue
+        '#9b5de5', // Purple
+        '#00bbf9', // Sky blue
+        '#f15bb5', // Pink
+        '#00f5d4', // Cyan
+        '#fee440', // Bright yellow
+        '#8338ec', // Violet
+        '#fb5607', // Bright orange
+        '#3a86ff', // Blue
+        '#ff006e', // Magenta
+        '#06d6a0', // Mint
+    ],
+
+    getSpeciesColor: function (speciesId: number, index: number): string {
+        // Check if we already assigned a color to this species
+        if (this.speciesColorMap.has(speciesId)) {
+            return this.speciesColorMap.get(speciesId)!;
+        }
+
+        // Assign a new color from the palette
+        const color = this.speciesColorPalette[index % this.speciesColorPalette.length];
+        this.speciesColorMap.set(speciesId, color);
+        return color;
+    },
+
+    showSpeciesLocationCircles: function (species: NearbySpeciesLocation[]): void {
+        // Clear existing species location circles
+        this.clearSpeciesLocationCircles();
+
+        // Ensure species is an array
+        const speciesArray = Array.isArray(species) ? species : [];
+
+        if (speciesArray.length === 0 || !this.map) return;
+
+        const self = this;
+
+        // Group species by ID to get unique species and assign colors
+        const uniqueSpecies = new Map<number, number>();
+        speciesArray.forEach((s, idx) => {
+            if (!uniqueSpecies.has(s.id)) {
+                uniqueSpecies.set(s.id, uniqueSpecies.size);
+            }
+        });
+
+        speciesArray.forEach((s) => {
+            const colorIndex = uniqueSpecies.get(s.id) || 0;
+            const color = self.getSpeciesColor(s.id, colorIndex);
+
+            // Create circle for species location
+            const circle = L.circle([s.latitude, s.longitude], {
+                radius: s.radiusMeters,
+                fillColor: color,
+                color: color,
+                weight: 2,
+                fillOpacity: 0.35
+            }).addTo(self.map!);
+
+            // Create popup content
+            const distanceText = s.distanceMeters < 1000
+                ? `${Math.round(s.distanceMeters)}m away`
+                : `${(s.distanceMeters / 1000).toFixed(1)}km away`;
+
+            const popupContent = `
+                <div class="nearby-species-popup">
+                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                        <span style="display: inline-block; width: 12px; height: 12px; border-radius: 50%; background-color: ${color};"></span>
+                        <strong>${s.commonName}</strong>
+                    </div>
+                    <em>${s.scientificName}</em><br/>
+                    <span class="distance">${distanceText}</span>
+                    ${s.locationDescription ? `<br/><small>${s.locationDescription}</small>` : ''}
+                </div>
+            `;
+            circle.bindPopup(popupContent);
+
+            self.speciesLocationCircles.push(circle);
+        });
+    },
+
+    clearSpeciesLocationCircles: function (): void {
+        const self = this;
+        this.speciesLocationCircles.forEach((circle: L.Circle) => {
+            self.map!.removeLayer(circle);
+        });
+        this.speciesLocationCircles = [];
+    },
+
+    getSpeciesColors: function (): { id: number; color: string }[] {
+        const result: { id: number; color: string }[] = [];
+        this.speciesColorMap.forEach((color, id) => {
+            result.push({ id, color });
+        });
+        return result;
+    },
+
+    resetSpeciesColors: function (): void {
+        this.speciesColorMap.clear();
     }
 };

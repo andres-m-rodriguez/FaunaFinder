@@ -398,3 +398,14 @@ body {
     background-color: var(--mud-palette-info) !important;
     color: var(--mud-palette-info-text) !important;
 }
+
+/* Species color indicator dot */
+.species-color-dot {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    min-width: 12px;
+    border-radius: 50%;
+    margin-top: 4px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}

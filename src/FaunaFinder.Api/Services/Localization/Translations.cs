@@ -109,6 +109,8 @@ public static class Translations
         ["NearMe_NoSpeciesFound"] = "No species found within this radius. Try expanding the search area.",
         ["NearMe_SpeciesFound"] = "{0} species found within {1}km",
         ["NearMe_UseLocateFirst"] = "Use the locate button on the map to enable species search near your location.",
+        ["NearMe_ShowLocations"] = "Show Locations",
+        ["NearMe_HideLocations"] = "Hide Locations",
     };
 
     public static IReadOnlyDictionary<string, string> Spanish { get; } = new Dictionary<string, string>
@@ -218,5 +220,7 @@ public static class Translations
         ["NearMe_NoSpeciesFound"] = "No se encontraron especies dentro de este radio. Intenta ampliar el area de busqueda.",
         ["NearMe_SpeciesFound"] = "{0} especies encontradas dentro de {1}km",
         ["NearMe_UseLocateFirst"] = "Usa el boton de ubicacion en el mapa para habilitar la busqueda de especies cerca de tu ubicacion.",
+        ["NearMe_ShowLocations"] = "Mostrar Ubicaciones",
+        ["NearMe_HideLocations"] = "Ocultar Ubicaciones",
     };
 }

@@ -74,6 +74,9 @@ interface LeafletInteropObject {
     userLocation: UserLocation | null;
     searchRadiusCircle: L.Circle | null;
     nearbySpeciesMarkers: L.Circle[];
+    speciesLocationCircles: L.Circle[];
+    speciesColorMap: Map<number, string>;
+    speciesColorPalette: string[];
     lightTileUrl: string;
     darkTileUrl: string;
     lightTheme: ThemeColors;
@@ -100,6 +103,11 @@ interface LeafletInteropObject {
     clearNearbySpeciesMarkers(): void;
     getUserLocation(): UserLocation | null;
     focusOnNearbySpecies(index: number): void;
+    getSpeciesColor(speciesId: number, index: number): string;
+    showSpeciesLocationCircles(species: NearbySpeciesLocation[]): void;
+    clearSpeciesLocationCircles(): void;
+    getSpeciesColors(): { id: number; color: string }[];
+    resetSpeciesColors(): void;
 }
 
 interface Window {
