@@ -217,7 +217,7 @@
 
                 <MudPaper Class="px-3 py-2" Square="true" Elevation="0">
                     <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mb-2">@L["NearMe_SelectRadius"]</MudText>
-                    <div class="d-flex flex-wrap gap-2">
+                    <div class="d-flex flex-wrap gap-2 mb-3">
                         @foreach (var radius in RadiusOptions)
                         {
                             <MudChip T="string"
@@ -229,6 +229,17 @@
                             </MudChip>
                         }
                     </div>
+                    @if (nearbySpecies.Count > 0)
+                    {
+                        <MudButton Variant="@(showSpeciesLocationsOnMap ? Variant.Filled : Variant.Outlined)"
+                                   Color="Color.Info"
+                                   Size="Size.Small"
+                                   StartIcon="@(showSpeciesLocationsOnMap ? Icons.Material.Filled.VisibilityOff : Icons.Material.Filled.Visibility)"
+                                   OnClick="ToggleSpeciesLocationsOnMap"
+                                   FullWidth="true">
+                            @(showSpeciesLocationsOnMap ? L["NearMe_HideLocations"] : L["NearMe_ShowLocations"])
+                        </MudButton>
+                    }
                 </MudPaper>
 
                 <div class="sidebar-content">
@@ -259,17 +270,23 @@
                                     var s = nearbySpecies[i];
                                     <MudListItem Class="nearby-species-item pa-2 mb-2 rounded border-default" OnClick="() => FocusOnNearbySpecies(index)">
                                         <div class="d-flex justify-space-between align-start">
-                                            <div>
-                                                <MudText Typo="Typo.subtitle2" Color="Color.Primary">@s.CommonName</MudText>
-                                                <MudText Typo="Typo.caption" Color="Color.Secondary">
-                                                    <em>@s.ScientificName</em>
-                                                </MudText>
-                                                @if (!string.IsNullOrEmpty(s.LocationDescription))
+                                            <div class="d-flex align-start gap-2">
+                                                @if (showSpeciesLocationsOnMap && speciesColors.TryGetValue(s.Id, out var color))
                                                 {
-                                                    <MudText Typo="Typo.caption" Color="Color.Secondary">
-                                                        @s.LocationDescription
-                                                    </MudText>
+                                                    <span class="species-color-dot" style="background-color: @color;"></span>
                                                 }
+                                                <div>
+                                                    <MudText Typo="Typo.subtitle2" Color="Color.Primary">@s.CommonName</MudText>
+                                                    <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                                        <em>@s.ScientificName</em>
+                                                    </MudText>
+                                                    @if (!string.IsNullOrEmpty(s.LocationDescription))
+                                                    {
+                                                        <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                                            @s.LocationDescription
+                                                        </MudText>
+                                                    }
+                                                </div>
                                             </div>
                                             <div class="d-flex flex-column align-end gap-1">
                                                 <MudChip T="string" Size="Size.Small" Color="Color.Info" Variant="Variant.Text">
@@ -503,7 +520,7 @@
                 {
                     <div class="px-3 py-2">
                         <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mb-2">@L["NearMe_SelectRadius"]</MudText>
-                        <div class="d-flex flex-wrap gap-2">
+                        <div class="d-flex flex-wrap gap-2 mb-3">
                             @foreach (var radius in RadiusOptions)
                             {
                                 <MudChip T="string"
@@ -515,6 +532,17 @@
                                 </MudChip>
                             }
                         </div>
+                        @if (nearbySpecies.Count > 0)
+                        {
+                            <MudButton Variant="@(showSpeciesLocationsOnMap ? Variant.Filled : Variant.Outlined)"
+                                       Color="Color.Info"
+                                       Size="Size.Small"
+                                       StartIcon="@(showSpeciesLocationsOnMap ? Icons.Material.Filled.VisibilityOff : Icons.Material.Filled.Visibility)"
+                                       OnClick="ToggleSpeciesLocationsOnMap"
+                                       FullWidth="true">
+                                @(showSpeciesLocationsOnMap ? L["NearMe_HideLocations"] : L["NearMe_ShowLocations"])
+                            </MudButton>
+                        }
                     </div>
 
                     @if (isLoadingNearbySpecies)
@@ -544,11 +572,17 @@
                                     var s = nearbySpecies[i];
                                     <MudListItem Class="nearby-species-item pa-2 mb-2 rounded border-default" OnClick="() => FocusOnNearbySpecies(index)">
                                         <div class="d-flex justify-space-between align-start">
-                                            <div>
-                                                <MudText Typo="Typo.subtitle2" Color="Color.Primary">@s.CommonName</MudText>
-                                                <MudText Typo="Typo.caption" Color="Color.Secondary">
-                                                    <em>@s.ScientificName</em>
-                                                </MudText>
+                                            <div class="d-flex align-start gap-2">
+                                                @if (showSpeciesLocationsOnMap && speciesColors.TryGetValue(s.Id, out var mobileColor))
+                                                {
+                                                    <span class="species-color-dot" style="background-color: @mobileColor;"></span>
+                                                }
+                                                <div>
+                                                    <MudText Typo="Typo.subtitle2" Color="Color.Primary">@s.CommonName</MudText>
+                                                    <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                                        <em>@s.ScientificName</em>
+                                                    </MudText>
+                                                </div>
                                             </div>
                                             <div class="d-flex flex-column align-end gap-1">
                                                 <MudChip T="string" Size="Size.Small" Color="Color.Info" Variant="Variant.Text">
@@ -707,6 +741,8 @@
     private IReadOnlyList<SpeciesNearbyDto> nearbySpecies = [];
     private bool isLoadingNearbySpecies = false;
     private static readonly int[] RadiusOptions = [1, 5, 10, 25, 50];
+    private bool showSpeciesLocationsOnMap = false;
+    private Dictionary<int, string> speciesColors = new();
 
     private enum SortOption
     {
@@ -1034,6 +1070,15 @@
     {
         if (userLatitude == null || userLongitude == null) return;
 
+        // Clear existing species location circles if shown
+        if (showSpeciesLocationsOnMap)
+        {
+            await JS.InvokeVoidAsync("leafletInterop.clearSpeciesLocationCircles");
+            await JS.InvokeVoidAsync("leafletInterop.resetSpeciesColors");
+            showSpeciesLocationsOnMap = false;
+            speciesColors.Clear();
+        }
+
         isLoadingNearbySpecies = true;
         StateHasChanged();
 
@@ -1084,7 +1129,11 @@
         nearbySpecies = [];
         sidebarOpen = false;
         sheetOpen = false;
+        showSpeciesLocationsOnMap = false;
+        speciesColors.Clear();
         await JS.InvokeVoidAsync("leafletInterop.clearSearchRadius");
+        await JS.InvokeVoidAsync("leafletInterop.clearSpeciesLocationCircles");
+        await JS.InvokeVoidAsync("leafletInterop.resetSpeciesColors");
         StateHasChanged();
     }
 
@@ -1092,6 +1141,45 @@
     {
         await JS.InvokeVoidAsync("leafletInterop.focusOnNearbySpecies", index);
     }
+
+    private async Task ToggleSpeciesLocationsOnMap()
+    {
+        showSpeciesLocationsOnMap = !showSpeciesLocationsOnMap;
+
+        if (showSpeciesLocationsOnMap)
+        {
+            // Show species location circles on the map
+            var speciesLocations = nearbySpecies.Select(s => new
+            {
+                id = s.Id,
+                commonName = s.CommonName,
+                scientificName = s.ScientificName,
+                distanceMeters = s.DistanceMeters,
+                latitude = s.Latitude,
+                longitude = s.Longitude,
+                radiusMeters = s.RadiusMeters,
+                locationDescription = s.LocationDescription
+            }).ToArray();
+
+            await JS.InvokeVoidAsync("leafletInterop.showSpeciesLocationCircles", speciesLocations);
+
+            // Get colors assigned to each species
+            var colors = await JS.InvokeAsync<List<SpeciesColorEntry>>("leafletInterop.getSpeciesColors");
+            speciesColors = colors.ToDictionary(c => c.Id, c => c.Color);
+        }
+        else
+        {
+            // Hide species location circles
+            await JS.InvokeVoidAsync("leafletInterop.clearSpeciesLocationCircles");
+            speciesColors.Clear();
+        }
+
+        StateHasChanged();
+    }
+
+    private record SpeciesColorEntry(
+        [property: System.Text.Json.Serialization.JsonPropertyName("id")] int Id,
+        [property: System.Text.Json.Serialization.JsonPropertyName("color")] string Color);
 
     private string FormatDistance(double meters)
     {
