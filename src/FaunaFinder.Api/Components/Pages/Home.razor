@@ -751,6 +751,9 @@
     public int? SpeciesId { get; set; }
 
     [SupplyParameterFromQuery]
+    public int? MunicipalityId { get; set; }
+
+    [SupplyParameterFromQuery]
     public bool RestoreNearMe { get; set; }
 
     private MunicipalityForListDto? selectedMunicipality;
@@ -953,6 +956,11 @@
             {
                 await LoadSpeciesLocations(SpeciesId.Value);
             }
+            // Check if we need to select a municipality (from View on Map)
+            else if (MunicipalityId.HasValue)
+            {
+                await SelectMunicipalityFromQuery(MunicipalityId.Value);
+            }
             // Check if we need to restore nearby species state
             else if (RestoreNearMe)
             {
@@ -980,6 +988,39 @@
             // Focus on the first location
             await JS.InvokeVoidAsync("leafletInterop.focusOnLocation", 0);
         }
+        StateHasChanged();
+    }
+
+    private async Task SelectMunicipalityFromQuery(int municipalityId)
+    {
+        var municipality = municipalities?.FirstOrDefault(m => m.Id == municipalityId);
+        if (municipality == null) return;
+
+        // Clear the query parameter from URL
+        NavigationManager.NavigateTo("/", replace: true);
+
+        // Set up sidebar state
+        selectedMunicipality = municipality;
+        clickedMunicipalityName = municipality.Name;
+        showAllSpecies = false;
+        showNearbySpecies = false;
+        expandedSpeciesId = null;
+        species = [];
+        sheetOpen = false;
+        sidebarOpen = true;
+
+        // Highlight the municipality on the map
+        await JS.InvokeVoidAsync("leafletInterop.highlightMunicipality", municipality.GeoJsonId);
+
+        StateHasChanged();
+
+        // Small delay to allow DOM to render before triggering animation
+        await Task.Delay(10);
+        sheetOpen = true;
+        StateHasChanged();
+
+        // Load species data
+        await LoadMunicipalitySpeciesCommand.ExecuteAsync();
         StateHasChanged();
     }
 
