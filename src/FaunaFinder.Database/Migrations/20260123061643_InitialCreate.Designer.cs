@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using NetTopologySuite.Geometries;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
@@ -11,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace FaunaFinder.Database.Migrations
 {
     [DbContext(typeof(FaunaFinderContext))]
-    [Migration("20260121034906_InitialCreate")]
+    [Migration("20260123061643_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -22,6 +23,7 @@ namespace FaunaFinder.Database.Migrations
                 .HasAnnotation("ProductVersion", "10.0.1")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
+            NpgsqlModelBuilderExtensions.HasPostgresExtension(modelBuilder, "postgis");
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
             modelBuilder.Entity("FaunaFinder.Database.Models.Conservation.FwsAction", b =>
@@ -136,6 +138,10 @@ namespace FaunaFinder.Database.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<Geometry>("Boundary")
+                        .HasColumnType("geometry(Geometry, 4326)")
+                        .HasColumnName("boundary");
+
                     b.Property<string>("GeoJsonId")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -150,6 +156,11 @@ namespace FaunaFinder.Database.Migrations
 
                     b.HasKey("Id")
                         .HasName("pk_municipalities");
+
+                    b.HasIndex("Boundary")
+                        .HasDatabaseName("municipalities_boundary_gist_idx");
+
+                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("Boundary"), "gist");
 
                     b.HasIndex("GeoJsonId")
                         .IsUnique()
@@ -226,6 +237,45 @@ namespace FaunaFinder.Database.Migrations
                     b.ToTable("species", (string)null);
                 });
 
+            modelBuilder.Entity("FaunaFinder.Database.Models.Species.SpeciesLocation", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("description");
+
+                    b.Property<double>("Latitude")
+                        .HasColumnType("double precision")
+                        .HasColumnName("latitude");
+
+                    b.Property<double>("Longitude")
+                        .HasColumnType("double precision")
+                        .HasColumnName("longitude");
+
+                    b.Property<double>("RadiusMeters")
+                        .HasColumnType("double precision")
+                        .HasColumnName("radius_meters");
+
+                    b.Property<int>("SpeciesId")
+                        .HasColumnType("integer")
+                        .HasColumnName("species_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_species_locations");
+
+                    b.HasIndex("SpeciesId")
+                        .HasDatabaseName("species_locations_species_id_idx");
+
+                    b.ToTable("species_locations", (string)null);
+                });
+
             modelBuilder.Entity("FaunaFinder.Database.Models.Conservation.FwsLink", b =>
                 {
                     b.HasOne("FaunaFinder.Database.Models.Conservation.FwsAction", "FwsAction")
@@ -277,6 +327,18 @@ namespace FaunaFinder.Database.Migrations
                     b.Navigation("Species");
                 });
 
+            modelBuilder.Entity("FaunaFinder.Database.Models.Species.SpeciesLocation", b =>
+                {
+                    b.HasOne("FaunaFinder.Database.Models.Species.Species", "Species")
+                        .WithMany("Locations")
+                        .HasForeignKey("SpeciesId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_species_locations_species_species_id");
+
+                    b.Navigation("Species");
+                });
+
             modelBuilder.Entity("FaunaFinder.Database.Models.Conservation.FwsAction", b =>
                 {
                     b.Navigation("FwsLinks");
@@ -295,6 +357,8 @@ namespace FaunaFinder.Database.Migrations
             modelBuilder.Entity("FaunaFinder.Database.Models.Species.Species", b =>
                 {
                     b.Navigation("FwsLinks");
+
+                    b.Navigation("Locations");
 
                     b.Navigation("MunicipalitySpecies");
                 });
