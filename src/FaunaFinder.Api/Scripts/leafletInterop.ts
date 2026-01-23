@@ -351,11 +351,14 @@ window.leafletInterop = {
             if (feature && feature.properties) {
                 const props = feature.properties as MunicipalityProperties;
                 if (props.COUNTY === county) {
+                    // Selected style - prominent dashed border
                     (layer as L.Path).setStyle({
                         fillColor: theme.highlightFill,
-                        weight: 2,
-                        color: theme.highlightBorder,
-                        fillOpacity: 0.6
+                        weight: 4,
+                        color: '#2563eb',
+                        fillOpacity: 0.5,
+                        dashArray: '10, 6',
+                        dashOffset: '0'
                     });
                     targetLayer = layer;
                 } else {
