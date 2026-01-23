@@ -1023,7 +1023,10 @@
     [JSInvokable]
     public async Task OnMunicipalityClick(string geoJsonId, string name)
     {
-        var municipality = municipalities?.FirstOrDefault(m => m.GeoJsonId == geoJsonId);
+        // Try full geoJsonId first, then try county-only (strip "72" state prefix for Puerto Rico)
+        var countyOnly = geoJsonId.StartsWith("72") ? geoJsonId[2..] : geoJsonId;
+        var municipality = municipalities?.FirstOrDefault(m => m.GeoJsonId == geoJsonId)
+            ?? municipalities?.FirstOrDefault(m => m.GeoJsonId == countyOnly);
 
         showAllSpecies = false;
         showNearbySpecies = false;
