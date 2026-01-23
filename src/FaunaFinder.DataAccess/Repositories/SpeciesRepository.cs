@@ -40,6 +40,10 @@ public sealed class SpeciesRepository(
                         fl.FwsAction.Name
                     ),
                     fl.Justification
+                )).ToList(),
+                ms.Species.Translations.Select(t => new SpeciesTranslationDto(
+                    t.LanguageCode,
+                    t.CommonName
                 )).ToList()
             ))
             .ToListAsync(cancellationToken);
@@ -88,6 +92,12 @@ public sealed class SpeciesRepository(
                         l.RadiusMeters,
                         l.Description
                     ))
+                    .ToList(),
+                s.Translations
+                    .Select(static t => new SpeciesTranslationDto(
+                        t.LanguageCode,
+                        t.CommonName
+                    ))
                     .ToList()
             ))
             .FirstOrDefaultAsync(cancellationToken);
@@ -129,6 +139,12 @@ public sealed class SpeciesRepository(
                 s.MunicipalitySpecies
                     .Select(ms => ms.Municipality.Name)
                     .OrderBy(n => n)
+                    .ToList(),
+                s.Translations
+                    .Select(t => new SpeciesTranslationDto(
+                        t.LanguageCode,
+                        t.CommonName
+                    ))
                     .ToList()
             ))
             .ToListAsync(cancellationToken);
@@ -177,7 +193,11 @@ public sealed class SpeciesRepository(
                     l.Longitude,
                     l.RadiusMeters,
                     l.Description
-                }).ToList()
+                }).ToList(),
+                Translations = s.Translations.Select(t => new SpeciesTranslationDto(
+                    t.LanguageCode,
+                    t.CommonName
+                )).ToList()
             })
             .ToListAsync(cancellationToken);
 
@@ -207,7 +227,8 @@ public sealed class SpeciesRepository(
                         location.Latitude,
                         location.Longitude,
                         location.RadiusMeters,
-                        location.Description
+                        location.Description,
+                        species.Translations
                     ));
                 }
             }
