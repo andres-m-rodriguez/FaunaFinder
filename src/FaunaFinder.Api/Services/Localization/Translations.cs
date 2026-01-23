@@ -20,6 +20,7 @@ public static class Translations
         ["ViewAll"] = "View All",
         ["AllSpecies"] = "All Species",
         ["Details"] = "Details",
+        ["ViewOnMap"] = "View on Map",
 
         // Errors
         ["Error_SomethingWentWrong"] = "Something went wrong",
@@ -137,6 +138,7 @@ public static class Translations
         ["ViewAll"] = "Ver todo",
         ["AllSpecies"] = "Todas las especies",
         ["Details"] = "Detalles",
+        ["ViewOnMap"] = "Ver en mapa",
 
         // Errors
         ["Error_SomethingWentWrong"] = "Algo salió mal",

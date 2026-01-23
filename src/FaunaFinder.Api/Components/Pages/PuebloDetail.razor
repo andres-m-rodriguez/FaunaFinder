@@ -33,12 +33,22 @@
     {
         @* Municipality Header *@
         <MudPaper Elevation="2" Class="pa-4 mb-6">
-            <MudText Typo="Typo.h4" Color="Color.Primary" GutterBottom="true">@municipality.Name</MudText>
-            <div class="d-flex align-center">
-                <MudIcon Icon="@Icons.Material.Filled.Pets" Size="Size.Medium" Color="Color.Secondary" Class="mr-2" />
-                <MudText Typo="Typo.h6" Color="Color.Secondary">
-                    @municipality.SpeciesCount @L["Pueblos_Species"]
-                </MudText>
+            <div class="d-flex flex-column flex-sm-row justify-space-between align-start align-sm-center gap-2">
+                <div>
+                    <MudText Typo="Typo.h4" Color="Color.Primary" GutterBottom="true">@municipality.Name</MudText>
+                    <div class="d-flex align-center">
+                        <MudIcon Icon="@Icons.Material.Filled.Pets" Size="Size.Medium" Color="Color.Secondary" Class="mr-2" />
+                        <MudText Typo="Typo.h6" Color="Color.Secondary">
+                            @municipality.SpeciesCount @L["Pueblos_Species"]
+                        </MudText>
+                    </div>
+                </div>
+                <MudButton Variant="Variant.Outlined"
+                           Color="Color.Primary"
+                           StartIcon="@Icons.Material.Filled.Map"
+                           OnClick="ViewOnMap">
+                    @L["ViewOnMap"]
+                </MudButton>
             </div>
         </MudPaper>
 
@@ -165,5 +175,13 @@
     private void NavigateToSpecies(int speciesId)
     {
         NavigationManager.NavigateTo($"/species/{speciesId}?returnUrl=/pueblos/{Id}");
+    }
+
+    private void ViewOnMap()
+    {
+        if (municipality != null)
+        {
+            NavigationManager.NavigateTo($"/?municipalityId={municipality.Id}");
+        }
     }
 }
