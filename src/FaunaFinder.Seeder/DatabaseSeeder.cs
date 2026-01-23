@@ -106,7 +106,7 @@ public static class DatabaseSeeder
             ("Puerto Rican Boa", "Chilabothrus inornatus", "Boa Puertorriqueña", ["Caguas", "Humacao", "Fajardo", "Arecibo", "Mayaguez", "Ponce"]),
 
             // Coqui Llanero - ONLY in Toa Baja wetlands area (very restricted) - modeled as Vega Baja/Manati
-            ("Coqui Llanero", "Eleutherodactylus juanariveroi", "Coquí Llanero", ["Vega Baja", "Manati"]),
+            ("Plains Coqui", "Eleutherodactylus juanariveroi", "Coquí Llanero", ["Vega Baja", "Manati"]),
 
             // Puerto Rican Crested Toad - South coast AND North coast - TWO SEPARATE AREAS
             ("Puerto Rican Crested Toad", "Peltophryne lemur", "Sapo Concho Puertorriqueño", ["Guayama", "Ponce", "Isabela", "Aguadilla"]),
