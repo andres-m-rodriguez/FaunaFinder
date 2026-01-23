@@ -1,9 +1,11 @@
 using FaunaFinder.Api.Components;
 using FaunaFinder.Api.Services.DarkMode;
+using FaunaFinder.Api.Services.Export;
 using FaunaFinder.Api.Services.Localization;
 using FaunaFinder.Database.Extensions;
 using FaunaFinder.DataAccess.Extensions;
 using MudBlazor.Services;
+using QuestPDF.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,6 +27,12 @@ builder.Services.AddScoped<IAppLocalizer, AppLocalizer>();
 
 // Add Dark Mode
 builder.Services.AddScoped<IDarkModeService, DarkModeService>();
+
+// Add Export Service
+builder.Services.AddScoped<IMunicipalityReportService, MunicipalityReportService>();
+
+// Configure QuestPDF license (Community license for open source projects)
+QuestPDF.Settings.License = LicenseType.Community;
 
 // Add FaunaFinder Database (with snake_case naming and NoTracking)
 builder.AddFaunaFinderDatabase();
