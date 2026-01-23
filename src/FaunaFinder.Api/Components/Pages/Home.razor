@@ -1009,8 +1009,8 @@
         sheetOpen = false;
         sidebarOpen = true;
 
-        // Highlight the municipality on the map
-        await JS.InvokeVoidAsync("leafletInterop.highlightMunicipality", municipality.GeoJsonId);
+        // Select and highlight the municipality on the map (waits for GeoJSON to load)
+        await JS.InvokeVoidAsync("leafletInterop.selectMunicipality", municipality.GeoJsonId);
 
         StateHasChanged();
 

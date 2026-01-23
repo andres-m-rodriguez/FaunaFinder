@@ -78,6 +78,8 @@ interface LeafletInteropObject {
     speciesLocationCircles: L.Circle[];
     speciesColorMap: Map<number, string>;
     speciesColorPalette: string[];
+    geojsonLoadedPromise: Promise<void> | null;
+    geojsonLoadedResolve: (() => void) | null;
     lightTileUrl: string;
     darkTileUrl: string;
     lightTheme: ThemeColors;
@@ -90,6 +92,7 @@ interface LeafletInteropObject {
     highlightFeature(e: L.LeafletMouseEvent): void;
     resetHighlight(e: L.LeafletMouseEvent): void;
     highlightMunicipality(county: string): void;
+    selectMunicipality(county: string): Promise<void>;
     showSpeciesLocations(speciesName: string, locations: SpeciesLocation[]): void;
     clearSpeciesLocations(): void;
     focusOnLocation(index: number): void;
