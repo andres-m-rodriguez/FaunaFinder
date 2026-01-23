@@ -6,6 +6,7 @@ var builder = DistributedApplication.CreateBuilder(args);
 var postgres = builder.AddAzurePostgresFlexibleServer("postgres")
     .RunAsContainer(configureContainer: container =>
     {
+        container.WithImage("postgis/postgis", "17-3.5");
         container.WithDataVolume("faunafinder-postgres-data");
         container.WithPgAdmin();
     });

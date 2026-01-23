@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore.Migrations;
+using NetTopologySuite.Geometries;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
@@ -11,6 +12,9 @@ namespace FaunaFinder.Database.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.AlterDatabase()
+                .Annotation("Npgsql:PostgresExtension:postgis", ",,");
+
             migrationBuilder.CreateTable(
                 name: "fws_actions",
                 columns: table => new
@@ -32,7 +36,8 @@ namespace FaunaFinder.Database.Migrations
                     id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
-                    geo_json_id = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false)
+                    geo_json_id = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    boundary = table.Column<Geometry>(type: "geometry(Geometry, 4326)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -127,6 +132,29 @@ namespace FaunaFinder.Database.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "species_locations",
+                columns: table => new
+                {
+                    id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    species_id = table.Column<int>(type: "integer", nullable: false),
+                    latitude = table.Column<double>(type: "double precision", nullable: false),
+                    longitude = table.Column<double>(type: "double precision", nullable: false),
+                    radius_meters = table.Column<double>(type: "double precision", nullable: false),
+                    description = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("pk_species_locations", x => x.id);
+                    table.ForeignKey(
+                        name: "fk_species_locations_species_species_id",
+                        column: x => x.species_id,
+                        principalTable: "species",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "fws_actions_code_uidx",
                 table: "fws_actions",
@@ -147,6 +175,12 @@ namespace FaunaFinder.Database.Migrations
                 name: "ix_fws_links_species_id",
                 table: "fws_links",
                 column: "species_id");
+
+            migrationBuilder.CreateIndex(
+                name: "municipalities_boundary_gist_idx",
+                table: "municipalities",
+                column: "boundary")
+                .Annotation("Npgsql:IndexMethod", "gist");
 
             migrationBuilder.CreateIndex(
                 name: "municipalities_geojson_id_uidx",
@@ -187,6 +221,11 @@ namespace FaunaFinder.Database.Migrations
                 table: "species",
                 column: "scientific_name",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "species_locations_species_id_idx",
+                table: "species_locations",
+                column: "species_id");
         }
 
         /// <inheritdoc />
@@ -197,6 +236,9 @@ namespace FaunaFinder.Database.Migrations
 
             migrationBuilder.DropTable(
                 name: "municipality_species");
+
+            migrationBuilder.DropTable(
+                name: "species_locations");
 
             migrationBuilder.DropTable(
                 name: "fws_actions");

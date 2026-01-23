@@ -13,6 +13,7 @@ public sealed class DesignTimeDbContextFactory : IDesignTimeDbContextFactory<Fau
         optionsBuilder.UseNpgsql("Host=localhost;Database=faunafinder;Username=postgres;Password=postgres", npgsqlOptions =>
         {
             npgsqlOptions.MigrationsAssembly("FaunaFinder.Database");
+            npgsqlOptions.UseNetTopologySuite();
         });
         optionsBuilder.UseSnakeCaseNamingConvention();
 

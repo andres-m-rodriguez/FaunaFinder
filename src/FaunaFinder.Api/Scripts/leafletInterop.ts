@@ -270,41 +270,62 @@ window.leafletInterop = {
 
     loadGeoJson: function (): void {
         const self = this;
-        fetch('/data/pr-municipios.geojson')
+
+        // Helper to process GeoJSON data
+        const processGeoJson = (data: GeoJSON.FeatureCollection) => {
+            self.geojsonLayer = L.geoJSON(data, {
+                style: () => self.getDefaultStyle(),
+                onEachFeature: (feature, layer) => {
+                    const props = feature.properties as MunicipalityProperties;
+                    const name = props.NAME;
+                    const state = props.STATE;
+                    const county = props.COUNTY;
+                    // Combine STATE + COUNTY to form the full GeoJsonId (e.g., "72" + "071" = "72071")
+                    const geoJsonId = state + county;
+
+                    layer.bindTooltip(name, {
+                        direction: 'center',
+                        className: 'municipality-tooltip'
+                    });
+
+                    layer.on({
+                        mouseover: (e: L.LeafletMouseEvent) => self.highlightFeature(e),
+                        mouseout: (e: L.LeafletMouseEvent) => self.resetHighlight(e),
+                        click: () => self.dotNetHelper?.invokeMethodAsync('OnMunicipalityClick', geoJsonId, name)
+                    });
+                }
+            }).addTo(self.map!);
+            console.log('GeoJSON loaded successfully with', data.features.length, 'features');
+        };
+
+        // Try API endpoint first (database with PostGIS), fall back to static file
+        fetch('/api/municipalities/geojson')
             .then(r => {
-                if (!r.ok) throw new Error('HTTP ' + r.status + ': ' + r.statusText);
+                if (!r.ok) throw new Error('API returned ' + r.status);
                 return r.json();
             })
             .then((data: GeoJSON.FeatureCollection) => {
-                self.geojsonLayer = L.geoJSON(data, {
-                    style: () => self.getDefaultStyle(),
-                    onEachFeature: (feature, layer) => {
-                        const props = feature.properties as MunicipalityProperties;
-                        const name = props.NAME;
-                        const state = props.STATE;
-                        const county = props.COUNTY;
-                        // Combine STATE + COUNTY to form the full GeoJsonId (e.g., "72" + "071" = "72071")
-                        const geoJsonId = state + county;
-
-                        layer.bindTooltip(name, {
-                            direction: 'center',
-                            className: 'municipality-tooltip'
-                        });
-
-                        layer.on({
-                            mouseover: (e: L.LeafletMouseEvent) => self.highlightFeature(e),
-                            mouseout: (e: L.LeafletMouseEvent) => self.resetHighlight(e),
-                            click: () => self.dotNetHelper?.invokeMethodAsync('OnMunicipalityClick', geoJsonId, name)
-                        });
-                    }
-                }).addTo(self.map!);
-                console.log('GeoJSON loaded successfully with', data.features.length, 'features');
-            })
-            .catch((err: Error) => {
-                console.error('GeoJSON load error:', err);
-                if (self.map) {
-                    L.marker([18.15, -66.5]).addTo(self.map).bindPopup('GeoJSON error: ' + err.message).openPopup();
+                if (data.features && data.features.length > 0) {
+                    processGeoJson(data);
+                } else {
+                    throw new Error('No features in API response');
                 }
+            })
+            .catch(() => {
+                // Fall back to static file if API has no data
+                console.log('Falling back to static GeoJSON file');
+                fetch('/data/pr-municipios.geojson')
+                    .then(r => {
+                        if (!r.ok) throw new Error('HTTP ' + r.status + ': ' + r.statusText);
+                        return r.json();
+                    })
+                    .then(processGeoJson)
+                    .catch((err: Error) => {
+                        console.error('GeoJSON load error:', err);
+                        if (self.map) {
+                            L.marker([18.15, -66.5]).addTo(self.map).bindPopup('GeoJSON error: ' + err.message).openPopup();
+                        }
+                    });
             });
     },
 
