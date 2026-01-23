@@ -22,6 +22,9 @@ public sealed class DatabaseSeederWorker(
             logger.LogInformation("Seeding database...");
             await DatabaseSeeder.SeedAsync(context, stoppingToken);
 
+            logger.LogInformation("Seeding translations...");
+            await TranslationSeeder.SeedAsync(context, stoppingToken);
+
             logger.LogInformation("Database seeding completed successfully.");
         }
         catch (Exception ex)

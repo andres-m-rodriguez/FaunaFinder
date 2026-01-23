@@ -1,4 +1,5 @@
 using FaunaFinder.Database.Models.Conservation;
+using FaunaFinder.Database.Models.Localization;
 using FaunaFinder.Database.Models.Municipalities;
 using FaunaFinder.Database.Models.Species;
 using Microsoft.EntityFrameworkCore;
@@ -16,6 +17,8 @@ public sealed class FaunaFinderContext(DbContextOptions<FaunaFinderContext> opti
     public DbSet<FwsAction> FwsActions => Set<FwsAction>();
     public DbSet<FwsLink> FwsLinks => Set<FwsLink>();
     public DbSet<NrcsPractice> NrcsPractices => Set<NrcsPractice>();
+    public DbSet<Language> Languages => Set<Language>();
+    public DbSet<Translation> Translations => Set<Translation>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -27,5 +30,7 @@ public sealed class FaunaFinderContext(DbContextOptions<FaunaFinderContext> opti
         modelBuilder.ApplyConfiguration(new FwsAction.EntityConfiguration());
         modelBuilder.ApplyConfiguration(new FwsLink.EntityConfiguration());
         modelBuilder.ApplyConfiguration(new NrcsPractice.EntityConfiguration());
+        modelBuilder.ApplyConfiguration(new Language.EntityConfiguration());
+        modelBuilder.ApplyConfiguration(new Translation.EntityConfiguration());
     }
 }

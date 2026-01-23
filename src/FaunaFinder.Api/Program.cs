@@ -26,6 +26,9 @@ builder.Services.AddRazorComponents()
 // Add MudBlazor
 builder.Services.AddMudServices();
 
+// Add Memory Cache (for translations)
+builder.Services.AddMemoryCache();
+
 // Add Localization
 builder.Services.AddScoped<IAppLocalizer, AppLocalizer>();
 
