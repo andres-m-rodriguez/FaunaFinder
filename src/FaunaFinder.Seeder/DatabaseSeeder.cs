@@ -96,56 +96,57 @@ public static class DatabaseSeeder
 
         // === SPECIES WITH GEOGRAPHIC DISTRIBUTIONS ===
         // Each species has specific municipalities where it lives
-        var speciesData = new List<(string Common, string Scientific, string[] Regions)>
+        // Tuple: (English Common Name, Scientific Name, Spanish Common Name, Regions)
+        var speciesData = new List<(string Common, string Scientific, string Spanish, string[] Regions)>
         {
             // Puerto Rican Parrot - Lives in El Yunque (East) AND Rio Abajo (North) - TWO SEPARATE AREAS
-            ("Puerto Rican Parrot", "Amazona vittata", ["Fajardo", "Humacao", "Caguas", "Arecibo", "Vega Baja", "Manati"]),
+            ("Puerto Rican Parrot", "Amazona vittata", "Cotorra Puertorriqueña", ["Fajardo", "Humacao", "Caguas", "Arecibo", "Vega Baja", "Manati"]),
 
             // Puerto Rican Boa - Found across the island but mainly forests
-            ("Puerto Rican Boa", "Chilabothrus inornatus", ["Caguas", "Humacao", "Fajardo", "Arecibo", "Mayaguez", "Ponce"]),
+            ("Puerto Rican Boa", "Chilabothrus inornatus", "Boa Puertorriqueña", ["Caguas", "Humacao", "Fajardo", "Arecibo", "Mayaguez", "Ponce"]),
 
             // Coqui Llanero - ONLY in Toa Baja wetlands area (very restricted) - modeled as Vega Baja/Manati
-            ("Coqui Llanero", "Eleutherodactylus juanariveroi", ["Vega Baja", "Manati"]),
+            ("Plains Coqui", "Eleutherodactylus juanariveroi", "Coquí Llanero", ["Vega Baja", "Manati"]),
 
             // Puerto Rican Crested Toad - South coast AND North coast - TWO SEPARATE AREAS
-            ("Puerto Rican Crested Toad", "Peltophryne lemur", ["Guayama", "Ponce", "Isabela", "Aguadilla"]),
+            ("Puerto Rican Crested Toad", "Peltophryne lemur", "Sapo Concho Puertorriqueño", ["Guayama", "Ponce", "Isabela", "Aguadilla"]),
 
             // Leatherback Sea Turtle - Nests on beaches, east and west coasts
-            ("Leatherback Sea Turtle", "Dermochelys coriacea", ["Fajardo", "Humacao", "Rincon", "Aguadilla", "Vieques", "Culebra"]),
+            ("Leatherback Sea Turtle", "Dermochelys coriacea", "Tortuga Laúd", ["Fajardo", "Humacao", "Rincon", "Aguadilla", "Vieques", "Culebra"]),
 
             // Hawksbill Sea Turtle - Beaches and coral reefs around the island
-            ("Hawksbill Sea Turtle", "Eretmochelys imbricata", ["Fajardo", "Culebra", "Vieques", "Rincon", "Cabo Rojo", "Guayama"]),
+            ("Hawksbill Sea Turtle", "Eretmochelys imbricata", "Tortuga Carey", ["Fajardo", "Culebra", "Vieques", "Rincon", "Cabo Rojo", "Guayama"]),
 
             // West Indian Manatee - Coastal waters, bays
-            ("West Indian Manatee", "Trichechus manatus", ["San Juan", "Carolina", "Fajardo", "Guayama", "Ponce", "Mayaguez", "Vieques"]),
+            ("West Indian Manatee", "Trichechus manatus", "Manatí Antillano", ["San Juan", "Carolina", "Fajardo", "Guayama", "Ponce", "Mayaguez", "Vieques"]),
 
             // Yellow-shouldered Blackbird - Southwest coast AND Mona Island (modeled as Cabo Rojo/Mayaguez)
-            ("Yellow-shouldered Blackbird", "Agelaius xanthomus", ["Cabo Rojo", "Mayaguez", "Yauco", "Ponce"]),
+            ("Yellow-shouldered Blackbird", "Agelaius xanthomus", "Mariquita de Puerto Rico", ["Cabo Rojo", "Mayaguez", "Yauco", "Ponce"]),
 
             // Puerto Rican Nightjar - Dry forests in southwest
-            ("Puerto Rican Nightjar", "Antrostomus noctitherus", ["Cabo Rojo", "Yauco", "Ponce", "Guayama"]),
+            ("Puerto Rican Nightjar", "Antrostomus noctitherus", "Guabairo Puertorriqueño", ["Cabo Rojo", "Yauco", "Ponce", "Guayama"]),
 
-            // Ponce Guabairo (dummy species for testing)
-            ("Ponce Cave Bat", "Mormoops blainvillei", ["Ponce", "Yauco", "Guayama"]),
+            // Ponce Cave Bat - Cave-dwelling bat
+            ("Ponce Cave Bat", "Mormoops blainvillei", "Murciélago de Cueva de Ponce", ["Ponce", "Yauco", "Guayama"]),
 
             // Puerto Rican Racer - widespread but including south coast
-            ("Puerto Rican Racer", "Borikenophis portoricensis", ["Ponce", "Guayama", "Caguas", "Mayaguez", "Arecibo"]),
+            ("Puerto Rican Racer", "Borikenophis portoricensis", "Culebra Corredora Puertorriqueña", ["Ponce", "Guayama", "Caguas", "Mayaguez", "Arecibo"]),
 
             // Elfin-woods Warbler - High elevation forests (El Yunque and Maricao)
-            ("Elfin-woods Warbler", "Setophaga angelae", ["Fajardo", "Humacao", "Caguas", "Mayaguez", "Yauco"]),
+            ("Elfin-woods Warbler", "Setophaga angelae", "Reinita de Bosque Enano", ["Fajardo", "Humacao", "Caguas", "Mayaguez", "Yauco"]),
 
             // Puerto Rican Sharp-shinned Hawk - Mountain forests
-            ("Puerto Rican Sharp-shinned Hawk", "Accipiter striatus venator", ["Caguas", "Humacao", "Arecibo", "Mayaguez"]),
+            ("Puerto Rican Sharp-shinned Hawk", "Accipiter striatus venator", "Falcón de Sierra Puertorriqueño", ["Caguas", "Humacao", "Arecibo", "Mayaguez"]),
 
             // Green Sea Turtle - Coastal areas
-            ("Green Sea Turtle", "Chelonia mydas", ["Culebra", "Vieques", "Fajardo", "Humacao", "Rincon"]),
+            ("Green Sea Turtle", "Chelonia mydas", "Tortuga Verde", ["Culebra", "Vieques", "Fajardo", "Humacao", "Rincon"]),
         };
 
         var savedMunicipalities = await context.Municipalities.ToDictionaryAsync(m => m.Name, m => m, cancellationToken);
         var savedPractices = await context.NrcsPractices.ToListAsync(cancellationToken);
         var savedActions = await context.FwsActions.ToListAsync(cancellationToken);
 
-        foreach (var (commonName, scientificName, regions) in speciesData)
+        foreach (var (commonName, scientificName, spanishName, regions) in speciesData)
         {
             var species = new Species
             {
@@ -154,6 +155,16 @@ public static class DatabaseSeeder
                 ScientificName = scientificName
             };
             context.Species.Add(species);
+            await context.SaveChangesAsync(cancellationToken);
+
+            // Add Spanish translation for the species
+            context.SpeciesTranslations.Add(new SpeciesTranslation
+            {
+                Id = 0,
+                SpeciesId = species.Id,
+                LanguageCode = "es",
+                CommonName = spanishName
+            });
             await context.SaveChangesAsync(cancellationToken);
 
             // Link species to municipalities

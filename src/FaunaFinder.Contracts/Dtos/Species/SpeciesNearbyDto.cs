@@ -11,5 +11,6 @@ public sealed record SpeciesNearbyDto(
     double Latitude,
     double Longitude,
     double RadiusMeters,
-    string? LocationDescription
+    string? LocationDescription,
+    List<SpeciesTranslationDto> Translations
 );

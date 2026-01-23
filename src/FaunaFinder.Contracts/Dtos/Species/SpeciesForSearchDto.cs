@@ -4,4 +4,5 @@ public sealed record SpeciesForSearchDto(
     int Id,
     string CommonName,
     string ScientificName,
-    IReadOnlyList<string> MunicipalityNames);
+    IReadOnlyList<string> MunicipalityNames,
+    List<SpeciesTranslationDto> Translations);

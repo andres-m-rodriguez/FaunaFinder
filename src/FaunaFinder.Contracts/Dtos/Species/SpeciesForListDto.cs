@@ -6,5 +6,6 @@ public sealed record SpeciesForListDto(
     int Id,
     string CommonName,
     string ScientificName,
-    List<FwsLinkDto> FwsLinks
+    List<FwsLinkDto> FwsLinks,
+    List<SpeciesTranslationDto> Translations
 );
