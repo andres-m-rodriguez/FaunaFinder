@@ -454,11 +454,14 @@ window.leafletInterop = {
         // Clear existing markers
         this.clearNearbySpeciesMarkers();
 
-        if (!species || species.length === 0 || !this.map) return;
+        // Ensure species is an array
+        const speciesArray = Array.isArray(species) ? species : [];
+
+        if (speciesArray.length === 0 || !this.map) return;
 
         const self = this;
 
-        species.forEach((s, index) => {
+        speciesArray.forEach((s, index) => {
             // Create circle for species location
             const circle = L.circle([s.latitude, s.longitude], {
                 radius: s.radiusMeters,
