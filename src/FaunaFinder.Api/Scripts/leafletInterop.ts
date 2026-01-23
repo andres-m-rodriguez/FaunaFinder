@@ -281,7 +281,10 @@ window.leafletInterop = {
                     onEachFeature: (feature, layer) => {
                         const props = feature.properties as MunicipalityProperties;
                         const name = props.NAME;
+                        const state = props.STATE;
                         const county = props.COUNTY;
+                        // Combine STATE + COUNTY to form the full GeoJsonId (e.g., "72" + "071" = "72071")
+                        const geoJsonId = state + county;
 
                         layer.bindTooltip(name, {
                             direction: 'center',
@@ -291,7 +294,7 @@ window.leafletInterop = {
                         layer.on({
                             mouseover: (e: L.LeafletMouseEvent) => self.highlightFeature(e),
                             mouseout: (e: L.LeafletMouseEvent) => self.resetHighlight(e),
-                            click: () => self.dotNetHelper?.invokeMethodAsync('OnMunicipalityClick', county, name)
+                            click: () => self.dotNetHelper?.invokeMethodAsync('OnMunicipalityClick', geoJsonId, name)
                         });
                     }
                 }).addTo(self.map!);
