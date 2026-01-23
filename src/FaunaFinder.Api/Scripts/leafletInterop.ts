@@ -14,6 +14,9 @@ window.leafletInterop = {
     userLocationMarker: null,
     locateControl: null,
     isLocating: false,
+    userLocation: null,
+    searchRadiusCircle: null,
+    nearbySpeciesMarkers: [],
 
     // Tile layer URLs
     lightTileUrl: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
@@ -141,6 +144,9 @@ window.leafletInterop = {
                 const lng = position.coords.longitude;
                 const accuracy = position.coords.accuracy;
 
+                // Store user location
+                self.userLocation = { latitude: lat, longitude: lng };
+
                 // Remove existing user location marker if present
                 if (self.userLocationMarker) {
                     self.map!.removeLayer(self.userLocationMarker);
@@ -163,6 +169,9 @@ window.leafletInterop = {
                 self.map!.flyTo([lat, lng], 14, {
                     duration: 1.5
                 });
+
+                // Notify Blazor that user location is available
+                self.dotNetHelper?.invokeMethodAsync('OnUserLocationFound', lat, lng);
             },
             function (error: GeolocationPositionError) {
                 self.isLocating = false;
@@ -403,6 +412,98 @@ window.leafletInterop = {
             this.map!.fitBounds(group.getBounds(), { padding: [50, 50] });
             // Close any open popups
             this.locationCircles.forEach((circle: L.Circle) => circle.closePopup());
+        }
+    },
+
+    // Species Near Me Functions
+
+    showSearchRadius: function (radiusMeters: number): void {
+        if (!this.userLocation || !this.map) return;
+
+        // Remove existing search radius circle
+        if (this.searchRadiusCircle) {
+            this.map.removeLayer(this.searchRadiusCircle);
+        }
+
+        // Create search radius circle
+        this.searchRadiusCircle = L.circle(
+            [this.userLocation.latitude, this.userLocation.longitude],
+            {
+                radius: radiusMeters,
+                fillColor: '#3b82f6',
+                color: '#2563eb',
+                weight: 2,
+                fillOpacity: 0.1,
+                dashArray: '5, 5'
+            }
+        ).addTo(this.map);
+
+        // Fit map to show the entire search radius
+        this.map.fitBounds(this.searchRadiusCircle.getBounds(), { padding: [50, 50] });
+    },
+
+    clearSearchRadius: function (): void {
+        if (this.searchRadiusCircle && this.map) {
+            this.map.removeLayer(this.searchRadiusCircle);
+            this.searchRadiusCircle = null;
+        }
+        this.clearNearbySpeciesMarkers();
+    },
+
+    showNearbySpecies: function (species: NearbySpeciesLocation[]): void {
+        // Clear existing markers
+        this.clearNearbySpeciesMarkers();
+
+        if (!species || species.length === 0 || !this.map) return;
+
+        const self = this;
+
+        species.forEach((s, index) => {
+            // Create circle for species location
+            const circle = L.circle([s.latitude, s.longitude], {
+                radius: s.radiusMeters,
+                fillColor: '#10b981',
+                color: '#059669',
+                weight: 2,
+                fillOpacity: 0.35
+            }).addTo(self.map!);
+
+            // Create popup content
+            const distanceText = s.distanceMeters < 1000
+                ? `${Math.round(s.distanceMeters)}m away`
+                : `${(s.distanceMeters / 1000).toFixed(1)}km away`;
+
+            const popupContent = `
+                <div class="nearby-species-popup">
+                    <strong>${s.commonName}</strong><br/>
+                    <em>${s.scientificName}</em><br/>
+                    <span class="distance">${distanceText}</span>
+                    ${s.locationDescription ? `<br/><small>${s.locationDescription}</small>` : ''}
+                </div>
+            `;
+            circle.bindPopup(popupContent);
+
+            self.nearbySpeciesMarkers.push(circle);
+        });
+    },
+
+    clearNearbySpeciesMarkers: function (): void {
+        const self = this;
+        this.nearbySpeciesMarkers.forEach((marker: L.Circle) => {
+            self.map!.removeLayer(marker);
+        });
+        this.nearbySpeciesMarkers = [];
+    },
+
+    getUserLocation: function (): { latitude: number; longitude: number } | null {
+        return this.userLocation;
+    },
+
+    focusOnNearbySpecies: function (index: number): void {
+        if (index >= 0 && index < this.nearbySpeciesMarkers.length) {
+            const circle = this.nearbySpeciesMarkers[index];
+            this.map!.fitBounds(circle.getBounds(), { padding: [50, 50], maxZoom: 14 });
+            circle.openPopup();
         }
     }
 };

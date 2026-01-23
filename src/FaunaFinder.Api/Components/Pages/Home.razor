@@ -203,6 +203,91 @@
                     </MudList>
                 </div>
             }
+            else if (showNearbySpecies)
+            {
+                <MudPaper Class="pa-3 mud-theme-info" Square="true" Elevation="0">
+                    <div class="d-flex justify-space-between align-center">
+                        <div class="d-flex align-center gap-2">
+                            <MudIcon Icon="@Icons.Material.Filled.NearMe" Size="Size.Small" />
+                            <MudText Typo="Typo.subtitle1">@L["NearMe_Title"]</MudText>
+                        </div>
+                        <MudIconButton Icon="@Icons.Material.Filled.Close" Color="Color.Inherit" Size="Size.Small" OnClick="CloseSpeciesNearMe" />
+                    </div>
+                </MudPaper>
+
+                <MudPaper Class="px-3 py-2" Square="true" Elevation="0">
+                    <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mb-2">@L["NearMe_SelectRadius"]</MudText>
+                    <div class="d-flex flex-wrap gap-2">
+                        @foreach (var radius in RadiusOptions)
+                        {
+                            <MudChip T="string"
+                                     Color="@(selectedRadiusKm == radius ? Color.Info : Color.Default)"
+                                     Variant="@(selectedRadiusKm == radius ? Variant.Filled : Variant.Outlined)"
+                                     OnClick="() => OnRadiusChanged(radius)"
+                                     Size="Size.Small">
+                                @($"{radius} km")
+                            </MudChip>
+                        }
+                    </div>
+                </MudPaper>
+
+                <div class="sidebar-content">
+                    @if (isLoadingNearbySpecies)
+                    {
+                        <MudContainer Class="d-flex flex-column align-center justify-center" Style="height: 200px;">
+                            <MudProgressCircular Color="Color.Info" Indeterminate="true" />
+                            <MudText Typo="Typo.body2" Class="mt-3">@L["NearMe_Searching"]</MudText>
+                        </MudContainer>
+                    }
+                    else if (nearbySpecies.Count == 0)
+                    {
+                        <MudAlert Severity="Severity.Info" Variant="Variant.Text" Class="ma-3">
+                            @L["NearMe_NoSpeciesFound"]
+                        </MudAlert>
+                    }
+                    else
+                    {
+                        <div class="pa-3">
+                            <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mb-2">
+                                @string.Format(L["NearMe_SpeciesFound"], nearbySpecies.Count, selectedRadiusKm)
+                            </MudText>
+
+                            <MudList T="SpeciesNearbyDto" Dense="true" Class="nearby-species-list">
+                                @for (var i = 0; i < nearbySpecies.Count; i++)
+                                {
+                                    var index = i;
+                                    var s = nearbySpecies[i];
+                                    <MudListItem Class="nearby-species-item pa-2 mb-2 rounded border-default" OnClick="() => FocusOnNearbySpecies(index)">
+                                        <div class="d-flex justify-space-between align-start">
+                                            <div>
+                                                <MudText Typo="Typo.subtitle2" Color="Color.Primary">@s.CommonName</MudText>
+                                                <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                                    <em>@s.ScientificName</em>
+                                                </MudText>
+                                                @if (!string.IsNullOrEmpty(s.LocationDescription))
+                                                {
+                                                    <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                                        @s.LocationDescription
+                                                    </MudText>
+                                                }
+                                            </div>
+                                            <div class="text-right">
+                                                <MudChip T="string" Size="Size.Small" Color="Color.Info" Variant="Variant.Text">
+                                                    @FormatDistance(s.DistanceMeters)
+                                                </MudChip>
+                                                <MudIconButton Icon="@Icons.Material.Filled.Info"
+                                                               Size="Size.Small"
+                                                               Href="@($"/species/{s.Id}")"
+                                                               Color="Color.Primary" />
+                                            </div>
+                                        </div>
+                                    </MudListItem>
+                                }
+                            </MudList>
+                        </div>
+                    }
+                </div>
+            }
             else
             {
                 <MudPaper Class="pa-3 mud-theme-primary" Square="true" Elevation="0">
@@ -216,9 +301,26 @@
                     <MudButton Variant="Variant.Filled"
                                Color="Color.Primary"
                                FullWidth="true"
+                               Class="mb-2"
                                OnClick="@(() => LoadAllSpeciesCommand.ExecuteAsync(CancellationToken.None))">
                         @L["ViewAllSpecies"]
                     </MudButton>
+                    @if (userLatitude.HasValue && userLongitude.HasValue)
+                    {
+                        <MudButton Variant="Variant.Filled"
+                                   Color="Color.Info"
+                                   FullWidth="true"
+                                   StartIcon="@Icons.Material.Filled.NearMe"
+                                   OnClick="OpenSpeciesNearMe">
+                            @L["NearMe_Button"]
+                        </MudButton>
+                    }
+                    else
+                    {
+                        <MudAlert Severity="Severity.Info" Variant="Variant.Text" Dense="true" Class="mt-2">
+                            @L["NearMe_UseLocateFirst"]
+                        </MudAlert>
+                    }
                 </div>
             }
         </div>
@@ -226,13 +328,13 @@
 
     @* Mobile Bottom Sheet *@
     <MudHidden Breakpoint="Breakpoint.MdAndUp">
-        @if (clickedMunicipalityName != null || showAllSpecies)
+        @if (clickedMunicipalityName != null || showAllSpecies || showNearbySpecies)
         {
             <div class="mobile-sheet-backdrop @(sheetOpen ? "open" : "")" @onclick="CloseSheet"></div>
             <div class="mobile-sheet @(sheetOpen ? "open" : "")">
                 <div class="mobile-sheet-header">
                     <MudText Typo="Typo.subtitle1" Class="ml-3">
-                        @(clickedMunicipalityName ?? L["AllSpecies"])
+                        @(showNearbySpecies ? L["NearMe_Title"] : (clickedMunicipalityName ?? L["AllSpecies"]))
                     </MudText>
                     <MudSpacer />
                     @if (clickedMunicipalityName != null && species.Count > 0)
@@ -394,19 +496,96 @@
                         </MudList>
                     </MudContainer>
                 }
+                else if (showNearbySpecies)
+                {
+                    <div class="px-3 py-2">
+                        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mb-2">@L["NearMe_SelectRadius"]</MudText>
+                        <div class="d-flex flex-wrap gap-2">
+                            @foreach (var radius in RadiusOptions)
+                            {
+                                <MudChip T="string"
+                                         Color="@(selectedRadiusKm == radius ? Color.Info : Color.Default)"
+                                         Variant="@(selectedRadiusKm == radius ? Variant.Filled : Variant.Outlined)"
+                                         OnClick="() => OnRadiusChanged(radius)"
+                                         Size="Size.Small">
+                                    @($"{radius} km")
+                                </MudChip>
+                            }
+                        </div>
+                    </div>
+
+                    @if (isLoadingNearbySpecies)
+                    {
+                        <MudContainer Class="d-flex flex-column align-center justify-center" Style="height: 200px;">
+                            <MudProgressCircular Color="Color.Info" Indeterminate="true" />
+                            <MudText Typo="Typo.body2" Class="mt-3">@L["NearMe_Searching"]</MudText>
+                        </MudContainer>
+                    }
+                    else if (nearbySpecies.Count == 0)
+                    {
+                        <MudAlert Severity="Severity.Info" Variant="Variant.Text" Class="ma-3">
+                            @L["NearMe_NoSpeciesFound"]
+                        </MudAlert>
+                    }
+                    else
+                    {
+                        <MudContainer Class="pa-3" MaxWidth="MaxWidth.False">
+                            <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mb-2">
+                                @string.Format(L["NearMe_SpeciesFound"], nearbySpecies.Count, selectedRadiusKm)
+                            </MudText>
+
+                            <MudList T="SpeciesNearbyDto" Dense="true" Class="nearby-species-list">
+                                @for (var i = 0; i < nearbySpecies.Count; i++)
+                                {
+                                    var index = i;
+                                    var s = nearbySpecies[i];
+                                    <MudListItem Class="nearby-species-item pa-2 mb-2 rounded border-default" OnClick="() => FocusOnNearbySpecies(index)">
+                                        <div class="d-flex justify-space-between align-start">
+                                            <div>
+                                                <MudText Typo="Typo.subtitle2" Color="Color.Primary">@s.CommonName</MudText>
+                                                <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                                    <em>@s.ScientificName</em>
+                                                </MudText>
+                                            </div>
+                                            <div class="text-right">
+                                                <MudChip T="string" Size="Size.Small" Color="Color.Info" Variant="Variant.Text">
+                                                    @FormatDistance(s.DistanceMeters)
+                                                </MudChip>
+                                                <MudIconButton Icon="@Icons.Material.Filled.Info"
+                                                               Size="Size.Small"
+                                                               Href="@($"/species/{s.Id}")"
+                                                               Color="Color.Primary" />
+                                            </div>
+                                        </div>
+                                    </MudListItem>
+                                }
+                            </MudList>
+                        </MudContainer>
+                    }
+                }
             </div>
         }
     </MudHidden>
 
-    @* Mobile FAB for "View All Species" when nothing selected *@
+    @* Mobile FABs for "View All Species" and "Species Near Me" when nothing selected *@
     <MudHidden Breakpoint="Breakpoint.MdAndUp">
-        @if (clickedMunicipalityName == null && !showAllSpecies && viewingSpeciesLocations == null)
+        @if (clickedMunicipalityName == null && !showAllSpecies && !showNearbySpecies && viewingSpeciesLocations == null)
         {
-            <MudFab Color="Color.Primary"
-                    StartIcon="@Icons.Material.Filled.List"
-                    Label="@L["ViewAll"]"
-                    Class="mobile-fab"
-                    OnClick="@(() => LoadAllSpeciesCommand.ExecuteAsync(CancellationToken.None))" />
+            <div class="mobile-fab-container">
+                <MudFab Color="Color.Primary"
+                        StartIcon="@Icons.Material.Filled.List"
+                        Label="@L["ViewAll"]"
+                        Class="mobile-fab-item"
+                        OnClick="@(() => LoadAllSpeciesCommand.ExecuteAsync(CancellationToken.None))" />
+                @if (userLatitude.HasValue && userLongitude.HasValue)
+                {
+                    <MudFab Color="Color.Info"
+                            StartIcon="@Icons.Material.Filled.NearMe"
+                            Label="@L["NearMe_Button"]"
+                            Class="mobile-fab-item"
+                            OnClick="OpenSpeciesNearMe" />
+                }
+            </div>
         }
     </MudHidden>
 
@@ -510,6 +689,15 @@
     private HashSet<string> selectedNrcsPractices = new();
     private HashSet<string> selectedFwsActions = new();
     private bool filterDialogVisible = false;
+
+    // Species Near Me state
+    private double? userLatitude;
+    private double? userLongitude;
+    private bool showNearbySpecies = false;
+    private int selectedRadiusKm = 5;
+    private IReadOnlyList<SpeciesNearbyDto> nearbySpecies = [];
+    private bool isLoadingNearbySpecies = false;
+    private static readonly int[] RadiusOptions = [1, 5, 10, 25, 50];
 
     private enum SortOption
     {
@@ -697,12 +885,16 @@
         var municipality = municipalities?.FirstOrDefault(m => m.GeoJsonId == geoJsonId);
 
         showAllSpecies = false;
+        showNearbySpecies = false;
         expandedSpeciesId = null;
         selectedMunicipality = municipality;
         clickedMunicipalityName = name;
         species = [];
         sheetOpen = false;
         sidebarOpen = true;
+
+        // Clear nearby species search
+        await JS.InvokeVoidAsync("leafletInterop.clearSearchRadius");
 
         // Reset filters when switching municipalities
         ClearAllFilters();
@@ -716,6 +908,14 @@
         StateHasChanged();
 
         await LoadMunicipalitySpeciesCommand.ExecuteAsync();
+    }
+
+    [JSInvokable]
+    public void OnUserLocationFound(double latitude, double longitude)
+    {
+        userLatitude = latitude;
+        userLongitude = longitude;
+        StateHasChanged();
     }
 
     [RelayCommand]
@@ -783,10 +983,108 @@
         selectedMunicipality = null;
         clickedMunicipalityName = null;
         showAllSpecies = false;
+        showNearbySpecies = false;
         species = [];
         allSpecies = [];
+        nearbySpecies = [];
         expandedSpeciesId = null;
         ClearAllFilters();
+        await JS.InvokeVoidAsync("leafletInterop.clearSearchRadius");
         StateHasChanged();
+    }
+
+    // Species Near Me methods
+    private async Task OpenSpeciesNearMe()
+    {
+        if (userLatitude == null || userLongitude == null) return;
+
+        showNearbySpecies = true;
+        showAllSpecies = false;
+        selectedMunicipality = null;
+        clickedMunicipalityName = null;
+        species = [];
+        allSpecies = [];
+        sheetOpen = false;
+        sidebarOpen = true;
+
+        StateHasChanged();
+
+        await Task.Delay(10);
+        sheetOpen = true;
+        StateHasChanged();
+
+        await SearchNearbySpecies();
+    }
+
+    private async Task SearchNearbySpecies()
+    {
+        if (userLatitude == null || userLongitude == null) return;
+
+        isLoadingNearbySpecies = true;
+        StateHasChanged();
+
+        try
+        {
+            var radiusMeters = selectedRadiusKm * 1000.0;
+
+            // Show search radius on map
+            await JS.InvokeVoidAsync("leafletInterop.showSearchRadius", radiusMeters);
+
+            // Query nearby species
+            nearbySpecies = await SpeciesRepository.GetSpeciesNearbyAsync(
+                userLatitude.Value,
+                userLongitude.Value,
+                radiusMeters);
+
+            // Show nearby species on map
+            var speciesLocations = nearbySpecies.Select(s => new
+            {
+                id = s.Id,
+                commonName = s.CommonName,
+                scientificName = s.ScientificName,
+                distanceMeters = s.DistanceMeters,
+                latitude = s.Latitude,
+                longitude = s.Longitude,
+                radiusMeters = s.RadiusMeters,
+                locationDescription = s.LocationDescription
+            }).ToArray();
+
+            await JS.InvokeVoidAsync("leafletInterop.showNearbySpecies", speciesLocations);
+        }
+        finally
+        {
+            isLoadingNearbySpecies = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task OnRadiusChanged(int newRadius)
+    {
+        selectedRadiusKm = newRadius;
+        await SearchNearbySpecies();
+    }
+
+    private async Task CloseSpeciesNearMe()
+    {
+        showNearbySpecies = false;
+        nearbySpecies = [];
+        sidebarOpen = false;
+        sheetOpen = false;
+        await JS.InvokeVoidAsync("leafletInterop.clearSearchRadius");
+        StateHasChanged();
+    }
+
+    private async Task FocusOnNearbySpecies(int index)
+    {
+        await JS.InvokeVoidAsync("leafletInterop.focusOnNearbySpecies", index);
+    }
+
+    private string FormatDistance(double meters)
+    {
+        if (meters < 1000)
+        {
+            return $"{meters:N0}m";
+        }
+        return $"{meters / 1000:N1}km";
     }
 }

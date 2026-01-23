@@ -11,6 +11,28 @@ interface SpeciesLocation {
 }
 
 /**
+ * Represents a nearby species location with distance info for "Species Near Me" feature
+ */
+interface NearbySpeciesLocation {
+    id: number;
+    commonName: string;
+    scientificName: string;
+    distanceMeters: number;
+    latitude: number;
+    longitude: number;
+    radiusMeters: number;
+    locationDescription?: string;
+}
+
+/**
+ * User location coordinates
+ */
+interface UserLocation {
+    latitude: number;
+    longitude: number;
+}
+
+/**
  * Theme colors for map styling
  */
 interface ThemeColors {
@@ -49,6 +71,9 @@ interface LeafletInteropObject {
     userLocationMarker: L.Marker | null;
     locateControl: HTMLElement | null;
     isLocating: boolean;
+    userLocation: UserLocation | null;
+    searchRadiusCircle: L.Circle | null;
+    nearbySpeciesMarkers: L.Circle[];
     lightTileUrl: string;
     darkTileUrl: string;
     lightTheme: ThemeColors;
@@ -69,6 +94,12 @@ interface LeafletInteropObject {
     locateUser(): void;
     setLocateControlState(state: string): void;
     showLocationError(errorType: string): void;
+    showSearchRadius(radiusMeters: number): void;
+    clearSearchRadius(): void;
+    showNearbySpecies(species: NearbySpeciesLocation[]): void;
+    clearNearbySpeciesMarkers(): void;
+    getUserLocation(): UserLocation | null;
+    focusOnNearbySpecies(index: number): void;
 }
 
 interface Window {
