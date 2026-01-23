@@ -19,6 +19,8 @@ window.leafletInterop = {
     nearbySpeciesMarkers: [],
     speciesLocationCircles: [],
     speciesColorMap: new Map<number, string>(),
+    geojsonLoadedPromise: null as Promise<void> | null,
+    geojsonLoadedResolve: null as (() => void) | null,
 
     // Tile layer URLs
     lightTileUrl: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
@@ -41,6 +43,11 @@ window.leafletInterop = {
     initMap: function (dotNetHelper: DotNetObjectReference): void {
         this.dotNetHelper = dotNetHelper;
         this.isMobile = window.innerWidth < 640;
+
+        // Create promise for GeoJSON loading
+        this.geojsonLoadedPromise = new Promise<void>((resolve) => {
+            this.geojsonLoadedResolve = resolve;
+        });
 
         // Check initial dark mode state from localStorage or system preference
         const savedDarkMode = localStorage.getItem('faunafinder-darkmode');
@@ -299,6 +306,11 @@ window.leafletInterop = {
                     }
                 }).addTo(self.map!);
                 console.log('GeoJSON loaded successfully with', data.features.length, 'features');
+
+                // Resolve the GeoJSON loaded promise
+                if (self.geojsonLoadedResolve) {
+                    self.geojsonLoadedResolve();
+                }
             })
             .catch((err: Error) => {
                 console.error('GeoJSON load error:', err);
@@ -372,6 +384,14 @@ window.leafletInterop = {
             const bounds = (targetLayer as L.Polygon).getBounds();
             this.map.fitBounds(bounds, { padding: [50, 50], maxZoom: 12 });
         }
+    },
+
+    selectMunicipality: async function (county: string): Promise<void> {
+        // Wait for GeoJSON to be loaded
+        if (this.geojsonLoadedPromise) {
+            await this.geojsonLoadedPromise;
+        }
+        this.highlightMunicipality(county);
     },
 
     showSpeciesLocations: function (speciesName: string, locations: SpeciesLocation[]): void {
