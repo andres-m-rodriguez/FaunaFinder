@@ -1,7 +1,9 @@
 @page "/"
 @using BlazingSingularity.Commands
+@using FaunaFinder.Api.Services.Export
 @inject IMunicipalityRepository MunicipalityRepository
 @inject ISpeciesRepository SpeciesRepository
+@inject IMunicipalityReportService ReportService
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JS
 @inject IAppLocalizer L
@@ -73,6 +75,23 @@
                                         </div>
                                     </MudMenuItem>
                                 }
+                            </MudMenu>
+
+                            <MudMenu Icon="@Icons.Material.Filled.Download" Size="Size.Small" Dense="true"
+                                     AnchorOrigin="Origin.BottomLeft" TransformOrigin="Origin.TopLeft"
+                                     Disabled="isExporting">
+                                <MudMenuItem OnClick="ExportToPdf">
+                                    <div class="d-flex align-center gap-2">
+                                        <MudIcon Icon="@Icons.Material.Filled.PictureAsPdf" Size="Size.Small" />
+                                        <span>@L["Export_PDF"]</span>
+                                    </div>
+                                </MudMenuItem>
+                                <MudMenuItem OnClick="ExportToCsv">
+                                    <div class="d-flex align-center gap-2">
+                                        <MudIcon Icon="@Icons.Material.Filled.TableChart" Size="Size.Small" />
+                                        <span>@L["Export_CSV"]</span>
+                                    </div>
+                                </MudMenuItem>
                             </MudMenu>
                         </div>
 
@@ -359,6 +378,25 @@
                     <MudSpacer />
                     @if (clickedMunicipalityName != null && species.Count > 0)
                     {
+                        <MudMenu Icon="@Icons.Material.Filled.Download"
+                                 Size="Size.Small"
+                                 Dense="true"
+                                 AnchorOrigin="Origin.BottomLeft"
+                                 TransformOrigin="Origin.TopRight"
+                                 Disabled="isExporting">
+                            <MudMenuItem OnClick="ExportToPdf">
+                                <div class="d-flex align-center gap-2">
+                                    <MudIcon Icon="@Icons.Material.Filled.PictureAsPdf" Size="Size.Small" />
+                                    <span>@L["Export_PDF"]</span>
+                                </div>
+                            </MudMenuItem>
+                            <MudMenuItem OnClick="ExportToCsv">
+                                <div class="d-flex align-center gap-2">
+                                    <MudIcon Icon="@Icons.Material.Filled.TableChart" Size="Size.Small" />
+                                    <span>@L["Export_CSV"]</span>
+                                </div>
+                            </MudMenuItem>
+                        </MudMenu>
                         <MudIconButton Icon="@Icons.Material.Filled.FilterList"
                                        Size="Size.Small"
                                        OnClick="OpenFilterDialog"
@@ -733,6 +771,9 @@
     private HashSet<string> selectedFwsActions = new();
     private bool filterDialogVisible = false;
 
+    // Export state
+    private bool isExporting = false;
+
     // Species Near Me state
     private double? userLatitude;
     private double? userLongitude;
@@ -843,6 +884,56 @@
     private void CloseFilterDialog()
     {
         filterDialogVisible = false;
+    }
+
+    // Export methods
+    private async Task ExportToPdf()
+    {
+        if (clickedMunicipalityName == null || species.Count == 0 || isExporting) return;
+
+        isExporting = true;
+        StateHasChanged();
+
+        try
+        {
+            await Task.Run(async () =>
+            {
+                var pdfBytes = ReportService.GeneratePdfReport(clickedMunicipalityName, FilteredSpecies.ToList());
+                var fileName = $"{clickedMunicipalityName.Replace(" ", "_")}_Species_Report.pdf";
+                await DownloadFile(pdfBytes, fileName, "application/pdf");
+            });
+        }
+        finally
+        {
+            isExporting = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task ExportToCsv()
+    {
+        if (clickedMunicipalityName == null || species.Count == 0 || isExporting) return;
+
+        isExporting = true;
+        StateHasChanged();
+
+        try
+        {
+            var csvBytes = ReportService.GenerateCsvReport(clickedMunicipalityName, FilteredSpecies.ToList());
+            var fileName = $"{clickedMunicipalityName.Replace(" ", "_")}_Species_Report.csv";
+            await DownloadFile(csvBytes, fileName, "text/csv");
+        }
+        finally
+        {
+            isExporting = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task DownloadFile(byte[] fileBytes, string fileName, string contentType)
+    {
+        var base64 = Convert.ToBase64String(fileBytes);
+        await JS.InvokeVoidAsync("downloadFile", base64, fileName, contentType);
     }
 
     private void ToggleSpecies(int speciesId, bool expanded)

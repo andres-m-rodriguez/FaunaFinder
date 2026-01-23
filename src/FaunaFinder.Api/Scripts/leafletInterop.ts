@@ -620,3 +620,28 @@ window.leafletInterop = {
         this.speciesColorMap.clear();
     }
 };
+
+/**
+ * Download file utility function for Blazor interop
+ * Converts base64 data to a blob and triggers a download
+ */
+function downloadFile(base64: string, fileName: string, contentType: string): void {
+    const byteCharacters = atob(base64);
+    const byteNumbers = new Array(byteCharacters.length);
+    for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+    }
+    const byteArray = new Uint8Array(byteNumbers);
+    const blob = new Blob([byteArray], { type: contentType });
+
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(link.href);
+}
+
+// Expose downloadFile to window for Blazor interop
+(window as Window & { downloadFile: typeof downloadFile }).downloadFile = downloadFile;

@@ -111,6 +111,12 @@ public static class Translations
         ["NearMe_UseLocateFirst"] = "Use the locate button on the map to enable species search near your location.",
         ["NearMe_ShowLocations"] = "Show Locations",
         ["NearMe_HideLocations"] = "Hide Locations",
+
+        // Export
+        ["Export_Button"] = "Export",
+        ["Export_PDF"] = "Download PDF",
+        ["Export_CSV"] = "Download CSV",
+        ["Export_Generating"] = "Generating report...",
     };
 
     public static IReadOnlyDictionary<string, string> Spanish { get; } = new Dictionary<string, string>
@@ -222,5 +228,11 @@ public static class Translations
         ["NearMe_UseLocateFirst"] = "Usa el boton de ubicacion en el mapa para habilitar la busqueda de especies cerca de tu ubicacion.",
         ["NearMe_ShowLocations"] = "Mostrar Ubicaciones",
         ["NearMe_HideLocations"] = "Ocultar Ubicaciones",
+
+        // Export
+        ["Export_Button"] = "Exportar",
+        ["Export_PDF"] = "Descargar PDF",
+        ["Export_CSV"] = "Descargar CSV",
+        ["Export_Generating"] = "Generando informe...",
     };
 }
