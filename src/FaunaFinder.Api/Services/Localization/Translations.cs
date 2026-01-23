@@ -19,6 +19,7 @@ public static class Translations
         ["ViewAllSpecies"] = "View All Species",
         ["ViewAll"] = "View All",
         ["AllSpecies"] = "All Species",
+        ["Details"] = "Details",
 
         // Errors
         ["Error_SomethingWentWrong"] = "Something went wrong",
@@ -99,6 +100,17 @@ public static class Translations
         ["PageTitle_Species"] = "Species - FaunaFinder",
         ["PageTitle_Pueblos"] = "Municipalities - FaunaFinder",
         ["PageTitle_About"] = "About - FaunaFinder",
+
+        // Species Near Me
+        ["NearMe_Title"] = "Species Near Me",
+        ["NearMe_Button"] = "Near Me",
+        ["NearMe_SelectRadius"] = "Select search radius",
+        ["NearMe_Searching"] = "Searching for species...",
+        ["NearMe_NoSpeciesFound"] = "No species found within this radius. Try expanding the search area.",
+        ["NearMe_SpeciesFound"] = "{0} species found within {1}km",
+        ["NearMe_UseLocateFirst"] = "Use the locate button on the map to enable species search near your location.",
+        ["NearMe_ShowLocations"] = "Show Locations",
+        ["NearMe_HideLocations"] = "Hide Locations",
     };
 
     public static IReadOnlyDictionary<string, string> Spanish { get; } = new Dictionary<string, string>
@@ -118,6 +130,7 @@ public static class Translations
         ["ViewAllSpecies"] = "Ver todas las especies",
         ["ViewAll"] = "Ver todo",
         ["AllSpecies"] = "Todas las especies",
+        ["Details"] = "Detalles",
 
         // Errors
         ["Error_SomethingWentWrong"] = "Algo salió mal",
@@ -198,5 +211,16 @@ public static class Translations
         ["PageTitle_Species"] = "Especies - FaunaFinder",
         ["PageTitle_Pueblos"] = "Pueblos - FaunaFinder",
         ["PageTitle_About"] = "Acerca de - FaunaFinder",
+
+        // Species Near Me
+        ["NearMe_Title"] = "Especies cercanas",
+        ["NearMe_Button"] = "Cercanas",
+        ["NearMe_SelectRadius"] = "Seleccionar radio de busqueda",
+        ["NearMe_Searching"] = "Buscando especies...",
+        ["NearMe_NoSpeciesFound"] = "No se encontraron especies dentro de este radio. Intenta ampliar el area de busqueda.",
+        ["NearMe_SpeciesFound"] = "{0} especies encontradas dentro de {1}km",
+        ["NearMe_UseLocateFirst"] = "Usa el boton de ubicacion en el mapa para habilitar la busqueda de especies cerca de tu ubicacion.",
+        ["NearMe_ShowLocations"] = "Mostrar Ubicaciones",
+        ["NearMe_HideLocations"] = "Ocultar Ubicaciones",
     };
 }
