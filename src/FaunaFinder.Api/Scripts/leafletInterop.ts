@@ -343,6 +343,8 @@ window.leafletInterop = {
         if (!this.geojsonLayer) return;
         const theme = this.isDarkMode ? this.darkTheme : this.lightTheme;
         const self = this;
+        let targetLayer: L.Layer | null = null;
+
         this.geojsonLayer.eachLayer((layer: L.Layer) => {
             const geoLayer = layer as L.GeoJSON;
             const feature = (geoLayer as unknown as { feature: GeoJSON.Feature }).feature;
@@ -355,11 +357,18 @@ window.leafletInterop = {
                         color: theme.highlightBorder,
                         fillOpacity: 0.6
                     });
+                    targetLayer = layer;
                 } else {
                     self.geojsonLayer!.resetStyle(layer as L.Path);
                 }
             }
         });
+
+        // Zoom to the selected municipality
+        if (targetLayer && this.map) {
+            const bounds = (targetLayer as L.Polygon).getBounds();
+            this.map.fitBounds(bounds, { padding: [50, 50], maxZoom: 12 });
+        }
     },
 
     showSpeciesLocations: function (speciesName: string, locations: SpeciesLocation[]): void {
