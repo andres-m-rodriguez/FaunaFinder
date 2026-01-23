@@ -54,6 +54,7 @@ interface DotNetObjectReference {
  */
 interface MunicipalityProperties {
     NAME: string;
+    STATE: string;
     COUNTY: string;
 }
 
