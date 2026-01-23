@@ -113,4 +113,5 @@ interface LeafletInteropObject {
 
 interface Window {
     leafletInterop: LeafletInteropObject;
+    downloadFile: (base64: string, fileName: string, contentType: string) => void;
 }
