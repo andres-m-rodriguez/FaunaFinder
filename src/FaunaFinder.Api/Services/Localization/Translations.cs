@@ -28,17 +28,17 @@ public static class Translations
         ["Error_MunicipalityNotFound"] = "Municipality not found.",
         ["MunicipalityNotFound"] = "Municipality '{0}' not found in database.",
 
-        // Home Page
-        ["Home_ClickMunicipality"] = "Click on a municipality on the map to view species and conservation information.",
-        ["Home_NoSpeciesData"] = "No species data available for this municipality.",
-        ["Home_SpeciesFound"] = "{0} species found",
-        ["Home_SpeciesInDatabase"] = "{0} species in database",
-        ["Home_ConservationLinks"] = "Conservation Links",
-        ["Home_ClearLocations"] = "Clear",
-        ["Home_LocationsFound"] = "{0} location(s) found",
-        ["Home_ViewAllLocations"] = "View All Locations",
-        ["Home_BackToSpecies"] = "Back to Species Details",
-        ["Home_UnnamedLocation"] = "Location",
+        // Map Page
+        ["Map_ClickMunicipality"] = "Click on a municipality on the map to view species and conservation information.",
+        ["Map_NoSpeciesData"] = "No species data available for this municipality.",
+        ["Map_SpeciesFound"] = "{0} species found",
+        ["Map_SpeciesInDatabase"] = "{0} species in database",
+        ["Map_ConservationLinks"] = "Conservation Links",
+        ["Map_ClearLocations"] = "Clear",
+        ["Map_LocationsFound"] = "{0} location(s) found",
+        ["Map_ViewAllLocations"] = "View All Locations",
+        ["Map_BackToSpecies"] = "Back to Species Details",
+        ["Map_UnnamedLocation"] = "Location",
 
         // Species Page
         ["Species_Title"] = "Species",
@@ -97,7 +97,7 @@ public static class Translations
         ["Filter_NoMatches"] = "No species match the selected filters.",
 
         // Page Titles
-        ["PageTitle_Home"] = "FaunaFinder - Puerto Rico",
+        ["PageTitle_Map"] = "FaunaFinder - Puerto Rico",
         ["PageTitle_Species"] = "Species - FaunaFinder",
         ["PageTitle_Pueblos"] = "Municipalities - FaunaFinder",
         ["PageTitle_About"] = "About - FaunaFinder",
@@ -146,17 +146,17 @@ public static class Translations
         ["Error_MunicipalityNotFound"] = "Municipio no encontrado.",
         ["MunicipalityNotFound"] = "Municipio '{0}' no encontrado en la base de datos.",
 
-        // Home Page
-        ["Home_ClickMunicipality"] = "Haz clic en un municipio en el mapa para ver información sobre especies y conservación.",
-        ["Home_NoSpeciesData"] = "No hay datos de especies disponibles para este municipio.",
-        ["Home_SpeciesFound"] = "{0} especies encontradas",
-        ["Home_SpeciesInDatabase"] = "{0} especies en la base de datos",
-        ["Home_ConservationLinks"] = "Enlaces de conservación",
-        ["Home_ClearLocations"] = "Cerrar",
-        ["Home_LocationsFound"] = "{0} ubicación(es) encontrada(s)",
-        ["Home_ViewAllLocations"] = "Ver todas las ubicaciones",
-        ["Home_BackToSpecies"] = "Volver a detalles de especie",
-        ["Home_UnnamedLocation"] = "Ubicación",
+        // Map Page
+        ["Map_ClickMunicipality"] = "Haz clic en un municipio en el mapa para ver información sobre especies y conservación.",
+        ["Map_NoSpeciesData"] = "No hay datos de especies disponibles para este municipio.",
+        ["Map_SpeciesFound"] = "{0} especies encontradas",
+        ["Map_SpeciesInDatabase"] = "{0} especies en la base de datos",
+        ["Map_ConservationLinks"] = "Enlaces de conservación",
+        ["Map_ClearLocations"] = "Cerrar",
+        ["Map_LocationsFound"] = "{0} ubicación(es) encontrada(s)",
+        ["Map_ViewAllLocations"] = "Ver todas las ubicaciones",
+        ["Map_BackToSpecies"] = "Volver a detalles de especie",
+        ["Map_UnnamedLocation"] = "Ubicación",
 
         // Species Page
         ["Species_Title"] = "Especies",
@@ -215,7 +215,7 @@ public static class Translations
         ["Filter_NoMatches"] = "Ninguna especie coincide con los filtros seleccionados.",
 
         // Page Titles
-        ["PageTitle_Home"] = "FaunaFinder - Puerto Rico",
+        ["PageTitle_Map"] = "FaunaFinder - Puerto Rico",
         ["PageTitle_Species"] = "Especies - FaunaFinder",
         ["PageTitle_Pueblos"] = "Pueblos - FaunaFinder",
         ["PageTitle_About"] = "Acerca de - FaunaFinder",

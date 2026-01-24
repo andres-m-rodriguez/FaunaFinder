@@ -9,7 +9,7 @@
 @inject IAppLocalizer L
 @inject ISnackbar Snackbar
 
-<PageTitle>@L["PageTitle_Home"]</PageTitle>
+<PageTitle>@L["PageTitle_Map"]</PageTitle>
 
 <div class="map-page">
     <div class="map-container">
@@ -108,7 +108,7 @@
                     @if (species.Count == 0)
                     {
                         <MudAlert Severity="Severity.Info" Variant="Variant.Text" Class="ma-3">
-                            @L["Home_NoSpeciesData"]
+                            @L["Map_NoSpeciesData"]
                         </MudAlert>
                     }
                     else
@@ -121,7 +121,7 @@
                                 }
                                 else
                                 {
-                                    @string.Format(L["Home_SpeciesFound"], species.Count)
+                                    @string.Format(L["Map_SpeciesFound"], species.Count)
                                 }
                             </MudText>
 
@@ -150,7 +150,7 @@
 
                 <div class="sidebar-content pa-3">
                     <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mb-2">
-                        @string.Format(L["Home_SpeciesInDatabase"], allSpecies.Count)
+                        @string.Format(L["Map_SpeciesInDatabase"], allSpecies.Count)
                     </MudText>
 
                     <MudList T="SpeciesForSearchDto" Dense="true">
@@ -242,7 +242,7 @@
 
                 <div class="pa-4">
                     <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-4">
-                        @L["Home_ClickMunicipality"]
+                        @L["Map_ClickMunicipality"]
                     </MudText>
                     <MudButton Variant="Variant.Filled"
                                Color="Color.Primary"
@@ -365,7 +365,7 @@
                         @if (species.Count == 0)
                         {
                             <MudAlert Severity="Severity.Info" Variant="Variant.Text">
-                                @L["Home_NoSpeciesData"]
+                                @L["Map_NoSpeciesData"]
                             </MudAlert>
                         }
                         else
@@ -377,7 +377,7 @@
                                 }
                                 else
                                 {
-                                    @string.Format(L["Home_SpeciesFound"], species.Count)
+                                    @string.Format(L["Map_SpeciesFound"], species.Count)
                                 }
                             </MudText>
 
@@ -403,7 +403,7 @@
                 {
                     <MudContainer Class="pa-3" MaxWidth="MaxWidth.False">
                         <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mb-2">
-                            @string.Format(L["Home_SpeciesInDatabase"], allSpecies.Count)
+                            @string.Format(L["Map_SpeciesInDatabase"], allSpecies.Count)
                         </MudText>
 
                         <MudList T="SpeciesForSearchDto" Dense="true">
