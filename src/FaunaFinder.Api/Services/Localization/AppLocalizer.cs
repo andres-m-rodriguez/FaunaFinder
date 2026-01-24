@@ -1,3 +1,5 @@
+using FaunaFinder.Contracts.Localization;
+
 namespace FaunaFinder.Api.Services.Localization;
 
 public sealed class AppLocalizer : IAppLocalizer
@@ -26,5 +28,12 @@ public sealed class AppLocalizer : IAppLocalizer
             : Translations.English;
 
         OnLanguageChanged?.Invoke();
+    }
+
+    public string GetLocalizedValue(IEnumerable<LocaleValue> values)
+    {
+        var targetLocale = IsSpanish ? SupportedLocales.Spanish : SupportedLocales.English;
+        var value = values.FirstOrDefault(v => v.Code.StartsWith(targetLocale));
+        return value?.Value ?? values.FirstOrDefault()?.Value ?? string.Empty;
     }
 }

@@ -2,6 +2,7 @@ using FaunaFinder.Contracts.Dtos.FwsActions;
 using FaunaFinder.Contracts.Dtos.FwsLinks;
 using FaunaFinder.Contracts.Dtos.NrcsPractices;
 using FaunaFinder.Contracts.Dtos.Species;
+using FaunaFinder.Contracts.Localization;
 using FaunaFinder.Contracts.Parameters;
 using FaunaFinder.Database;
 using FaunaFinder.DataAccess.Interfaces;
@@ -22,10 +23,10 @@ public sealed class SpeciesRepository(
         return await context.MunicipalitySpecies
             .AsNoTracking()
             .Where(ms => ms.MunicipalityId == municipalityId)
-            .OrderBy(ms => ms.Species.CommonName)
+            .OrderBy(ms => ms.Species.ScientificName)
             .Select(ms => new SpeciesForListDto(
                 ms.Species.Id,
-                ms.Species.CommonName,
+                ms.Species.CommonName.ToList(),
                 ms.Species.ScientificName,
                 ms.Species.FwsLinks.Select(fl => new FwsLinkDto(
                     fl.Id,
@@ -40,10 +41,6 @@ public sealed class SpeciesRepository(
                         fl.FwsAction.Name
                     ),
                     fl.Justification
-                )).ToList(),
-                ms.Species.Translations.Select(t => new SpeciesTranslationDto(
-                    t.LanguageCode,
-                    t.CommonName
                 )).ToList()
             ))
             .ToListAsync(cancellationToken);
@@ -59,11 +56,11 @@ public sealed class SpeciesRepository(
         return await context.Species
             .AsNoTracking()
             .Where(s => s.Id == speciesId)
-            .Select(static s => new SpeciesForDetailDto(
+            .Select(s => new SpeciesForDetailDto(
                 s.Id,
-                s.CommonName,
+                s.CommonName.ToList(),
                 s.ScientificName,
-                s.FwsLinks.Select(static fl => new FwsLinkDto(
+                s.FwsLinks.Select(fl => new FwsLinkDto(
                     fl.Id,
                     new NrcsPracticeDto(
                         fl.NrcsPractice.Id,
@@ -85,18 +82,12 @@ public sealed class SpeciesRepository(
                     ))
                     .ToList(),
                 s.Locations
-                    .Select(static l => new SpeciesLocationDto(
+                    .Select(l => new SpeciesLocationDto(
                         l.Id,
                         l.Latitude,
                         l.Longitude,
                         l.RadiusMeters,
                         l.Description
-                    ))
-                    .ToList(),
-                s.Translations
-                    .Select(static t => new SpeciesTranslationDto(
-                        t.LanguageCode,
-                        t.CommonName
                     ))
                     .ToList()
             ))
@@ -116,7 +107,7 @@ public sealed class SpeciesRepository(
         {
             var search = parameters.Search.ToLower();
             query = query.Where(s =>
-                s.CommonName.ToLower().Contains(search) ||
+                s.CommonName.Any(cn => cn.Value.ToLower().Contains(search)) ||
                 s.ScientificName.ToLower().Contains(search));
         }
 
@@ -129,22 +120,16 @@ public sealed class SpeciesRepository(
 
         // Project and return with municipality names
         return await query
-            .OrderBy(static s => s.CommonName)
+            .OrderBy(s => s.ScientificName)
             .Skip(parameters.Page * parameters.PageSize)
             .Take(parameters.PageSize)
-            .Select(static s => new SpeciesForSearchDto(
+            .Select(s => new SpeciesForSearchDto(
                 s.Id,
-                s.CommonName,
+                s.CommonName.ToList(),
                 s.ScientificName,
                 s.MunicipalitySpecies
                     .Select(ms => ms.Municipality.Name)
                     .OrderBy(n => n)
-                    .ToList(),
-                s.Translations
-                    .Select(t => new SpeciesTranslationDto(
-                        t.LanguageCode,
-                        t.CommonName
-                    ))
                     .ToList()
             ))
             .ToListAsync(cancellationToken);
@@ -162,7 +147,7 @@ public sealed class SpeciesRepository(
         {
             var searchLower = search.ToLower();
             query = query.Where(s =>
-                s.CommonName.ToLower().Contains(searchLower) ||
+                s.CommonName.Any(cn => cn.Value.ToLower().Contains(searchLower)) ||
                 s.ScientificName.ToLower().Contains(searchLower));
         }
 
@@ -185,7 +170,7 @@ public sealed class SpeciesRepository(
             .Select(s => new
             {
                 s.Id,
-                s.CommonName,
+                CommonName = s.CommonName.ToList(),
                 s.ScientificName,
                 Locations = s.Locations.Select(l => new
                 {
@@ -193,11 +178,7 @@ public sealed class SpeciesRepository(
                     l.Longitude,
                     l.RadiusMeters,
                     l.Description
-                }).ToList(),
-                Translations = s.Translations.Select(t => new SpeciesTranslationDto(
-                    t.LanguageCode,
-                    t.CommonName
-                )).ToList()
+                }).ToList()
             })
             .ToListAsync(cancellationToken);
 
@@ -227,8 +208,7 @@ public sealed class SpeciesRepository(
                         location.Latitude,
                         location.Longitude,
                         location.RadiusMeters,
-                        location.Description,
-                        species.Translations
+                        location.Description
                     ));
                 }
             }

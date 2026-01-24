@@ -5,7 +5,7 @@
                    Class="mb-2 border-default">
     <TitleContent>
         <div>
-            <MudText Typo="Typo.subtitle2" Color="Color.Primary">@Species.CommonName</MudText>
+            <MudText Typo="Typo.subtitle2" Color="Color.Primary">@L.GetLocalizedValue(Species.CommonName)</MudText>
             <MudText Typo="Typo.caption" Color="Color.Secondary">
                 <em>@Species.ScientificName</em>
             </MudText>
@@ -14,7 +14,7 @@
     <ChildContent>
         @if (Species.FwsLinks.Any())
         {
-            <MudText Typo="Typo.overline" Color="Color.Primary" Class="mb-2">@L["Home_ConservationLinks"]</MudText>
+            <MudText Typo="Typo.overline" Color="Color.Primary" Class="mb-2">@L["Map_ConservationLinks"]</MudText>
             @foreach (var link in Species.FwsLinks)
             {
                 <MudPaper Elevation="0" Class="pa-2 mb-2 bg-subtle">
@@ -44,6 +44,9 @@
 </MudExpansionPanel>
 
 @code {
+    [CascadingParameter(Name = "LanguageRefresh")]
+    private int LanguageRefresh { get; set; }
+
     [Parameter, EditorRequired] public SpeciesForListDto Species { get; set; } = null!;
     [Parameter] public bool IsExpanded { get; set; }
     [Parameter] public EventCallback<bool> OnExpandedChanged { get; set; }

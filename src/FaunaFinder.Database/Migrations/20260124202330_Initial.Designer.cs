@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace FaunaFinder.Database.Migrations
 {
     [DbContext(typeof(FaunaFinderContext))]
-    [Migration("20260123061643_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20260124202330_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -212,12 +212,6 @@ namespace FaunaFinder.Database.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("CommonName")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)")
-                        .HasColumnName("common_name");
-
                     b.Property<string>("ScientificName")
                         .IsRequired()
                         .HasMaxLength(200)
@@ -226,9 +220,6 @@ namespace FaunaFinder.Database.Migrations
 
                     b.HasKey("Id")
                         .HasName("pk_species");
-
-                    b.HasIndex("CommonName")
-                        .HasDatabaseName("species_common_name_idx");
 
                     b.HasIndex("ScientificName")
                         .IsUnique()
@@ -325,6 +316,35 @@ namespace FaunaFinder.Database.Migrations
                     b.Navigation("Municipality");
 
                     b.Navigation("Species");
+                });
+
+            modelBuilder.Entity("FaunaFinder.Database.Models.Species.Species", b =>
+                {
+                    b.OwnsMany("FaunaFinder.Contracts.Localization.LocaleValue", "CommonName", b1 =>
+                        {
+                            b1.Property<int>("SpeciesId");
+
+                            b1.Property<int>("__synthesizedOrdinal")
+                                .ValueGeneratedOnAdd();
+
+                            b1.Property<string>("Code")
+                                .IsRequired();
+
+                            b1.Property<string>("Value")
+                                .IsRequired();
+
+                            b1.HasKey("SpeciesId", "__synthesizedOrdinal");
+
+                            b1.ToTable("species");
+
+                            b1.ToJson("common_name");
+
+                            b1.WithOwner()
+                                .HasForeignKey("SpeciesId")
+                                .HasConstraintName("fk_species_species_species_id");
+                        });
+
+                    b.Navigation("CommonName");
                 });
 
             modelBuilder.Entity("FaunaFinder.Database.Models.Species.SpeciesLocation", b =>

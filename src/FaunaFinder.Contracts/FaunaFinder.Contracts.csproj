@@ -6,4 +6,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\FaunaFinder.Contracts.Localization\FaunaFinder.Contracts.Localization.csproj" />
+  </ItemGroup>
+
 </Project>

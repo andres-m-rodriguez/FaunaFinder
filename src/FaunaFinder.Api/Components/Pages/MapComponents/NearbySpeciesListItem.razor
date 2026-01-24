@@ -8,7 +8,7 @@
                 <span class="species-color-dot" style="background-color: @Color;"></span>
             }
             <div>
-                <MudText Typo="Typo.subtitle2" Color="MudBlazor.Color.Primary">@Species.CommonName</MudText>
+                <MudText Typo="Typo.subtitle2" Color="MudBlazor.Color.Primary">@L.GetLocalizedValue(Species.CommonName)</MudText>
                 <MudText Typo="Typo.caption" Color="MudBlazor.Color.Secondary">
                     <em>@Species.ScientificName</em>
                 </MudText>
@@ -36,6 +36,9 @@
 </MudListItem>
 
 @code {
+    [CascadingParameter(Name = "LanguageRefresh")]
+    private int LanguageRefresh { get; set; }
+
     [Parameter, EditorRequired] public SpeciesNearbyDto Species { get; set; } = null!;
     [Parameter] public bool ShowColorDot { get; set; }
     [Parameter] public string? Color { get; set; }
