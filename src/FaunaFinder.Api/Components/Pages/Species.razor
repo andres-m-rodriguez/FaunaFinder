@@ -42,7 +42,7 @@
                 <MudItem xs="12" sm="6" md="4" lg="3">
                     <MudCard Elevation="2" Class="species-card" @onclick="() => NavigateToSpecies(s.Id)">
                         <MudCardContent>
-                            <MudText Typo="Typo.h6" Color="Color.Primary">@L.GetSpeciesName(s.CommonName, s.Translations)</MudText>
+                            <MudText Typo="Typo.h6" Color="Color.Primary">@L.GetLocalizedValue(s.CommonName)</MudText>
                             <MudText Typo="Typo.body2" Color="Color.Secondary" Class="font-italic">
                                 @s.ScientificName
                             </MudText>

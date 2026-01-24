@@ -1,4 +1,4 @@
-using FaunaFinder.Contracts.Dtos.Species;
+using FaunaFinder.Contracts.Localization;
 
 namespace FaunaFinder.Api.Services.Localization;
 
@@ -30,12 +30,10 @@ public sealed class AppLocalizer : IAppLocalizer
         OnLanguageChanged?.Invoke();
     }
 
-    public string GetSpeciesName(string englishName, IEnumerable<SpeciesTranslationDto>? translations)
+    public string GetLocalizedValue(IEnumerable<LocaleValue> values)
     {
-        if (!IsSpanish || translations is null)
-            return englishName;
-
-        var spanishTranslation = translations.FirstOrDefault(t => t.LanguageCode.StartsWith("es"));
-        return spanishTranslation?.CommonName ?? englishName;
+        var targetLocale = IsSpanish ? SupportedLocales.Spanish : SupportedLocales.English;
+        var value = values.FirstOrDefault(v => v.Code.StartsWith(targetLocale));
+        return value?.Value ?? values.FirstOrDefault()?.Value ?? string.Empty;
     }
 }

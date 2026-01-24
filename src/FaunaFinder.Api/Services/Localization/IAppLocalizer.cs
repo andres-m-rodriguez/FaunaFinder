@@ -1,4 +1,4 @@
-using FaunaFinder.Contracts.Dtos.Species;
+using FaunaFinder.Contracts.Localization;
 
 namespace FaunaFinder.Api.Services.Localization;
 
@@ -12,8 +12,8 @@ public interface IAppLocalizer
     event Action? OnLanguageChanged;
 
     /// <summary>
-    /// Gets the translated species name based on the current language setting.
-    /// Returns the translation if available, otherwise falls back to the English name.
+    /// Gets the localized value based on the current language setting.
+    /// Returns the translation if available, otherwise falls back to the default language.
     /// </summary>
-    string GetSpeciesName(string englishName, IEnumerable<SpeciesTranslationDto>? translations);
+    string GetLocalizedValue(IEnumerable<LocaleValue> values);
 }

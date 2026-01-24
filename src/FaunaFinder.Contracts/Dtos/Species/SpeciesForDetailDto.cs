@@ -1,15 +1,15 @@
 using FaunaFinder.Contracts.Dtos.FwsLinks;
+using FaunaFinder.Contracts.Localization;
 
 namespace FaunaFinder.Contracts.Dtos.Species;
 
 public sealed record SpeciesForDetailDto(
     int Id,
-    string CommonName,
+    List<LocaleValue> CommonName,
     string ScientificName,
     List<FwsLinkDto> FwsLinks,
     List<SpeciesMunicipalityDto> Municipalities,
-    List<SpeciesLocationDto> Locations,
-    List<SpeciesTranslationDto> Translations
+    List<SpeciesLocationDto> Locations
 );
 
 public sealed record SpeciesMunicipalityDto(

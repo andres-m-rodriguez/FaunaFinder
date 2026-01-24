@@ -157,7 +157,7 @@
                         @foreach (var s in allSpecies)
                         {
                             <MudListItem>
-                                <MudText Typo="Typo.subtitle2" Color="Color.Primary">@L.GetSpeciesName(s.CommonName, s.Translations)</MudText>
+                                <MudText Typo="Typo.subtitle2" Color="Color.Primary">@L.GetLocalizedValue(s.CommonName)</MudText>
                                 <MudText Typo="Typo.caption" Color="Color.Secondary">
                                     <em>@s.ScientificName</em>
                                 </MudText>
@@ -410,7 +410,7 @@
                             @foreach (var s in allSpecies)
                             {
                                 <MudListItem>
-                                    <MudText Typo="Typo.subtitle2" Color="Color.Primary">@L.GetSpeciesName(s.CommonName, s.Translations)</MudText>
+                                    <MudText Typo="Typo.subtitle2" Color="Color.Primary">@L.GetLocalizedValue(s.CommonName)</MudText>
                                     <MudText Typo="Typo.caption" Color="Color.Secondary">
                                         <em>@s.ScientificName</em>
                                     </MudText>
