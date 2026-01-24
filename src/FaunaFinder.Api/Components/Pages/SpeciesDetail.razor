@@ -122,6 +122,9 @@
 </MudContainer>
 
 @code {
+    [CascadingParameter(Name = "LanguageRefresh")]
+    private int LanguageRefresh { get; set; }
+
     [Parameter]
     public int Id { get; set; }
 

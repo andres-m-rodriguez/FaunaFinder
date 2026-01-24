@@ -36,6 +36,9 @@
 </MudListItem>
 
 @code {
+    [CascadingParameter(Name = "LanguageRefresh")]
+    private int LanguageRefresh { get; set; }
+
     [Parameter, EditorRequired] public SpeciesNearbyDto Species { get; set; } = null!;
     [Parameter] public bool ShowColorDot { get; set; }
     [Parameter] public string? Color { get; set; }

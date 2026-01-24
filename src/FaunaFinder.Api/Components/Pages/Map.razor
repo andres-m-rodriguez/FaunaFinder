@@ -527,6 +527,9 @@
                      OnClose="CloseFilterDialog" />
 
 @code {
+    [CascadingParameter(Name = "LanguageRefresh")]
+    private int LanguageRefresh { get; set; }
+
     [SupplyParameterFromQuery]
     public int? SpeciesId { get; set; }
 
@@ -608,8 +611,8 @@
             // Apply sorting
             filtered = currentSort switch
             {
-                SortOption.NameAZ => filtered.OrderBy(s => s.CommonName),
-                SortOption.NameZA => filtered.OrderByDescending(s => s.CommonName),
+                SortOption.NameAZ => filtered.OrderBy(s => L.GetLocalizedValue(s.CommonName)),
+                SortOption.NameZA => filtered.OrderByDescending(s => L.GetLocalizedValue(s.CommonName)),
                 SortOption.ScientificAZ => filtered.OrderBy(s => s.ScientificName),
                 SortOption.ScientificZA => filtered.OrderByDescending(s => s.ScientificName),
                 _ => filtered

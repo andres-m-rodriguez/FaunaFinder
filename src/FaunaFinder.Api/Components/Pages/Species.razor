@@ -75,6 +75,9 @@
 </MudContainer>
 
 @code {
+    [CascadingParameter(Name = "LanguageRefresh")]
+    private int LanguageRefresh { get; set; }
+
     private IReadOnlyList<SpeciesForSearchDto> species = [];
     private string searchTerm = string.Empty;
     private int currentPage = 0;

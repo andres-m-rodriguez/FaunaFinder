@@ -44,6 +44,9 @@
 </MudExpansionPanel>
 
 @code {
+    [CascadingParameter(Name = "LanguageRefresh")]
+    private int LanguageRefresh { get; set; }
+
     [Parameter, EditorRequired] public SpeciesForListDto Species { get; set; } = null!;
     [Parameter] public bool IsExpanded { get; set; }
     [Parameter] public EventCallback<bool> OnExpandedChanged { get; set; }
