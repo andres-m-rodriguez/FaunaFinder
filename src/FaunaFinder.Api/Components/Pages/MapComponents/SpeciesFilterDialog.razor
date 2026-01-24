@@ -1,0 +1,76 @@
+@inject IAppLocalizer L
+
+<MudDialog @bind-Visible="Visible" Options="new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true }">
+    <TitleContent>
+        <MudText Typo="Typo.h6">@L["Filter_Filters"]</MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudText Typo="Typo.subtitle2" Class="mb-2">@L["Filter_NrcsPractices"]</MudText>
+        <div class="d-flex flex-wrap gap-1 mb-4">
+            @foreach (var practice in AvailableNrcsPractices)
+            {
+                <MudChip T="string"
+                         Color="@(SelectedNrcsPractices.Contains(practice) ? Color.Primary : Color.Default)"
+                         Variant="@(SelectedNrcsPractices.Contains(practice) ? Variant.Filled : Variant.Outlined)"
+                         OnClick="() => ToggleNrcsPractice(practice)">
+                    @practice
+                </MudChip>
+            }
+        </div>
+
+        <MudText Typo="Typo.subtitle2" Class="mb-2">@L["Filter_FwsActions"]</MudText>
+        <div class="d-flex flex-wrap gap-1">
+            @foreach (var action in AvailableFwsActions)
+            {
+                <MudChip T="string"
+                         Color="@(SelectedFwsActions.Contains(action) ? Color.Secondary : Color.Default)"
+                         Variant="@(SelectedFwsActions.Contains(action) ? Variant.Filled : Variant.Outlined)"
+                         OnClick="() => ToggleFwsAction(action)">
+                    @action
+                </MudChip>
+            }
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="OnClearAll" Color="Color.Default">@L["Filter_ClearAll"]</MudButton>
+        <MudButton OnClick="OnApply" Color="Color.Primary" Variant="Variant.Filled">@L["Filter_Apply"]</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [Parameter] public bool Visible { get; set; }
+    [Parameter] public EventCallback<bool> VisibleChanged { get; set; }
+    [Parameter] public IEnumerable<string> AvailableNrcsPractices { get; set; } = [];
+    [Parameter] public IEnumerable<string> AvailableFwsActions { get; set; } = [];
+    [Parameter] public HashSet<string> SelectedNrcsPractices { get; set; } = new();
+    [Parameter] public HashSet<string> SelectedFwsActions { get; set; } = new();
+    [Parameter] public EventCallback OnClearFilters { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    private void ToggleNrcsPractice(string practice)
+    {
+        if (!SelectedNrcsPractices.Remove(practice))
+        {
+            SelectedNrcsPractices.Add(practice);
+        }
+    }
+
+    private void ToggleFwsAction(string action)
+    {
+        if (!SelectedFwsActions.Remove(action))
+        {
+            SelectedFwsActions.Add(action);
+        }
+    }
+
+    private async Task OnClearAll()
+    {
+        await OnClearFilters.InvokeAsync();
+    }
+
+    private async Task OnApply()
+    {
+        await VisibleChanged.InvokeAsync(false);
+        await OnClose.InvokeAsync();
+    }
+}

@@ -29,17 +29,17 @@ public static class TranslationKeys
     public const string Error_MunicipalityNotFound = "Error_MunicipalityNotFound";
     public const string MunicipalityNotFound = "MunicipalityNotFound";
 
-    // Home Page
-    public const string Home_ClickMunicipality = "Home_ClickMunicipality";
-    public const string Home_NoSpeciesData = "Home_NoSpeciesData";
-    public const string Home_SpeciesFound = "Home_SpeciesFound";
-    public const string Home_SpeciesInDatabase = "Home_SpeciesInDatabase";
-    public const string Home_ConservationLinks = "Home_ConservationLinks";
-    public const string Home_ClearLocations = "Home_ClearLocations";
-    public const string Home_LocationsFound = "Home_LocationsFound";
-    public const string Home_ViewAllLocations = "Home_ViewAllLocations";
-    public const string Home_BackToSpecies = "Home_BackToSpecies";
-    public const string Home_UnnamedLocation = "Home_UnnamedLocation";
+    // Map Page
+    public const string Map_ClickMunicipality = "Map_ClickMunicipality";
+    public const string Map_NoSpeciesData = "Map_NoSpeciesData";
+    public const string Map_SpeciesFound = "Map_SpeciesFound";
+    public const string Map_SpeciesInDatabase = "Map_SpeciesInDatabase";
+    public const string Map_ConservationLinks = "Map_ConservationLinks";
+    public const string Map_ClearLocations = "Map_ClearLocations";
+    public const string Map_LocationsFound = "Map_LocationsFound";
+    public const string Map_ViewAllLocations = "Map_ViewAllLocations";
+    public const string Map_BackToSpecies = "Map_BackToSpecies";
+    public const string Map_UnnamedLocation = "Map_UnnamedLocation";
 
     // Species Page
     public const string Species_Title = "Species_Title";
@@ -98,7 +98,7 @@ public static class TranslationKeys
     public const string Filter_NoMatches = "Filter_NoMatches";
 
     // Page Titles
-    public const string PageTitle_Home = "PageTitle_Home";
+    public const string PageTitle_Map = "PageTitle_Map";
     public const string PageTitle_Species = "PageTitle_Species";
     public const string PageTitle_Pueblos = "PageTitle_Pueblos";
     public const string PageTitle_About = "PageTitle_About";
