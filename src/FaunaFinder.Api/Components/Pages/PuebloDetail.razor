@@ -62,7 +62,7 @@
                         <TitleContent>
                             <div class="d-flex flex-column flex-sm-row align-start align-sm-center justify-space-between" style="width: 100%;">
                                 <div class="d-flex flex-column flex-sm-row align-start align-sm-center">
-                                    <MudText Typo="Typo.subtitle1" Color="Color.Primary" Class="mr-4">@s.CommonName</MudText>
+                                    <MudText Typo="Typo.subtitle1" Color="Color.Primary" Class="mr-4">@L.GetSpeciesName(s.CommonName, s.Translations)</MudText>
                                     <MudText Typo="Typo.body2" Color="Color.Secondary">
                                         <em>@s.ScientificName</em>
                                     </MudText>

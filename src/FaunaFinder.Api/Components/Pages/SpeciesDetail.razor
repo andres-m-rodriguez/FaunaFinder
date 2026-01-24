@@ -4,7 +4,7 @@
 @inject NavigationManager NavigationManager
 @inject IAppLocalizer L
 
-<PageTitle>@(species?.CommonName ?? L["Nav_Species"]) - FaunaFinder</PageTitle>
+<PageTitle>@(species != null ? L.GetSpeciesName(species.CommonName, species.Translations) : L["Nav_Species"]) - FaunaFinder</PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.Large" Class="py-6">
     @* Back Navigation *@
@@ -32,7 +32,7 @@
     {
         @* Species Header *@
         <MudPaper Elevation="2" Class="pa-4 mb-6">
-            <MudText Typo="Typo.h4" Color="Color.Primary" GutterBottom="true">@species.CommonName</MudText>
+            <MudText Typo="Typo.h4" Color="Color.Primary" GutterBottom="true">@L.GetSpeciesName(species.CommonName, species.Translations)</MudText>
             <MudText Typo="Typo.h6" Color="Color.Secondary" Class="font-italic">@species.ScientificName</MudText>
             <div class="d-flex align-center mt-3">
                 <MudIcon Icon="@Icons.Material.Filled.LocationOn" Size="Size.Medium" Color="Color.Secondary" Class="mr-2" />

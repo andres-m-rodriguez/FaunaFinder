@@ -8,7 +8,7 @@
                 <span class="species-color-dot" style="background-color: @Color;"></span>
             }
             <div>
-                <MudText Typo="Typo.subtitle2" Color="MudBlazor.Color.Primary">@Species.CommonName</MudText>
+                <MudText Typo="Typo.subtitle2" Color="MudBlazor.Color.Primary">@L.GetSpeciesName(Species.CommonName, Species.Translations)</MudText>
                 <MudText Typo="Typo.caption" Color="MudBlazor.Color.Secondary">
                     <em>@Species.ScientificName</em>
                 </MudText>

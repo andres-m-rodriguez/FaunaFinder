@@ -3,7 +3,7 @@
 <div class="location-nav-overlay">
     <div class="location-nav-header">
         <MudIcon Icon="@Icons.Material.Filled.MyLocation" Size="Size.Small" Class="mr-2" />
-        <MudText Typo="Typo.body2" Style="font-weight: 500;">@Species.CommonName</MudText>
+        <MudText Typo="Typo.body2" Style="font-weight: 500;">@L.GetSpeciesName(Species.CommonName, Species.Translations)</MudText>
         <MudSpacer />
         <MudButton Variant="Variant.Text"
                    Size="Size.Small"
@@ -23,7 +23,7 @@
                        OnClick="OnPrevious" />
         <div class="location-nav-info" @onclick="OnFocusCurrent">
             <MudText Typo="Typo.body1" Align="Align.Center">
-                @(CurrentLocation.Description ?? L["Home_UnnamedLocation"])
+                @(CurrentLocation.Description ?? L["Map_UnnamedLocation"])
             </MudText>
             <MudText Typo="Typo.caption" Color="Color.Secondary" Align="Align.Center">
                 @($"{CurrentIndex + 1} / {Species.Locations.Count}") &bull; @($"{CurrentLocation.RadiusMeters:N0}m radius")
