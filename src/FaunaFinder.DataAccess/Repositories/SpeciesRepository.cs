@@ -23,12 +23,10 @@ public sealed class SpeciesRepository(
         return await context.MunicipalitySpecies
             .AsNoTracking()
             .Where(ms => ms.MunicipalityId == municipalityId)
-            .OrderBy(ms => ms.Species.CommonName)
+            .OrderBy(ms => ms.Species.ScientificName)
             .Select(ms => new SpeciesForListDto(
                 ms.Species.Id,
-                new List<LocaleValue> { new(SupportedLocales.English, ms.Species.CommonName) }
-                    .Concat(ms.Species.Translations.Select(t => new LocaleValue(t.LanguageCode, t.CommonName)))
-                    .ToList(),
+                ms.Species.CommonName.ToList(),
                 ms.Species.ScientificName,
                 ms.Species.FwsLinks.Select(fl => new FwsLinkDto(
                     fl.Id,
@@ -60,9 +58,7 @@ public sealed class SpeciesRepository(
             .Where(s => s.Id == speciesId)
             .Select(s => new SpeciesForDetailDto(
                 s.Id,
-                new List<LocaleValue> { new(SupportedLocales.English, s.CommonName) }
-                    .Concat(s.Translations.Select(t => new LocaleValue(t.LanguageCode, t.CommonName)))
-                    .ToList(),
+                s.CommonName.ToList(),
                 s.ScientificName,
                 s.FwsLinks.Select(fl => new FwsLinkDto(
                     fl.Id,
@@ -111,7 +107,7 @@ public sealed class SpeciesRepository(
         {
             var search = parameters.Search.ToLower();
             query = query.Where(s =>
-                s.CommonName.ToLower().Contains(search) ||
+                s.CommonName.Any(cn => cn.Value.ToLower().Contains(search)) ||
                 s.ScientificName.ToLower().Contains(search));
         }
 
@@ -124,14 +120,12 @@ public sealed class SpeciesRepository(
 
         // Project and return with municipality names
         return await query
-            .OrderBy(s => s.CommonName)
+            .OrderBy(s => s.ScientificName)
             .Skip(parameters.Page * parameters.PageSize)
             .Take(parameters.PageSize)
             .Select(s => new SpeciesForSearchDto(
                 s.Id,
-                new List<LocaleValue> { new(SupportedLocales.English, s.CommonName) }
-                    .Concat(s.Translations.Select(t => new LocaleValue(t.LanguageCode, t.CommonName)))
-                    .ToList(),
+                s.CommonName.ToList(),
                 s.ScientificName,
                 s.MunicipalitySpecies
                     .Select(ms => ms.Municipality.Name)
@@ -153,7 +147,7 @@ public sealed class SpeciesRepository(
         {
             var searchLower = search.ToLower();
             query = query.Where(s =>
-                s.CommonName.ToLower().Contains(searchLower) ||
+                s.CommonName.Any(cn => cn.Value.ToLower().Contains(searchLower)) ||
                 s.ScientificName.ToLower().Contains(searchLower));
         }
 
@@ -176,7 +170,7 @@ public sealed class SpeciesRepository(
             .Select(s => new
             {
                 s.Id,
-                s.CommonName,
+                CommonName = s.CommonName.ToList(),
                 s.ScientificName,
                 Locations = s.Locations.Select(l => new
                 {
@@ -184,11 +178,7 @@ public sealed class SpeciesRepository(
                     l.Longitude,
                     l.RadiusMeters,
                     l.Description
-                }).ToList(),
-                Translations = s.Translations.Select(t => new LocaleValue(
-                    t.LanguageCode,
-                    t.CommonName
-                )).ToList()
+                }).ToList()
             })
             .ToListAsync(cancellationToken);
 
@@ -212,7 +202,7 @@ public sealed class SpeciesRepository(
                 {
                     results.Add(new SpeciesNearbyDto(
                         species.Id,
-                        [new LocaleValue(SupportedLocales.English, species.CommonName), ..species.Translations],
+                        species.CommonName,
                         species.ScientificName,
                         distance,
                         location.Latitude,
