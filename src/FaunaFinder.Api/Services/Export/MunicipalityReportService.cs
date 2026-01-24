@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text;
+using FaunaFinder.Api.Services.Localization;
 using FaunaFinder.Contracts.Dtos.Species;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
@@ -7,8 +8,9 @@ using QuestPDF.Infrastructure;
 
 namespace FaunaFinder.Api.Services.Export;
 
-public class MunicipalityReportService : IMunicipalityReportService
+public class MunicipalityReportService(IAppLocalizer localizer) : IMunicipalityReportService
 {
+    private readonly IAppLocalizer _localizer = localizer;
     public byte[] GeneratePdfReport(string municipalityName, IReadOnlyList<SpeciesForListDto> species)
     {
         var document = Document.Create(container =>
@@ -83,7 +85,7 @@ public class MunicipalityReportService : IMunicipalityReportService
                 {
                     row.RelativeItem().Column(col =>
                     {
-                        col.Item().Text(species.CommonName)
+                        col.Item().Text(_localizer.GetLocalizedValue(species.CommonName))
                             .Bold().FontSize(12).FontColor(Colors.Green.Darken3);
                         col.Item().Text(species.ScientificName)
                             .Italic().FontSize(10).FontColor(Colors.Grey.Darken1);
@@ -156,14 +158,14 @@ public class MunicipalityReportService : IMunicipalityReportService
             if (s.FwsLinks.Count == 0)
             {
                 // Species with no conservation links
-                sb.AppendLine($"{EscapeCsv(municipalityName)},{EscapeCsv(s.CommonName)},{EscapeCsv(s.ScientificName)},,,,");
+                sb.AppendLine($"{EscapeCsv(municipalityName)},{EscapeCsv(_localizer.GetLocalizedValue(s.CommonName))},{EscapeCsv(s.ScientificName)},,,,");
             }
             else
             {
                 // One row per conservation link
                 foreach (var link in s.FwsLinks)
                 {
-                    sb.AppendLine($"{EscapeCsv(municipalityName)},{EscapeCsv(s.CommonName)},{EscapeCsv(s.ScientificName)},{EscapeCsv(link.NrcsPractice.Code)},{EscapeCsv(link.NrcsPractice.Name)},{EscapeCsv(link.FwsAction.Code)},{EscapeCsv(link.FwsAction.Name)},{EscapeCsv(link.Justification ?? "")}");
+                    sb.AppendLine($"{EscapeCsv(municipalityName)},{EscapeCsv(_localizer.GetLocalizedValue(s.CommonName))},{EscapeCsv(s.ScientificName)},{EscapeCsv(link.NrcsPractice.Code)},{EscapeCsv(link.NrcsPractice.Name)},{EscapeCsv(link.FwsAction.Code)},{EscapeCsv(link.FwsAction.Name)},{EscapeCsv(link.Justification ?? "")}");
                 }
             }
         }

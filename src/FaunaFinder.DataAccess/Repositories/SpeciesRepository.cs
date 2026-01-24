@@ -26,8 +26,9 @@ public sealed class SpeciesRepository(
             .OrderBy(ms => ms.Species.CommonName)
             .Select(ms => new SpeciesForListDto(
                 ms.Species.Id,
-                [new LocaleValue(SupportedLocales.English, ms.Species.CommonName),
-                    ..ms.Species.Translations.Select(t => new LocaleValue(t.LanguageCode, t.CommonName))],
+                new List<LocaleValue> { new(SupportedLocales.English, ms.Species.CommonName) }
+                    .Concat(ms.Species.Translations.Select(t => new LocaleValue(t.LanguageCode, t.CommonName)))
+                    .ToList(),
                 ms.Species.ScientificName,
                 ms.Species.FwsLinks.Select(fl => new FwsLinkDto(
                     fl.Id,
@@ -59,8 +60,9 @@ public sealed class SpeciesRepository(
             .Where(s => s.Id == speciesId)
             .Select(s => new SpeciesForDetailDto(
                 s.Id,
-                [new LocaleValue(SupportedLocales.English, s.CommonName),
-                    ..s.Translations.Select(t => new LocaleValue(t.LanguageCode, t.CommonName))],
+                new List<LocaleValue> { new(SupportedLocales.English, s.CommonName) }
+                    .Concat(s.Translations.Select(t => new LocaleValue(t.LanguageCode, t.CommonName)))
+                    .ToList(),
                 s.ScientificName,
                 s.FwsLinks.Select(fl => new FwsLinkDto(
                     fl.Id,
@@ -127,8 +129,9 @@ public sealed class SpeciesRepository(
             .Take(parameters.PageSize)
             .Select(s => new SpeciesForSearchDto(
                 s.Id,
-                [new LocaleValue(SupportedLocales.English, s.CommonName),
-                    ..s.Translations.Select(t => new LocaleValue(t.LanguageCode, t.CommonName))],
+                new List<LocaleValue> { new(SupportedLocales.English, s.CommonName) }
+                    .Concat(s.Translations.Select(t => new LocaleValue(t.LanguageCode, t.CommonName)))
+                    .ToList(),
                 s.ScientificName,
                 s.MunicipalitySpecies
                     .Select(ms => ms.Municipality.Name)
