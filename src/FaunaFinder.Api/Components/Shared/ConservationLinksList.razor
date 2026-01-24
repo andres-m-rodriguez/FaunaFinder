@@ -1,0 +1,48 @@
+@inject IAppLocalizer L
+
+@if (Links.Any())
+{
+    @if (ShowTitle)
+    {
+        <MudText Typo="Typo.overline" Color="Color.Primary" Class="mb-2">@L["Map_ConservationLinks"]</MudText>
+    }
+
+    @if (UseGrid)
+    {
+        <MudGrid Spacing="2">
+            @foreach (var link in Links)
+            {
+                <MudItem xs="12" md="6">
+                    <ConservationLinkCard Link="link" />
+                </MudItem>
+            }
+        </MudGrid>
+    }
+    else
+    {
+        @foreach (var link in Links)
+        {
+            <ConservationLinkCard Link="link" />
+        }
+    }
+}
+else if (ShowEmptyMessage)
+{
+    <MudText Typo="Typo.body2" Color="Color.Secondary">
+        @L["PuebloDetail_NoConservationLinks"]
+    </MudText>
+}
+
+@code {
+    [Parameter, EditorRequired]
+    public IEnumerable<FwsLinkDto> Links { get; set; } = [];
+
+    [Parameter]
+    public bool ShowTitle { get; set; } = true;
+
+    [Parameter]
+    public bool UseGrid { get; set; }
+
+    [Parameter]
+    public bool ShowEmptyMessage { get; set; }
+}
