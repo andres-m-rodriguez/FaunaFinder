@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace FaunaFinder.Database.Migrations
 {
     [DbContext(typeof(FaunaFinderContext))]
-    [Migration("20260124194933_StoreSpeciesCommonNameAsJson")]
-    partial class StoreSpeciesCommonNameAsJson
+    [Migration("20260124202330_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

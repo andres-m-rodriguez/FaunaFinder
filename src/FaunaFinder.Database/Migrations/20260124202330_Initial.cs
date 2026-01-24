@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace FaunaFinder.Database.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class Initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -64,8 +64,8 @@ namespace FaunaFinder.Database.Migrations
                 {
                     id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    common_name = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
-                    scientific_name = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false)
+                    scientific_name = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    common_name = table.Column<string>(type: "jsonb", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -210,11 +210,6 @@ namespace FaunaFinder.Database.Migrations
                 table: "nrcs_practices",
                 column: "code",
                 unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "species_common_name_idx",
-                table: "species",
-                column: "common_name");
 
             migrationBuilder.CreateIndex(
                 name: "species_scientific_name_uidx",
