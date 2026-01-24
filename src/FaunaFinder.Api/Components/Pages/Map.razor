@@ -153,15 +153,13 @@
                         @string.Format(L["Map_SpeciesInDatabase"], allSpecies.Count)
                     </MudText>
 
-                    <MudList T="SpeciesForSearchDto" Dense="true">
+                    <MudList T="string" Dense="true">
                         @foreach (var s in allSpecies)
                         {
-                            <MudListItem>
-                                <MudText Typo="Typo.subtitle2" Color="Color.Primary">@L.GetLocalizedValue(s.CommonName)</MudText>
-                                <MudText Typo="Typo.caption" Color="Color.Secondary">
-                                    <em>@s.ScientificName</em>
-                                </MudText>
-                            </MudListItem>
+                            <SpeciesListItem CommonName="s.CommonName"
+                                             ScientificName="s.ScientificName"
+                                             ShowDetailsButton="true"
+                                             OnDetailsClick="@(() => NavigateToSpeciesDetail(s.Id))" />
                         }
                     </MudList>
                 </div>
@@ -406,15 +404,13 @@
                             @string.Format(L["Map_SpeciesInDatabase"], allSpecies.Count)
                         </MudText>
 
-                        <MudList T="SpeciesForSearchDto" Dense="true">
+                        <MudList T="string" Dense="true">
                             @foreach (var s in allSpecies)
                             {
-                                <MudListItem>
-                                    <MudText Typo="Typo.subtitle2" Color="Color.Primary">@L.GetLocalizedValue(s.CommonName)</MudText>
-                                    <MudText Typo="Typo.caption" Color="Color.Secondary">
-                                        <em>@s.ScientificName</em>
-                                    </MudText>
-                                </MudListItem>
+                                <SpeciesListItem CommonName="s.CommonName"
+                                                 ScientificName="s.ScientificName"
+                                                 ShowDetailsButton="true"
+                                                 OnDetailsClick="@(() => NavigateToSpeciesDetail(s.Id))" />
                             }
                         </MudList>
                     </MudContainer>

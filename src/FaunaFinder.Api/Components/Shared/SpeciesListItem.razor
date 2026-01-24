@@ -1,0 +1,42 @@
+@inject IAppLocalizer L
+
+<MudListItem T="string" OnClick="OnClick">
+    <div class="d-flex justify-space-between align-center">
+        <div>
+            <MudText Typo="Typo.subtitle2" Color="Color.Primary">@L.GetLocalizedValue(CommonName)</MudText>
+            <MudText Typo="Typo.caption" Color="Color.Secondary">
+                <em>@ScientificName</em>
+            </MudText>
+        </div>
+        @if (ShowDetailsButton && OnDetailsClick.HasDelegate)
+        {
+            <MudButton Variant="Variant.Text"
+                       Size="Size.Small"
+                       EndIcon="@Icons.Material.Filled.ChevronRight"
+                       OnClick="OnDetailsClick"
+                       Color="Color.Primary">
+                @L["Details"]
+            </MudButton>
+        }
+    </div>
+</MudListItem>
+
+@code {
+    [CascadingParameter(Name = "LanguageRefresh")]
+    private int LanguageRefresh { get; set; }
+
+    [Parameter, EditorRequired]
+    public List<LocaleValue> CommonName { get; set; } = [];
+
+    [Parameter, EditorRequired]
+    public string ScientificName { get; set; } = string.Empty;
+
+    [Parameter]
+    public EventCallback OnClick { get; set; }
+
+    [Parameter]
+    public bool ShowDetailsButton { get; set; }
+
+    [Parameter]
+    public EventCallback OnDetailsClick { get; set; }
+}

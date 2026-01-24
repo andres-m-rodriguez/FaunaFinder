@@ -56,69 +56,14 @@
             <MudExpansionPanels MultiExpansion="false" Elevation="1">
                 @foreach (var s in species)
                 {
-                    <MudExpansionPanel Expanded="@(expandedSpeciesId == s.Id)"
-                                       ExpandedChanged="@((bool expanded) => ToggleSpecies(s.Id, expanded))"
-                                       Class="mb-2 pa-2">
-                        <TitleContent>
-                            <div class="d-flex flex-column flex-sm-row align-start align-sm-center justify-space-between" style="width: 100%;">
-                                <div class="d-flex flex-column flex-sm-row align-start align-sm-center">
-                                    <MudText Typo="Typo.subtitle1" Color="Color.Primary" Class="mr-4">@L.GetLocalizedValue(s.CommonName)</MudText>
-                                    <MudText Typo="Typo.body2" Color="Color.Secondary">
-                                        <em>@s.ScientificName</em>
-                                    </MudText>
-                                </div>
-                                <div @onclick:stopPropagation="true">
-                                    <MudButton Variant="Variant.Text"
-                                               Color="Color.Primary"
-                                               Size="Size.Small"
-                                               EndIcon="@Icons.Material.Filled.OpenInNew"
-                                               OnClick="@(() => NavigateToSpecies(s.Id))">
-                                        @L["ViewDetails"]
-                                    </MudButton>
-                                </div>
-                            </div>
-                        </TitleContent>
-                        <ChildContent>
-                            @if (s.FwsLinks.Any())
-                            {
-                                <MudText Typo="Typo.overline" Color="Color.Primary" Class="mb-3">@L["Map_ConservationLinks"]</MudText>
-                                <MudGrid Spacing="2">
-                                    @foreach (var link in s.FwsLinks)
-                                    {
-                                        <MudItem xs="12" md="6">
-                                            <MudPaper Elevation="0" Class="pa-3 bg-subtle">
-                                                <div class="d-flex flex-wrap align-start gap-2 mb-2">
-                                                    <MudChip T="string" Size="Size.Small" Color="Color.Primary" Variant="Variant.Filled">
-                                                        NRCS @link.NrcsPractice.Code
-                                                    </MudChip>
-                                                    <MudText Typo="Typo.body2">@link.NrcsPractice.Name</MudText>
-                                                </div>
-                                                <div class="d-flex flex-wrap align-start gap-2 mb-2">
-                                                    <MudChip T="string" Size="Size.Small" Color="Color.Secondary" Variant="Variant.Filled">
-                                                        FWS @link.FwsAction.Code
-                                                    </MudChip>
-                                                    <MudText Typo="Typo.body2">@link.FwsAction.Name</MudText>
-                                                </div>
-                                                @if (!string.IsNullOrEmpty(link.Justification))
-                                                {
-                                                    <MudDivider Class="my-2" />
-                                                    <MudText Typo="Typo.caption" Color="Color.Secondary">
-                                                        @link.Justification
-                                                    </MudText>
-                                                }
-                                            </MudPaper>
-                                        </MudItem>
-                                    }
-                                </MudGrid>
-                            }
-                            else
-                            {
-                                <MudText Typo="Typo.body2" Color="Color.Secondary">
-                                    @L["PuebloDetail_NoConservationLinks"]
-                                </MudText>
-                            }
-                        </ChildContent>
-                    </MudExpansionPanel>
+                    <SpeciesExpansionPanel Species="s"
+                                           IsExpanded="@(expandedSpeciesId == s.Id)"
+                                           OnExpandedChanged="@((bool expanded) => ToggleSpecies(s.Id, expanded))"
+                                           ShowViewDetails="true"
+                                           OnViewDetails="@(() => NavigateToSpecies(s.Id))"
+                                           UseGridLayout="true"
+                                           ShowEmptyMessage="true"
+                                           TitleTypo="Typo.subtitle1" />
                 }
             </MudExpansionPanels>
         }
