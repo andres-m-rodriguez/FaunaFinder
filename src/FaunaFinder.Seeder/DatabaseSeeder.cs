@@ -15,7 +15,18 @@ public static class DatabaseSeeder
 {
     public static async Task SeedAsync(FaunaFinderContext context, CancellationToken cancellationToken = default)
     {
-        if (await context.Municipalities.AnyAsync(cancellationToken))
+        // Check if we need to seed boundaries for existing municipalities
+        var hasMunicipalities = await context.Municipalities.AnyAsync(cancellationToken);
+        var hasBoundaries = await context.Municipalities.AnyAsync(m => m.Boundary != null, cancellationToken);
+
+        if (hasMunicipalities && !hasBoundaries)
+        {
+            // Municipalities exist but boundaries are missing - seed them
+            await SeedMunicipalityBoundariesAsync(context, cancellationToken);
+            return;
+        }
+
+        if (hasMunicipalities)
             return;
 
         // === MUNICIPALITIES ===
@@ -399,6 +410,8 @@ public static class DatabaseSeeder
             if (municipalityLookup.TryGetValue(geoJsonId, out var municipality))
             {
                 municipality.Boundary = feature.Geometry;
+                // Explicitly mark the entity as modified so EF Core saves the boundary
+                context.Entry(municipality).State = EntityState.Modified;
             }
         }
 

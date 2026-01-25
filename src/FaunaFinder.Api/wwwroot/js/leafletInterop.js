@@ -237,14 +237,14 @@ window.leafletInterop = {
         fetch(apiUrl)
             .then(r => {
                 if (!r.ok)
-                    throw new Error('HTTP ' + r.status + ': ' + r.statusText);
+                    throw new Error('API returned ' + r.status);
                 return r.json();
             })
             .then((data) => {
                 if (data.features && data.features.length > 0) {
                     processGeoJson(data);
                 } else {
-                    throw new Error('No features in GeoJSON');
+                    throw new Error('No features in API response');
                 }
             })
             .catch((err) => {

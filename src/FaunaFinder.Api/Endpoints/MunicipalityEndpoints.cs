@@ -69,10 +69,7 @@ public static class MunicipalityEndpoints
 
             var featureCollection = new { type = "FeatureCollection", features };
 
-            var jsonOptions = new JsonSerializerOptions
-            {
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-            };
+            var jsonOptions = new JsonSerializerOptions();
             jsonOptions.Converters.Add(new GeoJsonConverterFactory());
 
             return Results.Json(featureCollection, jsonOptions, contentType: "application/geo+json");
