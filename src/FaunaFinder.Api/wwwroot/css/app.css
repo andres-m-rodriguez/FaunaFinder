@@ -341,7 +341,7 @@ code {
     display: flex;
     align-items: center;
     padding: 12px 4px 12px 0;
-    padding-top: 56px; /* Account for navbar (48px) + extra spacing on mobile */
+    padding-top: calc(env(safe-area-inset-top, 0px) + 64px); /* Safe area for notches + navbar (48px) + extra spacing */
     border-bottom: 1px solid var(--mud-palette-lines-default);
     position: sticky;
     top: 0;
