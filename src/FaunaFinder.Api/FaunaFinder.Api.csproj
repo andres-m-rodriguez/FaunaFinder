@@ -1,5 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
+  <Target Name="CompileTypeScript" BeforeTargets="BeforeBuild">
+    <Exec Command="npm install" WorkingDirectory="wwwroot/js" />
+    <Exec Command="npm run build" WorkingDirectory="wwwroot/js" />
+  </Target>
+
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
