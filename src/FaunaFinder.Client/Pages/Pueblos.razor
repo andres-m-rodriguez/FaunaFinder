@@ -1,5 +1,4 @@
 @page "/pueblos"
-@using BlazingSingularity.Commands
 @inject IMunicipalityService MunicipalityService
 @inject NavigationManager NavigationManager
 @inject IAppLocalizer L
@@ -22,11 +21,17 @@
                   OnDebounceIntervalElapsed="OnSearchChanged"
                   Class="mb-4" />
 
-    @if (LoadMunicipalitiesCommand.IsLoading)
+    @* Municipalities Grid *@
+    @if (isLoadingMunicipalities)
     {
-        <MudContainer Class="d-flex justify-center py-8">
-            <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
-        </MudContainer>
+        <MudGrid Spacing="3">
+            @for (int i = 0; i < 8; i++)
+            {
+                <MudItem xs="12" sm="6" md="4" lg="3">
+                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="80px" Class="rounded" />
+                </MudItem>
+            }
+        </MudGrid>
     }
     else if (municipalities.Count == 0)
     {
@@ -54,20 +59,40 @@
                 </MudItem>
             }
         </MudGrid>
+    }
 
+    @* Pagination - show skeleton while count is loading *@
+    @if (municipalities.Count > 0 || isLoadingMunicipalities)
+    {
         <div class="d-flex justify-center mt-6">
-            <MudPagination Count="@totalPages"
-                          Selected="@(currentPage + 1)"
-                          SelectedChanged="OnPageChanged"
-                          Color="Color.Primary"
-                          Variant="Variant.Filled"
-                          ShowFirstButton="true"
-                          ShowLastButton="true" />
+            @if (isLoadingCount)
+            {
+                <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="40px" Width="300px" Class="rounded" />
+            }
+            else
+            {
+                <MudPagination Count="@totalPages"
+                              Selected="@(currentPage + 1)"
+                              SelectedChanged="OnPageChanged"
+                              Color="Color.Primary"
+                              Variant="Variant.Filled"
+                              ShowFirstButton="true"
+                              ShowLastButton="true" />
+            }
         </div>
 
-        <MudText Typo="Typo.caption" Color="Color.Secondary" Align="Align.Center" Class="mt-2">
-            @L["Pueblos_Showing", (currentPage * pageSize) + 1, Math.Min((currentPage + 1) * pageSize, totalCount), totalCount]
-        </MudText>
+        <div class="d-flex justify-center mt-2">
+            @if (isLoadingCount)
+            {
+                <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="20px" Width="200px" Class="rounded" />
+            }
+            else
+            {
+                <MudText Typo="Typo.caption" Color="Color.Secondary" Align="Align.Center">
+                    @L["Pueblos_Showing", (currentPage * pageSize) + 1, Math.Min((currentPage + 1) * pageSize, totalCount), totalCount]
+                </MudText>
+            }
+        </div>
     }
 </MudContainer>
 
@@ -79,13 +104,26 @@
     private int totalCount = 0;
     private int totalPages = 0;
 
+    private bool isLoadingMunicipalities = true;
+    private bool isLoadingCount = true;
+
     protected override async Task OnInitializedAsync()
     {
-        await LoadMunicipalitiesCommand.ExecuteAsync();
+        await LoadDataAsync();
     }
 
-    [RelayCommand]
-    private async Task LoadMunicipalities()
+    private async Task LoadDataAsync()
+    {
+        isLoadingMunicipalities = true;
+        isLoadingCount = true;
+
+        var municipalitiesTask = LoadMunicipalitiesAsync();
+        var countTask = LoadCountAsync();
+
+        await Task.WhenAll(municipalitiesTask, countTask);
+    }
+
+    private async Task LoadMunicipalitiesAsync()
     {
         var parameters = new MunicipalityParameters(
             PageSize: pageSize,
@@ -94,22 +132,30 @@
         );
 
         municipalities = await MunicipalityService.GetMunicipalitiesWithSpeciesCountAsync(parameters);
+        isLoadingMunicipalities = false;
+        StateHasChanged();
+    }
+
+    private async Task LoadCountAsync()
+    {
         totalCount = await MunicipalityService.GetTotalMunicipalitiesCountAsync(
             string.IsNullOrWhiteSpace(searchTerm) ? null : searchTerm
         );
         totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
+        isLoadingCount = false;
+        StateHasChanged();
     }
 
     private async Task OnSearchChanged()
     {
         currentPage = 0;
-        await LoadMunicipalitiesCommand.ExecuteAsync();
+        await LoadDataAsync();
     }
 
     private async Task OnPageChanged(int page)
     {
         currentPage = page - 1;
-        await LoadMunicipalitiesCommand.ExecuteAsync();
+        await LoadDataAsync();
     }
 
     private void NavigateToDetail(int municipalityId)
