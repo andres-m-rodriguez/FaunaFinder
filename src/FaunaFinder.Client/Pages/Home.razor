@@ -671,7 +671,7 @@
                 description = l.Description
             }).ToArray();
 
-            await JS.InvokeVoidAsync("leafletInterop.showSpeciesLocations", viewingSpeciesLocations.CommonName, locations);
+            await JS.InvokeVoidAsync("leafletInterop.showSpeciesLocations", L.GetLocalizedValue(viewingSpeciesLocations.CommonName), locations);
 
             // Focus on the first location
             await JS.InvokeVoidAsync("leafletInterop.focusOnLocation", 0);
