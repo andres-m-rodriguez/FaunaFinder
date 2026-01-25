@@ -1,5 +1,4 @@
 @page "/species"
-@using BlazingSingularity.Commands
 @inject ISpeciesService SpeciesService
 @inject NavigationManager NavigationManager
 @inject IAppLocalizer L
@@ -22,12 +21,17 @@
                   OnDebounceIntervalElapsed="OnSearchChanged"
                   Class="mb-4" />
 
-    @if (LoadSpeciesCommand.IsLoading)
+    @* Species Grid *@
+    @if (isLoadingSpecies)
     {
-        @for (int i = 0; i < 8; i++)
-        {
-            <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="60px" Class="mb-3 rounded" />
-        }
+        <MudGrid Spacing="3">
+            @for (int i = 0; i < 8; i++)
+            {
+                <MudItem xs="12" sm="6" md="4" lg="3">
+                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="100px" Class="rounded" />
+                </MudItem>
+            }
+        </MudGrid>
     }
     else if (species.Count == 0)
     {
@@ -58,20 +62,40 @@
                 </MudItem>
             }
         </MudGrid>
+    }
 
+    @* Pagination - show skeleton while count is loading *@
+    @if (species.Count > 0 || isLoadingSpecies)
+    {
         <div class="d-flex justify-center mt-6">
-            <MudPagination Count="@totalPages"
-                          Selected="@(currentPage + 1)"
-                          SelectedChanged="OnPageChanged"
-                          Color="Color.Primary"
-                          Variant="Variant.Filled"
-                          ShowFirstButton="true"
-                          ShowLastButton="true" />
+            @if (isLoadingCount)
+            {
+                <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="40px" Width="300px" Class="rounded" />
+            }
+            else
+            {
+                <MudPagination Count="@totalPages"
+                              Selected="@(currentPage + 1)"
+                              SelectedChanged="OnPageChanged"
+                              Color="Color.Primary"
+                              Variant="Variant.Filled"
+                              ShowFirstButton="true"
+                              ShowLastButton="true" />
+            }
         </div>
 
-        <MudText Typo="Typo.caption" Color="Color.Secondary" Align="Align.Center" Class="mt-2">
-            @L["Species_Showing", (currentPage * pageSize) + 1, Math.Min((currentPage + 1) * pageSize, totalCount), totalCount]
-        </MudText>
+        <div class="d-flex justify-center mt-2">
+            @if (isLoadingCount)
+            {
+                <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="20px" Width="200px" Class="rounded" />
+            }
+            else
+            {
+                <MudText Typo="Typo.caption" Color="Color.Secondary" Align="Align.Center">
+                    @L["Species_Showing", (currentPage * pageSize) + 1, Math.Min((currentPage + 1) * pageSize, totalCount), totalCount]
+                </MudText>
+            }
+        </div>
     }
 </MudContainer>
 
@@ -86,13 +110,26 @@
     private int totalCount = 0;
     private int totalPages = 0;
 
+    private bool isLoadingSpecies = true;
+    private bool isLoadingCount = true;
+
     protected override async Task OnInitializedAsync()
     {
-        await LoadSpeciesCommand.ExecuteAsync();
+        await LoadDataAsync();
     }
 
-    [RelayCommand]
-    private async Task LoadSpecies()
+    private async Task LoadDataAsync()
+    {
+        isLoadingSpecies = true;
+        isLoadingCount = true;
+
+        var speciesTask = LoadSpeciesAsync();
+        var countTask = LoadCountAsync();
+
+        await Task.WhenAll(speciesTask, countTask);
+    }
+
+    private async Task LoadSpeciesAsync()
     {
         var parameters = new SpeciesParameters(
             PageSize: pageSize,
@@ -101,22 +138,30 @@
         );
 
         species = await SpeciesService.GetSpeciesAsync(parameters);
+        isLoadingSpecies = false;
+        StateHasChanged();
+    }
+
+    private async Task LoadCountAsync()
+    {
         totalCount = await SpeciesService.GetTotalSpeciesCountAsync(
             string.IsNullOrWhiteSpace(searchTerm) ? null : searchTerm
         );
         totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
+        isLoadingCount = false;
+        StateHasChanged();
     }
 
     private async Task OnSearchChanged()
     {
         currentPage = 0;
-        await LoadSpeciesCommand.ExecuteAsync();
+        await LoadDataAsync();
     }
 
     private async Task OnPageChanged(int page)
     {
         currentPage = page - 1;
-        await LoadSpeciesCommand.ExecuteAsync();
+        await LoadDataAsync();
     }
 
     private void NavigateToSpecies(int speciesId)
