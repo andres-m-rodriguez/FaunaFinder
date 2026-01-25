@@ -17,269 +17,225 @@
         <div id="map" class="map"></div>
     </div>
 
-    @* Desktop Sidebar *@
+    @* Desktop Sidebar - Only shown when municipality selected or nearby species *@
     <MudHidden Breakpoint="Breakpoint.SmAndDown">
-        <div class="desktop-sidebar @(sidebarOpen ? "open" : "")">
-            @if (LoadMunicipalitySpeciesCommand.IsLoading || LoadAllSpeciesCommand.IsLoading)
-            {
-                <SidebarHeader Title="@(clickedMunicipalityName ?? L["AllSpecies"])" OnClose="CloseSidebar" />
-                <LoadingPanel Message="@L["Loading"]" />
-            }
-            else if (clickedMunicipalityName != null)
-            {
-                <SidebarHeader Title="@clickedMunicipalityName" OnClose="CloseSidebar" />
-
-                @* Filter/Sort Toolbar *@
-                @if (species.Count > 0)
+        @if (clickedMunicipalityName != null || showNearbySpecies)
+        {
+            <div class="desktop-sidebar @(sidebarOpen ? "open" : "")">
+                @if (LoadMunicipalitySpeciesCommand.IsLoading)
                 {
-                    <MudPaper Class="px-3 py-2" Square="true" Elevation="0">
-                        <div class="d-flex align-center gap-2 flex-wrap">
-                            <MudSelect T="SortOption" Value="currentSort" ValueChanged="OnSortChanged"
-                                       Dense="true" Margin="Margin.Dense" Variant="Variant.Outlined"
-                                       Style="max-width: 150px;" Label="@L["Filter_Sort"]">
-                                <MudSelectItem Value="SortOption.NameAZ">@L["Filter_NameAZ"]</MudSelectItem>
-                                <MudSelectItem Value="SortOption.NameZA">@L["Filter_NameZA"]</MudSelectItem>
-                                <MudSelectItem Value="SortOption.ScientificAZ">@L["Filter_ScientificAZ"]</MudSelectItem>
-                                <MudSelectItem Value="SortOption.ScientificZA">@L["Filter_ScientificZA"]</MudSelectItem>
-                            </MudSelect>
-
-                            <MudMenu Icon="@Icons.Material.Filled.FilterList" Size="Size.Small" Dense="true"
-                                     AnchorOrigin="Origin.BottomLeft" TransformOrigin="Origin.TopLeft">
-                                <MudMenuItem OnClick="OpenFilterDialog">
-                                    <div class="d-flex align-center gap-2">
-                                        <MudIcon Icon="@Icons.Material.Filled.Tune" Size="Size.Small" />
-                                        <span>@L["Filter_Filters"]</span>
-                                        @if (ActiveFilterCount > 0)
-                                        {
-                                            <MudChip T="string" Size="Size.Small" Color="Color.Primary">@ActiveFilterCount</MudChip>
-                                        }
-                                    </div>
-                                </MudMenuItem>
-                                @if (ActiveFilterCount > 0)
-                                {
-                                    <MudMenuItem OnClick="ClearAllFilters">
-                                        <div class="d-flex align-center gap-2">
-                                            <MudIcon Icon="@Icons.Material.Filled.Clear" Size="Size.Small" />
-                                            <span>@L["Filter_ClearAll"]</span>
-                                        </div>
-                                    </MudMenuItem>
-                                }
-                            </MudMenu>
-
-                            <MudMenu Icon="@Icons.Material.Filled.Download" Size="Size.Small" Dense="true"
-                                     AnchorOrigin="Origin.BottomLeft" TransformOrigin="Origin.TopLeft"
-                                     Disabled="isExporting">
-                                <MudMenuItem OnClick="ExportToPdf">
-                                    <div class="d-flex align-center gap-2">
-                                        <MudIcon Icon="@Icons.Material.Filled.PictureAsPdf" Size="Size.Small" />
-                                        <span>@L["Export_PDF"]</span>
-                                    </div>
-                                </MudMenuItem>
-                                <MudMenuItem OnClick="ExportToCsv">
-                                    <div class="d-flex align-center gap-2">
-                                        <MudIcon Icon="@Icons.Material.Filled.TableChart" Size="Size.Small" />
-                                        <span>@L["Export_CSV"]</span>
-                                    </div>
-                                </MudMenuItem>
-                            </MudMenu>
-                        </div>
-
-                        @* Active filter chips *@
-                        @if (ActiveFilterCount > 0)
+                    <SidebarHeader Title="@clickedMunicipalityName" OnClose="CloseSidebar" />
+                    <div class="pa-3">
+                        @for (int i = 0; i < 5; i++)
                         {
-                            <div class="d-flex flex-wrap gap-1 mt-2">
-                                @foreach (var practice in selectedNrcsPractices)
-                                {
-                                    <MudChip T="string" Size="Size.Small" Color="Color.Primary" OnClose="() => RemoveNrcsPracticeFilter(practice)">
-                                        NRCS @practice
-                                    </MudChip>
-                                }
-                                @foreach (var action in selectedFwsActions)
-                                {
-                                    <MudChip T="string" Size="Size.Small" Color="Color.Secondary" OnClose="() => RemoveFwsActionFilter(action)">
-                                        FWS @action
-                                    </MudChip>
-                                }
+                            <div class="mb-3">
+                                <MudSkeleton SkeletonType="SkeletonType.Text" Width="70%" Height="24px" />
+                                <MudSkeleton SkeletonType="SkeletonType.Text" Width="50%" Height="16px" Class="mt-1" />
                             </div>
                         }
-                    </MudPaper>
+                    </div>
                 }
+                else if (clickedMunicipalityName != null)
+                {
+                    <SidebarHeader Title="@clickedMunicipalityName" OnClose="CloseSidebar" />
 
-                <div class="sidebar-content">
-                    @if (species.Count == 0)
+                    @* Filter/Sort Toolbar *@
+                    @if (species.Count > 0)
                     {
-                        <MudAlert Severity="Severity.Info" Variant="Variant.Text" Class="ma-3">
-                            @L["Map_NoSpeciesData"]
-                        </MudAlert>
-                    }
-                    else
-                    {
-                        <div class="pa-3">
-                            <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mb-2">
-                                @if (ActiveFilterCount > 0)
-                                {
-                                    @string.Format(L["Filter_ShowingFiltered"], FilteredSpecies.Count, species.Count)
-                                }
-                                else
-                                {
-                                    @string.Format(L["Map_SpeciesFound"], species.Count)
-                                }
-                            </MudText>
+                        <MudPaper Class="px-3 py-2" Square="true" Elevation="0">
+                            <div class="d-flex align-center gap-2 flex-wrap">
+                                <MudSelect T="SortOption" Value="currentSort" ValueChanged="OnSortChanged"
+                                           Dense="true" Margin="Margin.Dense" Variant="Variant.Outlined"
+                                           Style="max-width: 150px;" Label="@L["Filter_Sort"]">
+                                    <MudSelectItem Value="SortOption.NameAZ">@L["Filter_NameAZ"]</MudSelectItem>
+                                    <MudSelectItem Value="SortOption.NameZA">@L["Filter_NameZA"]</MudSelectItem>
+                                    <MudSelectItem Value="SortOption.ScientificAZ">@L["Filter_ScientificAZ"]</MudSelectItem>
+                                    <MudSelectItem Value="SortOption.ScientificZA">@L["Filter_ScientificZA"]</MudSelectItem>
+                                </MudSelect>
 
-                            @if (FilteredSpecies.Count == 0)
+                                <MudMenu Icon="@Icons.Material.Filled.FilterList" Size="Size.Small" Dense="true"
+                                         AnchorOrigin="Origin.BottomLeft" TransformOrigin="Origin.TopLeft">
+                                    <MudMenuItem OnClick="OpenFilterDialog">
+                                        <div class="d-flex align-center gap-2">
+                                            <MudIcon Icon="@Icons.Material.Filled.Tune" Size="Size.Small" />
+                                            <span>@L["Filter_Filters"]</span>
+                                            @if (ActiveFilterCount > 0)
+                                            {
+                                                <MudChip T="string" Size="Size.Small" Color="Color.Primary">@ActiveFilterCount</MudChip>
+                                            }
+                                        </div>
+                                    </MudMenuItem>
+                                    @if (ActiveFilterCount > 0)
+                                    {
+                                        <MudMenuItem OnClick="ClearAllFilters">
+                                            <div class="d-flex align-center gap-2">
+                                                <MudIcon Icon="@Icons.Material.Filled.Clear" Size="Size.Small" />
+                                                <span>@L["Filter_ClearAll"]</span>
+                                            </div>
+                                        </MudMenuItem>
+                                    }
+                                </MudMenu>
+
+                                <MudMenu Icon="@Icons.Material.Filled.Download" Size="Size.Small" Dense="true"
+                                         AnchorOrigin="Origin.BottomLeft" TransformOrigin="Origin.TopLeft"
+                                         Disabled="isExporting">
+                                    <MudMenuItem OnClick="ExportToPdf">
+                                        <div class="d-flex align-center gap-2">
+                                            <MudIcon Icon="@Icons.Material.Filled.PictureAsPdf" Size="Size.Small" />
+                                            <span>@L["Export_PDF"]</span>
+                                        </div>
+                                    </MudMenuItem>
+                                    <MudMenuItem OnClick="ExportToCsv">
+                                        <div class="d-flex align-center gap-2">
+                                            <MudIcon Icon="@Icons.Material.Filled.TableChart" Size="Size.Small" />
+                                            <span>@L["Export_CSV"]</span>
+                                        </div>
+                                    </MudMenuItem>
+                                </MudMenu>
+                            </div>
+
+                            @* Active filter chips *@
+                            @if (ActiveFilterCount > 0)
                             {
-                                <MudAlert Severity="Severity.Warning" Variant="Variant.Text" Class="mb-2">
-                                    @L["Filter_NoMatches"]
-                                </MudAlert>
+                                <div class="d-flex flex-wrap gap-1 mt-2">
+                                    @foreach (var practice in selectedNrcsPractices)
+                                    {
+                                        <MudChip T="string" Size="Size.Small" Color="Color.Primary" OnClose="() => RemoveNrcsPracticeFilter(practice)">
+                                            NRCS @practice
+                                        </MudChip>
+                                    }
+                                    @foreach (var action in selectedFwsActions)
+                                    {
+                                        <MudChip T="string" Size="Size.Small" Color="Color.Secondary" OnClose="() => RemoveFwsActionFilter(action)">
+                                            FWS @action
+                                        </MudChip>
+                                    }
+                                </div>
                             }
-
-                            <MudExpansionPanels MultiExpansion="false" Elevation="0">
-                                @foreach (var s in FilteredSpecies)
-                                {
-                                    <SpeciesExpansionPanel Species="s"
-                                                           IsExpanded="@(expandedSpeciesId == s.Id)"
-                                                           OnExpandedChanged="@((bool expanded) => ToggleSpecies(s.Id, expanded))" />
-                                }
-                            </MudExpansionPanels>
-                        </div>
+                        </MudPaper>
                     }
-                </div>
-            }
-            else if (showAllSpecies)
-            {
-                <SidebarHeader Title="@L["AllSpecies"]" OnClose="CloseSidebar" />
 
-                <div class="sidebar-content pa-3">
-                    <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mb-2">
-                        @string.Format(L["Map_SpeciesInDatabase"], allSpecies.Count)
-                    </MudText>
-
-                    <MudList T="string" Dense="true">
-                        @foreach (var s in allSpecies)
+                    <div class="sidebar-content">
+                        @if (species.Count == 0)
                         {
-                            <SpeciesListItem CommonName="s.CommonName"
-                                             ScientificName="s.ScientificName"
-                                             ShowDetailsButton="true"
-                                             OnDetailsClick="@(() => NavigateToSpeciesDetail(s.Id))" />
+                            <MudAlert Severity="Severity.Info" Variant="Variant.Text" Class="ma-3">
+                                @L["Map_NoSpeciesData"]
+                            </MudAlert>
                         }
-                    </MudList>
-                </div>
-            }
-            else if (showNearbySpecies)
-            {
-                <SidebarHeader Title="@L["NearMe_Title"]"
-                               Icon="@Icons.Material.Filled.NearMe"
-                               ThemeClass="mud-theme-info"
-                               OnClose="CloseSpeciesNearMe" />
-
-                <MudPaper Class="px-3 py-2" Square="true" Elevation="0">
-                    <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mb-2">@L["NearMe_SelectRadius"]</MudText>
-                    <div class="d-flex flex-wrap gap-2 mb-3">
-                        @foreach (var radius in RadiusOptions)
+                        else
                         {
-                            <MudChip T="string"
-                                     Color="@(selectedRadiusKm == radius ? Color.Info : Color.Default)"
-                                     Variant="@(selectedRadiusKm == radius ? Variant.Filled : Variant.Outlined)"
-                                     OnClick="() => OnRadiusChanged(radius)"
-                                     Size="Size.Small">
-                                @($"{radius} km")
-                            </MudChip>
+                            <div class="pa-3">
+                                <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mb-2">
+                                    @if (ActiveFilterCount > 0)
+                                    {
+                                        @string.Format(L["Filter_ShowingFiltered"], FilteredSpecies.Count, species.Count)
+                                    }
+                                    else
+                                    {
+                                        @string.Format(L["Map_SpeciesFound"], species.Count)
+                                    }
+                                </MudText>
+
+                                @if (FilteredSpecies.Count == 0)
+                                {
+                                    <MudAlert Severity="Severity.Warning" Variant="Variant.Text" Class="mb-2">
+                                        @L["Filter_NoMatches"]
+                                    </MudAlert>
+                                }
+
+                                <MudExpansionPanels MultiExpansion="false" Elevation="0">
+                                    @foreach (var s in FilteredSpecies)
+                                    {
+                                        <SpeciesExpansionPanel Species="s"
+                                                               IsExpanded="@(expandedSpeciesId == s.Id)"
+                                                               OnExpandedChanged="@((bool expanded) => ToggleSpecies(s.Id, expanded))" />
+                                    }
+                                </MudExpansionPanels>
+                            </div>
                         }
                     </div>
-                    @if (nearbySpecies.Count > 0)
-                    {
-                        <MudButton Variant="@(showSpeciesLocationsOnMap ? Variant.Filled : Variant.Outlined)"
-                                   Color="Color.Info"
-                                   Size="Size.Small"
-                                   StartIcon="@(showSpeciesLocationsOnMap ? Icons.Material.Filled.VisibilityOff : Icons.Material.Filled.Visibility)"
-                                   OnClick="ToggleSpeciesLocationsOnMap"
-                                   FullWidth="true">
-                            @(showSpeciesLocationsOnMap ? L["NearMe_HideLocations"] : L["NearMe_ShowLocations"])
-                        </MudButton>
-                    }
-                </MudPaper>
+                }
+                else if (showNearbySpecies)
+                {
+                    <SidebarHeader Title="@L["NearMe_Title"]"
+                                   Icon="@Icons.Material.Filled.NearMe"
+                                   ThemeClass="mud-theme-info"
+                                   OnClose="CloseSpeciesNearMe" />
 
-                <div class="sidebar-content">
-                    @if (isLoadingNearbySpecies)
-                    {
-                        <LoadingPanel Message="@L["NearMe_Searching"]" Color="Color.Info" />
-                    }
-                    else if (nearbySpecies.Count == 0)
-                    {
-                        <MudAlert Severity="Severity.Info" Variant="Variant.Text" Class="ma-3">
-                            @L["NearMe_NoSpeciesFound"]
-                        </MudAlert>
-                    }
-                    else
-                    {
-                        <div class="pa-3">
-                            <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mb-2">
-                                @string.Format(L["NearMe_SpeciesFound"], nearbySpecies.Count, selectedRadiusKm)
-                            </MudText>
-
-                            <MudList T="SpeciesNearbyDto" Dense="true" Class="nearby-species-list">
-                                @for (var i = 0; i < nearbySpecies.Count; i++)
-                                {
-                                    var index = i;
-                                    var s = nearbySpecies[i];
-                                    <NearbySpeciesListItem Species="s"
-                                                           ShowColorDot="showSpeciesLocationsOnMap"
-                                                           Color="@(speciesColors.TryGetValue(s.Id, out var color) ? color : null)"
-                                                           OnClick="() => FocusOnNearbySpecies(index)"
-                                                           OnDetailsClick="() => NavigateToSpeciesDetail(s.Id)" />
-                                }
-                            </MudList>
+                    <MudPaper Class="px-3 py-2" Square="true" Elevation="0">
+                        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mb-2">@L["NearMe_SelectRadius"]</MudText>
+                        <div class="d-flex flex-wrap gap-2 mb-3">
+                            @foreach (var radius in RadiusOptions)
+                            {
+                                <MudChip T="string"
+                                         Color="@(selectedRadiusKm == radius ? Color.Info : Color.Default)"
+                                         Variant="@(selectedRadiusKm == radius ? Variant.Filled : Variant.Outlined)"
+                                         OnClick="() => OnRadiusChanged(radius)"
+                                         Size="Size.Small">
+                                    @($"{radius} km")
+                                </MudChip>
+                            }
                         </div>
-                    }
-                </div>
-            }
-            else
-            {
-                <MudPaper Class="pa-3 mud-theme-primary" Square="true" Elevation="0">
-                    <MudText Typo="Typo.subtitle1">@L["AppTitle"]</MudText>
-                </MudPaper>
+                        @if (nearbySpecies.Count > 0)
+                        {
+                            <MudButton Variant="@(showSpeciesLocationsOnMap ? Variant.Filled : Variant.Outlined)"
+                                       Color="Color.Info"
+                                       Size="Size.Small"
+                                       StartIcon="@(showSpeciesLocationsOnMap ? Icons.Material.Filled.VisibilityOff : Icons.Material.Filled.Visibility)"
+                                       OnClick="ToggleSpeciesLocationsOnMap"
+                                       FullWidth="true">
+                                @(showSpeciesLocationsOnMap ? L["NearMe_HideLocations"] : L["NearMe_ShowLocations"])
+                            </MudButton>
+                        }
+                    </MudPaper>
 
-                <div class="pa-4">
-                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-4">
-                        @L["Map_ClickMunicipality"]
-                    </MudText>
-                    <MudButton Variant="Variant.Filled"
-                               Color="Color.Primary"
-                               FullWidth="true"
-                               Class="mb-2"
-                               OnClick="@(() => LoadAllSpeciesCommand.ExecuteAsync(CancellationToken.None))">
-                        @L["ViewAllSpecies"]
-                    </MudButton>
-                    @if (userLatitude.HasValue && userLongitude.HasValue)
-                    {
-                        <MudButton Variant="Variant.Filled"
-                                   Color="Color.Info"
-                                   FullWidth="true"
-                                   StartIcon="@Icons.Material.Filled.NearMe"
-                                   OnClick="OpenSpeciesNearMe">
-                            @L["NearMe_Button"]
-                        </MudButton>
-                    }
-                    else
-                    {
-                        <MudAlert Severity="Severity.Info" Variant="Variant.Text" Dense="true" Class="mt-2">
-                            @L["NearMe_UseLocateFirst"]
-                        </MudAlert>
-                    }
-                </div>
-            }
-        </div>
+                    <div class="sidebar-content">
+                        @if (isLoadingNearbySpecies)
+                        {
+                            <LoadingPanel Message="@L["NearMe_Searching"]" Color="Color.Info" />
+                        }
+                        else if (nearbySpecies.Count == 0)
+                        {
+                            <MudAlert Severity="Severity.Info" Variant="Variant.Text" Class="ma-3">
+                                @L["NearMe_NoSpeciesFound"]
+                            </MudAlert>
+                        }
+                        else
+                        {
+                            <div class="pa-3">
+                                <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mb-2">
+                                    @string.Format(L["NearMe_SpeciesFound"], nearbySpecies.Count, selectedRadiusKm)
+                                </MudText>
+
+                                <MudList T="SpeciesNearbyDto" Dense="true" Class="nearby-species-list">
+                                    @for (var i = 0; i < nearbySpecies.Count; i++)
+                                    {
+                                        var index = i;
+                                        var s = nearbySpecies[i];
+                                        <NearbySpeciesListItem Species="s"
+                                                               ShowColorDot="showSpeciesLocationsOnMap"
+                                                               Color="@(speciesColors.TryGetValue(s.Id, out var color) ? color : null)"
+                                                               OnClick="() => FocusOnNearbySpecies(index)"
+                                                               OnDetailsClick="() => NavigateToSpeciesDetail(s.Id)" />
+                                    }
+                                </MudList>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        }
     </MudHidden>
 
     @* Mobile Bottom Sheet *@
     <MudHidden Breakpoint="Breakpoint.MdAndUp">
-        @if (clickedMunicipalityName != null || showAllSpecies || showNearbySpecies)
+        @if (clickedMunicipalityName != null || showNearbySpecies)
         {
             <div class="mobile-sheet-backdrop @(sheetOpen ? "open" : "")" @onclick="CloseSheet"></div>
             <div class="mobile-sheet @(sheetOpen ? "open" : "")">
                 <div class="mobile-sheet-header">
                     <MudText Typo="Typo.subtitle1" Class="ml-3">
-                        @(showNearbySpecies ? L["NearMe_Title"] : (clickedMunicipalityName ?? L["AllSpecies"]))
+                        @(showNearbySpecies ? L["NearMe_Title"] : clickedMunicipalityName)
                     </MudText>
                     <MudSpacer />
                     @if (clickedMunicipalityName != null && species.Count > 0)
@@ -354,9 +310,17 @@
                     </div>
                 }
 
-                @if (LoadMunicipalitySpeciesCommand.IsLoading || LoadAllSpeciesCommand.IsLoading)
+                @if (LoadMunicipalitySpeciesCommand.IsLoading)
                 {
-                    <LoadingPanel Message="@L["Loading"]" />
+                    <div class="pa-3">
+                        @for (int i = 0; i < 5; i++)
+                        {
+                            <div class="mb-3">
+                                <MudSkeleton SkeletonType="SkeletonType.Text" Width="70%" Height="24px" />
+                                <MudSkeleton SkeletonType="SkeletonType.Text" Width="50%" Height="16px" Class="mt-1" />
+                            </div>
+                        }
+                    </div>
                 }
                 else if (clickedMunicipalityName != null)
                 {
@@ -396,24 +360,6 @@
                                 }
                             </MudExpansionPanels>
                         }
-                    </MudContainer>
-                }
-                else if (showAllSpecies)
-                {
-                    <MudContainer Class="pa-3" MaxWidth="MaxWidth.False">
-                        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mb-2">
-                            @string.Format(L["Map_SpeciesInDatabase"], allSpecies.Count)
-                        </MudText>
-
-                        <MudList T="string" Dense="true">
-                            @foreach (var s in allSpecies)
-                            {
-                                <SpeciesListItem CommonName="s.CommonName"
-                                                 ScientificName="s.ScientificName"
-                                                 ShowDetailsButton="true"
-                                                 OnDetailsClick="@(() => NavigateToSpeciesDetail(s.Id))" />
-                            }
-                        </MudList>
                     </MudContainer>
                 }
                 else if (showNearbySpecies)
@@ -481,24 +427,16 @@
         }
     </MudHidden>
 
-    @* Mobile FABs for "View All Species" and "Species Near Me" when nothing selected *@
+    @* Mobile FAB for "Species Near Me" when nothing selected *@
     <MudHidden Breakpoint="Breakpoint.MdAndUp">
-        @if (clickedMunicipalityName == null && !showAllSpecies && !showNearbySpecies && viewingSpeciesLocations == null)
+        @if (clickedMunicipalityName == null && !showNearbySpecies && viewingSpeciesLocations == null && userLatitude.HasValue && userLongitude.HasValue)
         {
             <div class="mobile-fab-container">
-                <MudFab Color="Color.Primary"
-                        StartIcon="@Icons.Material.Filled.List"
-                        Label="@L["ViewAll"]"
+                <MudFab Color="Color.Info"
+                        StartIcon="@Icons.Material.Filled.NearMe"
+                        Label="@L["NearMe_Button"]"
                         Class="mobile-fab-item"
-                        OnClick="@(() => LoadAllSpeciesCommand.ExecuteAsync(CancellationToken.None))" />
-                @if (userLatitude.HasValue && userLongitude.HasValue)
-                {
-                    <MudFab Color="Color.Info"
-                            StartIcon="@Icons.Material.Filled.NearMe"
-                            Label="@L["NearMe_Button"]"
-                            Class="mobile-fab-item"
-                            OnClick="OpenSpeciesNearMe" />
-                }
+                        OnClick="OpenSpeciesNearMe" />
             </div>
         }
     </MudHidden>
@@ -536,11 +474,9 @@
     private MunicipalityForListDto? selectedMunicipality;
     private string? clickedMunicipalityName;
     private IReadOnlyList<SpeciesForListDto> species = [];
-    private IReadOnlyList<SpeciesForSearchDto> allSpecies = [];
     private IReadOnlyList<MunicipalityForListDto> municipalities = [];
     private SpeciesForDetailDto? viewingSpeciesLocations;
     private int currentLocationIndex = 0;
-    private bool showAllSpecies = false;
     private bool sheetOpen = false;
     private bool sidebarOpen = true;
     private int? expandedSpeciesId;
@@ -794,7 +730,6 @@
             return;
         }
 
-        showAllSpecies = false;
         showNearbySpecies = false;
         expandedSpeciesId = null;
         selectedMunicipality = municipality;
@@ -838,46 +773,12 @@
         }
     }
 
-    [RelayCommand]
-    private async Task LoadAllSpecies(CancellationToken cancellationToken)
-    {
-        showAllSpecies = true;
-        selectedMunicipality = null;
-        sheetOpen = false;
-        sidebarOpen = true;
-        StateHasChanged();
-
-        await Task.Delay(10);
-        sheetOpen = true;
-        StateHasChanged();
-
-        allSpecies = await SpeciesService.GetSpeciesAsync(new SpeciesParameters(PageSize: 500), cancellationToken);
-    }
-
-    private void ShowAllSpecies()
-    {
-        selectedMunicipality = null;
-        clickedMunicipalityName = null;
-        species = [];
-        expandedSpeciesId = null;
-    }
-
-    private void CloseAllSpecies()
-    {
-        sheetOpen = false;
-        sidebarOpen = false;
-        allSpecies = [];
-        showAllSpecies = false;
-    }
-
     private void CloseSidebar()
     {
         sidebarOpen = false;
         selectedMunicipality = null;
         clickedMunicipalityName = null;
-        showAllSpecies = false;
         species = [];
-        allSpecies = [];
         expandedSpeciesId = null;
         ClearAllFilters();
     }
@@ -893,10 +794,8 @@
 
         selectedMunicipality = null;
         clickedMunicipalityName = null;
-        showAllSpecies = false;
         showNearbySpecies = false;
         species = [];
-        allSpecies = [];
         nearbySpecies = [];
         expandedSpeciesId = null;
         ClearAllFilters();
@@ -910,11 +809,9 @@
         if (userLatitude == null || userLongitude == null) return;
 
         showNearbySpecies = true;
-        showAllSpecies = false;
         selectedMunicipality = null;
         clickedMunicipalityName = null;
         species = [];
-        allSpecies = [];
         sheetOpen = false;
         sidebarOpen = true;
 
