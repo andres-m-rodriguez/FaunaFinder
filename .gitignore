@@ -362,3 +362,9 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 .azure
+
+# TypeScript compiled output
+src/FaunaFinder.Api/wwwroot/js/leafletInterop.js
+
+# Node modules in JS folder
+src/FaunaFinder.Api/wwwroot/js/node_modules/
