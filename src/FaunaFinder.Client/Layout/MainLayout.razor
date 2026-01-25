@@ -1,0 +1,137 @@
+@inherits LayoutComponentBase
+@inject IAppLocalizer L
+@inject IDarkModeService DarkModeService
+@implements IDisposable
+
+<MudThemeProvider Theme="_theme" IsDarkMode="_isDarkMode" />
+<MudPopoverProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
+<MudLayout>
+    <MudAppBar Color="Color.Primary" Fixed="true" Dense="true">
+        <MudIconButton Icon="@Icons.Material.Filled.Menu"
+                       Color="Color.Inherit"
+                       Edge="Edge.Start"
+                       OnClick="ToggleDrawer"
+                       Class="d-flex d-sm-none" />
+        <MudText Typo="Typo.h6" Class="ml-2">@L["AppTitle"]</MudText>
+        <MudSpacer />
+        <div class="d-none d-sm-flex align-center">
+            <MudButton Href="/" Color="Color.Inherit" Variant="Variant.Text">@L["Nav_Map"]</MudButton>
+            <MudButton Href="/species" Color="Color.Inherit" Variant="Variant.Text">@L["Nav_Species"]</MudButton>
+            <MudButton Href="/pueblos" Color="Color.Inherit" Variant="Variant.Text">@L["Nav_Pueblos"]</MudButton>
+            <MudButton Href="/about" Color="Color.Inherit" Variant="Variant.Text">@L["Nav_About"]</MudButton>
+            <div class="ml-2 d-flex align-center">
+                <DarkModeToggle />
+                <LanguageToggle />
+            </div>
+        </div>
+        <div class="d-flex d-sm-none align-center">
+            <DarkModeToggle />
+            <LanguageToggle />
+        </div>
+    </MudAppBar>
+
+    <MudDrawer @bind-Open="_drawerOpen"
+               Elevation="1"
+               Variant="DrawerVariant.Temporary"
+               ClipMode="DrawerClipMode.Always">
+        <MudNavMenu>
+            <MudNavLink Href="/" Icon="@Icons.Material.Filled.Map" OnClick="CloseDrawer">@L["Nav_Map"]</MudNavLink>
+            <MudNavLink Href="/species" Icon="@Icons.Material.Filled.Pets" OnClick="CloseDrawer">@L["Nav_Species"]</MudNavLink>
+            <MudNavLink Href="/pueblos" Icon="@Icons.Material.Filled.LocationCity" OnClick="CloseDrawer">@L["Nav_Pueblos"]</MudNavLink>
+            <MudNavLink Href="/about" Icon="@Icons.Material.Filled.Info" OnClick="CloseDrawer">@L["Nav_About"]</MudNavLink>
+        </MudNavMenu>
+    </MudDrawer>
+
+    <MudMainContent Class="pt-14">
+        <LanguageProvider>
+            <ErrorBoundary @ref="errorBoundary">
+                <ChildContent>
+                    @Body
+                </ChildContent>
+            <ErrorContent Context="ex">
+                <MudContainer MaxWidth="MaxWidth.Small" Class="d-flex flex-column align-center justify-center" Style="height: calc(100vh - 64px);">
+                    <MudPaper Elevation="3" Class="pa-6 text-center">
+                        <MudIcon Icon="@Icons.Material.Filled.Error" Color="Color.Error" Size="Size.Large" Class="mb-4" />
+                        <MudText Typo="Typo.h5" Class="mb-2">@L["Error_SomethingWentWrong"]</MudText>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-4">
+                            @L["Error_UnexpectedError"]
+                        </MudText>
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="RecoverFromError">
+                            @L["TryAgain"]
+                        </MudButton>
+                    </MudPaper>
+                </MudContainer>
+            </ErrorContent>
+        </ErrorBoundary>
+        </LanguageProvider>
+    </MudMainContent>
+</MudLayout>
+
+@code {
+    private ErrorBoundary? errorBoundary;
+    private bool _drawerOpen;
+    private bool _isDarkMode;
+
+    private readonly MudTheme _theme = new()
+    {
+        PaletteLight = new PaletteLight
+        {
+            Primary = "#2d6a4f",
+            PrimaryDarken = "#1b4332",
+            PrimaryLighten = "#40916c",
+            Secondary = "#40916c",
+            AppbarBackground = "#2d6a4f",
+            Background = "#f8f9fa",
+            Surface = "#ffffff",
+            DrawerBackground = "#ffffff"
+        },
+        PaletteDark = new PaletteDark
+        {
+            Primary = "#40916c",
+            PrimaryDarken = "#2d6a4f",
+            PrimaryLighten = "#52b788",
+            Secondary = "#52b788",
+            AppbarBackground = "#1b4332",
+            Background = "#121212",
+            Surface = "#1e1e1e",
+            DrawerBackground = "#1e1e1e",
+            TextPrimary = "#e0e0e0",
+            TextSecondary = "#a0a0a0"
+        }
+    };
+
+    protected override void OnInitialized()
+    {
+        DarkModeService.OnDarkModeChanged += OnDarkModeChanged;
+        _isDarkMode = DarkModeService.IsDarkMode;
+    }
+
+    private void OnDarkModeChanged()
+    {
+        _isDarkMode = DarkModeService.IsDarkMode;
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void ToggleDrawer()
+    {
+        _drawerOpen = !_drawerOpen;
+    }
+
+    private void CloseDrawer()
+    {
+        _drawerOpen = false;
+    }
+
+    private void RecoverFromError()
+    {
+        errorBoundary?.Recover();
+    }
+
+    public void Dispose()
+    {
+        DarkModeService.OnDarkModeChanged -= OnDarkModeChanged;
+    }
+}

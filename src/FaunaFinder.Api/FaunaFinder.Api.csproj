@@ -7,37 +7,21 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="BlazingSingularity" Version="1.0.0-beta.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.2" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="MudBlazor" Version="8.4.0" />
     <PackageReference Include="NetTopologySuite.IO.GeoJSON4STJ" Version="4.0.0" />
     <PackageReference Include="QuestPDF" Version="2024.12.2" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\FaunaFinder.Client\FaunaFinder.Client.csproj" />
     <ProjectReference Include="..\FaunaFinder.Database\FaunaFinder.Database.csproj" />
     <ProjectReference Include="..\FaunaFinder.DataAccess\FaunaFinder.DataAccess.csproj" />
     <ProjectReference Include="..\FaunaFinder.Contracts\FaunaFinder.Contracts.csproj" />
     <ProjectReference Include="..\FaunaFinder.ServiceDefaults\FaunaFinder.ServiceDefaults.csproj" />
   </ItemGroup>
-
-  <!-- TypeScript Build Integration -->
-  <ItemGroup>
-    <Content Remove="Scripts\**\*.ts" />
-    <TypeScriptCompile Include="Scripts\**\*.ts" />
-    <None Include="package.json" />
-    <None Include="tsconfig.json" />
-  </ItemGroup>
-
-  <Target Name="NpmInstall" BeforeTargets="TypeScriptCompile" Condition="!Exists('node_modules')">
-    <Exec Command="npm install" WorkingDirectory="$(MSBuildProjectDirectory)" />
-  </Target>
-
-  <Target Name="TypeScriptCompile" BeforeTargets="BeforeBuild">
-    <Exec Command="npm run build" WorkingDirectory="$(MSBuildProjectDirectory)" />
-  </Target>
 
 </Project>

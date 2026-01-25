@@ -1,0 +1,56 @@
+@inject IDarkModeService DarkModeService
+@inject IJSRuntime JS
+
+<MudTooltip Text="@(_isDarkMode ? "Switch to light mode" : "Switch to dark mode")">
+    <MudIconButton Icon="@(_isDarkMode ? Icons.Material.Filled.LightMode : Icons.Material.Filled.DarkMode)"
+                   Color="Color.Inherit"
+                   Size="Size.Small"
+                   OnClick="ToggleDarkMode" />
+</MudTooltip>
+
+@code {
+    private bool _isDarkMode;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                var savedPreference = await JS.InvokeAsync<string?>("localStorage.getItem", "faunafinder-darkmode");
+
+                if (!string.IsNullOrEmpty(savedPreference))
+                {
+                    _isDarkMode = savedPreference == "true";
+                }
+                else
+                {
+                    var prefersDark = await JS.InvokeAsync<bool>("eval", "window.matchMedia('(prefers-color-scheme: dark)').matches");
+                    _isDarkMode = prefersDark;
+                }
+
+                DarkModeService.SetDarkMode(_isDarkMode);
+                StateHasChanged();
+            }
+            catch
+            {
+                // Ignore JS interop errors
+            }
+        }
+    }
+
+    private async Task ToggleDarkMode()
+    {
+        _isDarkMode = !_isDarkMode;
+        DarkModeService.SetDarkMode(_isDarkMode);
+
+        try
+        {
+            await JS.InvokeVoidAsync("localStorage.setItem", "faunafinder-darkmode", _isDarkMode.ToString().ToLower());
+        }
+        catch
+        {
+            // Ignore JS interop errors
+        }
+    }
+}

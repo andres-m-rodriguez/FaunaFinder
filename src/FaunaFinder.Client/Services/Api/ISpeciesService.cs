@@ -1,0 +1,29 @@
+using FaunaFinder.Contracts.Dtos.Species;
+using FaunaFinder.Contracts.Parameters;
+
+namespace FaunaFinder.Client.Services.Api;
+
+public interface ISpeciesService
+{
+    Task<IReadOnlyList<SpeciesForListDto>> GetSpeciesByMunicipalityAsync(
+        int municipalityId,
+        CancellationToken cancellationToken = default);
+
+    Task<SpeciesForDetailDto?> GetSpeciesDetailAsync(
+        int speciesId,
+        CancellationToken cancellationToken = default);
+
+    Task<IReadOnlyList<SpeciesForSearchDto>> GetSpeciesAsync(
+        SpeciesParameters parameters,
+        CancellationToken cancellationToken = default);
+
+    Task<int> GetTotalSpeciesCountAsync(
+        string? search = null,
+        CancellationToken cancellationToken = default);
+
+    Task<IReadOnlyList<SpeciesNearbyDto>> GetSpeciesNearbyAsync(
+        double latitude,
+        double longitude,
+        double radiusMeters,
+        CancellationToken cancellationToken = default);
+}
