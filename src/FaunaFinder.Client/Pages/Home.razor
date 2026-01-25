@@ -755,11 +755,13 @@
     }
 
     [JSInvokable]
-    public void OnUserLocationFound(double latitude, double longitude)
+    public async Task OnUserLocationFound(double latitude, double longitude)
     {
         userLatitude = latitude;
         userLongitude = longitude;
-        StateHasChanged();
+
+        // When user locates themselves, show the sidebar with nearby species
+        await OpenSpeciesNearMe();
     }
 
     [RelayCommand]
