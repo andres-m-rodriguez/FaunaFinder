@@ -233,7 +233,7 @@ window.leafletInterop = {
             console.log('GeoJSON loaded successfully with', data.features.length, 'features');
         };
         // Load from API endpoint
-        const apiUrl = this.apiBaseUrl ? this.apiBaseUrl + '/municipalities/geojson' : '/municipalities/geojson';
+        const apiUrl = this.apiBaseUrl ? this.apiBaseUrl + '/api/municipalities/geojson' : '/api/municipalities/geojson';
         fetch(apiUrl)
             .then(r => {
                 if (!r.ok)
