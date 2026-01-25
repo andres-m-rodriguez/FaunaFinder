@@ -13,7 +13,16 @@
 <PageTitle>@L["PageTitle_Map"]</PageTitle>
 
 <div class="map-page">
-    <div class="map-container">
+    <div class="map-container" style="position: relative;">
+        @if (isMapLoading)
+        {
+            <MudOverlay Visible="true" DarkBackground="false" Absolute="true" Class="map-loading-overlay" ZIndex="1000">
+                <MudStack AlignItems="AlignItems.Center">
+                    <MudProgressCircular Indeterminate="true" Color="Color.Primary" />
+                    <MudText Typo="Typo.body2">@L["Map_Loading"]</MudText>
+                </MudStack>
+            </MudOverlay>
+        }
         <div id="map" class="map"></div>
     </div>
 
@@ -475,6 +484,9 @@
     private bool sidebarOpen = true;
     private int? expandedSpeciesId;
 
+    // Map loading state
+    private bool isMapLoading = true;
+
     // Sort and Filter state
     private SortOption currentSort = SortOption.NameAZ;
     private HashSet<string> selectedNrcsPractices = new();
@@ -714,6 +726,13 @@
             currentLocationIndex++;
             await FocusOnLocation(currentLocationIndex);
         }
+    }
+
+    [JSInvokable]
+    public void OnMapReady()
+    {
+        isMapLoading = false;
+        StateHasChanged();
     }
 
     [JSInvokable]

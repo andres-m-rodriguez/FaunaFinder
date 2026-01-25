@@ -30,6 +30,7 @@ public static class Translations
         ["MunicipalityNotFound"] = "Municipality '{0}' not found in database.",
 
         // Map Page
+        ["Map_Loading"] = "Loading map...",
         ["Map_ClickMunicipality"] = "Click on a municipality on the map to view species and conservation information.",
         ["Map_NoSpeciesData"] = "No species data available for this municipality.",
         ["Map_SpeciesFound"] = "{0} species found",
@@ -149,6 +150,7 @@ public static class Translations
         ["MunicipalityNotFound"] = "Municipio '{0}' no encontrado en la base de datos.",
 
         // Map Page
+        ["Map_Loading"] = "Cargando mapa...",
         ["Map_ClickMunicipality"] = "Haz clic en un municipio en el mapa para ver información sobre especies y conservación.",
         ["Map_NoSpeciesData"] = "No hay datos de especies disponibles para este municipio.",
         ["Map_SpeciesFound"] = "{0} especies encontradas",

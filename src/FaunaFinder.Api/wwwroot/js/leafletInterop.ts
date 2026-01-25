@@ -477,6 +477,9 @@ window.leafletInterop = {
             }).addTo(self.map!);
 
             console.log('GeoJSON loaded successfully with', data.features.length, 'features');
+
+            // Notify Blazor that the map is fully loaded
+            self.dotNetHelper?.invokeMethodAsync('OnMapReady');
         };
 
         // Check localStorage cache first
