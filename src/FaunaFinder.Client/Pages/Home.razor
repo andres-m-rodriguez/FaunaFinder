@@ -909,18 +909,27 @@
             // Clear the default nearby species markers first to avoid overlap
             await JS.InvokeVoidAsync("leafletInterop.clearNearbySpeciesMarkers");
 
-            // Show species location circles on the map with distinct colors
-            var speciesLocations = nearbySpecies.Select(s => new
-            {
-                id = s.Id,
-                commonName = s.CommonName,
-                scientificName = s.ScientificName,
-                distanceMeters = s.DistanceMeters,
-                latitude = s.Latitude,
-                longitude = s.Longitude,
-                radiusMeters = s.RadiusMeters,
-                locationDescription = s.LocationDescription
-            }).ToArray();
+            // Get IDs of all nearby species and fetch ALL their locations
+            var speciesIds = nearbySpecies.Select(s => s.Id).Distinct().ToList();
+            var allSpeciesLocations = await SpeciesService.GetSpeciesLocationsBatchAsync(speciesIds);
+
+            // Build a lookup for distance from the nearest location (for display)
+            var nearestDistances = nearbySpecies.ToDictionary(s => s.Id, s => s.DistanceMeters);
+
+            // Flatten all locations from all species into a single array
+            var speciesLocations = allSpeciesLocations
+                .SelectMany(species => species.Locations.Select(loc => new
+                {
+                    id = species.Id,
+                    commonName = L.GetLocalizedValue(species.CommonName),
+                    scientificName = species.ScientificName,
+                    distanceMeters = nearestDistances.GetValueOrDefault(species.Id, 0),
+                    latitude = loc.Latitude,
+                    longitude = loc.Longitude,
+                    radiusMeters = loc.RadiusMeters,
+                    locationDescription = loc.Description
+                }))
+                .ToArray();
 
             await JS.InvokeVoidAsync("leafletInterop.showSpeciesLocationCircles", speciesLocations);
 

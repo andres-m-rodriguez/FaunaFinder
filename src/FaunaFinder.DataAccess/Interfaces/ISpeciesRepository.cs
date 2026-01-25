@@ -39,4 +39,14 @@ public interface ISpeciesRepository
     Task<CursorPage<SpeciesForSearchDto>> GetSpeciesCursorPageAsync(
         CursorPageRequest request,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets all locations for the specified species IDs.
+    /// </summary>
+    /// <param name="speciesIds">The IDs of the species to retrieve locations for.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>List of species with all their locations.</returns>
+    Task<IReadOnlyList<SpeciesLocationsDto>> GetSpeciesLocationsBatchAsync(
+        IEnumerable<int> speciesIds,
+        CancellationToken cancellationToken = default);
 }

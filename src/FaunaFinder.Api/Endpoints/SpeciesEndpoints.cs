@@ -67,5 +67,17 @@ public static class SpeciesEndpoints
             var page = await repository.GetSpeciesCursorPageAsync(request, ct);
             return Results.Ok(page);
         }).WithName("GetSpeciesCursor");
+
+        group.MapGet("/locations/batch", async (
+            string ids,
+            ISpeciesRepository repository,
+            CancellationToken ct) =>
+        {
+            var speciesIds = ids.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                .Select(int.Parse)
+                .ToList();
+            var locations = await repository.GetSpeciesLocationsBatchAsync(speciesIds, ct);
+            return Results.Ok(locations);
+        }).WithName("GetSpeciesLocationsBatch");
     }
 }

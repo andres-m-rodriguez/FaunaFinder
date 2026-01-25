@@ -117,4 +117,15 @@ public sealed class SpeciesApiService : ISpeciesService
 
         return "?" + string.Join("&", queryParams);
     }
+
+    public async Task<IReadOnlyList<SpeciesLocationsDto>> GetSpeciesLocationsBatchAsync(
+        IEnumerable<int> speciesIds,
+        CancellationToken cancellationToken = default)
+    {
+        var ids = string.Join(",", speciesIds);
+        var result = await _httpClient.GetFromJsonAsync<IReadOnlyList<SpeciesLocationsDto>>(
+            $"api/species/locations/batch?ids={ids}",
+            cancellationToken);
+        return result ?? [];
+    }
 }
