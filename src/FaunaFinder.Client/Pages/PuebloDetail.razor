@@ -17,11 +17,13 @@
         @L["Back"]
     </MudButton>
 
-    @if (LoadDataCommand.IsLoading)
+    @* Municipality Header Section *@
+    @if (isLoadingMunicipality)
     {
-        <MudContainer Class="d-flex justify-center py-8">
-            <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
-        </MudContainer>
+        <MudPaper Elevation="2" Class="pa-4 mb-6">
+            <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="40px" Width="50%" Class="mb-3 rounded" />
+            <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="24px" Width="30%" Class="rounded" />
+        </MudPaper>
     }
     else if (municipality == null)
     {
@@ -31,7 +33,6 @@
     }
     else
     {
-        @* Municipality Header *@
         <MudPaper Elevation="2" Class="pa-4 mb-6">
             <MudText Typo="Typo.h4" Color="Color.Primary" GutterBottom="true">@municipality.Name</MudText>
             <div class="d-flex align-center">
@@ -41,11 +42,21 @@
                 </MudText>
             </div>
         </MudPaper>
+    }
 
-        @* Species List *@
+    @* Species List Section - only show if municipality loaded *@
+    @if (municipality != null || isLoadingMunicipality)
+    {
         <MudText Typo="Typo.h5" Color="Color.Primary" GutterBottom="true" Class="mb-4">@L["PuebloDetail_SpeciesInMunicipality"]</MudText>
 
-        @if (species.Count == 0)
+        @if (isLoadingSpecies)
+        {
+            @for (int i = 0; i < 6; i++)
+            {
+                <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="60px" Class="mb-3 rounded" />
+            }
+        }
+        else if (species.Count == 0)
         {
             <MudAlert Severity="Severity.Info" Variant="Variant.Text" Class="mb-4">
                 @L["PuebloDetail_NoSpeciesData"]
@@ -81,20 +92,32 @@
     private IReadOnlyList<SpeciesForListDto> species = [];
     private int? expandedSpeciesId;
 
+    private bool isLoadingMunicipality = true;
+    private bool isLoadingSpecies = true;
+
     protected override async Task OnInitializedAsync()
     {
-        await LoadDataCommand.ExecuteAsync();
+        // Load both in parallel
+        var municipalityTask = LoadMunicipalityAsync();
+        var speciesTask = LoadSpeciesAsync();
+
+        await Task.WhenAll(municipalityTask, speciesTask);
     }
 
-    [RelayCommand]
-    private async Task LoadData()
+    private async Task LoadMunicipalityAsync()
     {
+        isLoadingMunicipality = true;
         municipality = await MunicipalityService.GetMunicipalityDetailAsync(Id);
+        isLoadingMunicipality = false;
+        StateHasChanged();
+    }
 
-        if (municipality != null)
-        {
-            species = await SpeciesService.GetSpeciesByMunicipalityAsync(Id);
-        }
+    private async Task LoadSpeciesAsync()
+    {
+        isLoadingSpecies = true;
+        species = await SpeciesService.GetSpeciesByMunicipalityAsync(Id);
+        isLoadingSpecies = false;
+        StateHasChanged();
     }
 
     private void ToggleSpecies(int speciesId, bool expanded)
