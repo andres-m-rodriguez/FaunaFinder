@@ -1,0 +1,26 @@
+<MudPaper Elevation="0" Class="pa-2 mb-2 bg-subtle">
+    <div class="d-flex align-start gap-2 mb-1">
+        <MudChip T="string" Size="Size.Small" Color="Color.Primary" Variant="Variant.Filled">
+            NRCS @Link.NrcsPractice.Code
+        </MudChip>
+        <MudText Typo="Typo.body2">@Link.NrcsPractice.Name</MudText>
+    </div>
+    <div class="d-flex align-start gap-2 mb-1">
+        <MudChip T="string" Size="Size.Small" Color="Color.Secondary" Variant="Variant.Filled">
+            FWS @Link.FwsAction.Code
+        </MudChip>
+        <MudText Typo="Typo.body2">@Link.FwsAction.Name</MudText>
+    </div>
+    @if (!string.IsNullOrEmpty(Link.Justification))
+    {
+        <MudDivider Class="my-2" />
+        <MudText Typo="Typo.caption" Color="Color.Secondary">
+            @Link.Justification
+        </MudText>
+    }
+</MudPaper>
+
+@code {
+    [Parameter, EditorRequired]
+    public FwsLinkDto Link { get; set; } = null!;
+}

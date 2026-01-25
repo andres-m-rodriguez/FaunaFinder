@@ -1,0 +1,48 @@
+@inject IAppLocalizer L
+
+<div class="location-nav-overlay">
+    <div class="location-nav-header">
+        <MudIcon Icon="@Icons.Material.Filled.MyLocation" Size="Size.Small" Class="mr-2" />
+        <MudText Typo="Typo.body2" Style="font-weight: 500;">@L.GetLocalizedValue(Species.CommonName)</MudText>
+        <MudSpacer />
+        <MudButton Variant="Variant.Text"
+                   Size="Size.Small"
+                   StartIcon="@Icons.Material.Filled.ArrowBack"
+                   Href="@($"/species/{Species.Id}")"
+                   Class="mr-2">
+            @L["ViewDetails"]
+        </MudButton>
+        <MudIconButton Icon="@Icons.Material.Filled.Close"
+                       Size="Size.Small"
+                       OnClick="OnClose" />
+    </div>
+    <div class="location-nav-content">
+        <MudIconButton Icon="@Icons.Material.Filled.ChevronLeft"
+                       Size="Size.Large"
+                       Disabled="@(CurrentIndex == 0)"
+                       OnClick="OnPrevious" />
+        <div class="location-nav-info" @onclick="OnFocusCurrent">
+            <MudText Typo="Typo.body1" Align="Align.Center">
+                @(CurrentLocation.Description ?? L["Map_UnnamedLocation"])
+            </MudText>
+            <MudText Typo="Typo.caption" Color="Color.Secondary" Align="Align.Center">
+                @($"{CurrentIndex + 1} / {Species.Locations.Count}") &bull; @($"{CurrentLocation.RadiusMeters:N0}m radius")
+            </MudText>
+        </div>
+        <MudIconButton Icon="@Icons.Material.Filled.ChevronRight"
+                       Size="Size.Large"
+                       Disabled="@(CurrentIndex >= Species.Locations.Count - 1)"
+                       OnClick="OnNext" />
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public SpeciesForDetailDto Species { get; set; } = null!;
+    [Parameter] public int CurrentIndex { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+    [Parameter] public EventCallback OnPrevious { get; set; }
+    [Parameter] public EventCallback OnNext { get; set; }
+    [Parameter] public EventCallback OnFocusCurrent { get; set; }
+
+    private SpeciesLocationDto CurrentLocation => Species.Locations[CurrentIndex];
+}

@@ -1,3 +1,5 @@
+using FaunaFinder.Contracts.Localization;
+
 namespace FaunaFinder.Contracts.Dtos.Species;
 
 /// <summary>
@@ -5,12 +7,11 @@ namespace FaunaFinder.Contracts.Dtos.Species;
 /// </summary>
 public sealed record SpeciesNearbyDto(
     int Id,
-    string CommonName,
+    List<LocaleValue> CommonName,
     string ScientificName,
     double DistanceMeters,
     double Latitude,
     double Longitude,
     double RadiusMeters,
-    string? LocationDescription,
-    List<SpeciesTranslationDto> Translations
+    string? LocationDescription
 );

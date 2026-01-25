@@ -1,3 +1,4 @@
+using FaunaFinder.Contracts.Localization;
 using FaunaFinder.Database;
 using FaunaFinder.Database.Models.Conservation;
 using FaunaFinder.Database.Models.Municipalities;
@@ -151,20 +152,14 @@ public static class DatabaseSeeder
             var species = new Species
             {
                 Id = 0,
-                CommonName = commonName,
+                CommonName =
+                [
+                    new LocaleValue(SupportedLocales.English, commonName),
+                    new LocaleValue(SupportedLocales.Spanish, spanishName)
+                ],
                 ScientificName = scientificName
             };
             context.Species.Add(species);
-            await context.SaveChangesAsync(cancellationToken);
-
-            // Add Spanish translation for the species
-            context.SpeciesTranslations.Add(new SpeciesTranslation
-            {
-                Id = 0,
-                SpeciesId = species.Id,
-                LanguageCode = "es",
-                CommonName = spanishName
-            });
             await context.SaveChangesAsync(cancellationToken);
 
             // Link species to municipalities

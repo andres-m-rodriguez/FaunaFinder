@@ -209,12 +209,6 @@ namespace FaunaFinder.Database.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("CommonName")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)")
-                        .HasColumnName("common_name");
-
                     b.Property<string>("ScientificName")
                         .IsRequired()
                         .HasMaxLength(200)
@@ -223,9 +217,6 @@ namespace FaunaFinder.Database.Migrations
 
                     b.HasKey("Id")
                         .HasName("pk_species");
-
-                    b.HasIndex("CommonName")
-                        .HasDatabaseName("species_common_name_idx");
 
                     b.HasIndex("ScientificName")
                         .IsUnique()
@@ -271,41 +262,6 @@ namespace FaunaFinder.Database.Migrations
                         .HasDatabaseName("species_locations_species_id_idx");
 
                     b.ToTable("species_locations", (string)null);
-                });
-
-            modelBuilder.Entity("FaunaFinder.Database.Models.Species.SpeciesTranslation", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("id");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("CommonName")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)")
-                        .HasColumnName("common_name");
-
-                    b.Property<string>("LanguageCode")
-                        .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("character varying(10)")
-                        .HasColumnName("language_code");
-
-                    b.Property<int>("SpeciesId")
-                        .HasColumnType("integer")
-                        .HasColumnName("species_id");
-
-                    b.HasKey("Id")
-                        .HasName("pk_species_translations");
-
-                    b.HasIndex("SpeciesId", "LanguageCode")
-                        .IsUnique()
-                        .HasDatabaseName("species_translations_species_lang_uidx");
-
-                    b.ToTable("species_translations", (string)null);
                 });
 
             modelBuilder.Entity("FaunaFinder.Database.Models.Conservation.FwsLink", b =>
@@ -359,6 +315,35 @@ namespace FaunaFinder.Database.Migrations
                     b.Navigation("Species");
                 });
 
+            modelBuilder.Entity("FaunaFinder.Database.Models.Species.Species", b =>
+                {
+                    b.OwnsMany("FaunaFinder.Contracts.Localization.LocaleValue", "CommonName", b1 =>
+                        {
+                            b1.Property<int>("SpeciesId");
+
+                            b1.Property<int>("__synthesizedOrdinal")
+                                .ValueGeneratedOnAdd();
+
+                            b1.Property<string>("Code")
+                                .IsRequired();
+
+                            b1.Property<string>("Value")
+                                .IsRequired();
+
+                            b1.HasKey("SpeciesId", "__synthesizedOrdinal");
+
+                            b1.ToTable("species");
+
+                            b1.ToJson("common_name");
+
+                            b1.WithOwner()
+                                .HasForeignKey("SpeciesId")
+                                .HasConstraintName("fk_species_species_species_id");
+                        });
+
+                    b.Navigation("CommonName");
+                });
+
             modelBuilder.Entity("FaunaFinder.Database.Models.Species.SpeciesLocation", b =>
                 {
                     b.HasOne("FaunaFinder.Database.Models.Species.Species", "Species")
@@ -367,18 +352,6 @@ namespace FaunaFinder.Database.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_species_locations_species_species_id");
-
-                    b.Navigation("Species");
-                });
-
-            modelBuilder.Entity("FaunaFinder.Database.Models.Species.SpeciesTranslation", b =>
-                {
-                    b.HasOne("FaunaFinder.Database.Models.Species.Species", "Species")
-                        .WithMany("Translations")
-                        .HasForeignKey("SpeciesId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_species_translations_species_species_id");
 
                     b.Navigation("Species");
                 });
@@ -405,8 +378,6 @@ namespace FaunaFinder.Database.Migrations
                     b.Navigation("Locations");
 
                     b.Navigation("MunicipalitySpecies");
-
-                    b.Navigation("Translations");
                 });
 #pragma warning restore 612, 618
         }
