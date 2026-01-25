@@ -18,9 +18,28 @@
 
     @if (LoadDataCommand.IsLoading)
     {
-        <MudContainer Class="d-flex justify-center py-8">
-            <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
-        </MudContainer>
+        <MudPaper Elevation="2" Class="pa-4 mb-6">
+            <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="40px" Class="mb-3 rounded" />
+            <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="24px" Width="60%" Class="mb-3 rounded" />
+            <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="20px" Width="40%" Class="mb-3 rounded" />
+            <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="36px" Width="150px" Class="rounded" />
+        </MudPaper>
+
+        <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="32px" Width="200px" Class="mb-4 rounded" />
+        <MudGrid Spacing="3" Class="mb-6">
+            @for (int i = 0; i < 4; i++)
+            {
+                <MudItem xs="6" sm="4" md="3">
+                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="50px" Class="rounded" />
+                </MudItem>
+            }
+        </MudGrid>
+
+        <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="32px" Width="250px" Class="mb-4 rounded" />
+        @for (int i = 0; i < 2; i++)
+        {
+            <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="120px" Class="mb-3 rounded" />
+        }
     }
     else if (species == null)
     {
