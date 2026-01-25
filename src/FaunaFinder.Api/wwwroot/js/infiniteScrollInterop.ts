@@ -4,21 +4,35 @@ interface DotNetObjectReference {
 
 interface InfiniteScrollInterop {
     observer: IntersectionObserver | null;
+    isLoading: boolean;
     observe(element: Element, dotNetHelper: DotNetObjectReference): void;
     disconnect(): void;
 }
 
 const infiniteScrollInterop: InfiniteScrollInterop = {
     observer: null,
+    isLoading: false,
 
     observe(element: Element, dotNetHelper: DotNetObjectReference): void {
+        const self = this;
         this.observer = new IntersectionObserver(
             async (entries: IntersectionObserverEntry[]) => {
-                if (entries[0].isIntersecting) {
-                    await dotNetHelper.invokeMethodAsync('LoadMore');
+                if (entries[0].isIntersecting && !self.isLoading) {
+                    self.isLoading = true;
+                    try {
+                        await dotNetHelper.invokeMethodAsync('LoadMore');
+                    } finally {
+                        // Small delay to prevent rapid re-triggering
+                        setTimeout(() => {
+                            self.isLoading = false;
+                        }, 100);
+                    }
                 }
             },
-            { threshold: 0.1 }
+            {
+                threshold: 0.1,
+                rootMargin: '100px' // Trigger slightly before element is fully visible
+            }
         );
         this.observer.observe(element);
     },
@@ -28,6 +42,7 @@ const infiniteScrollInterop: InfiniteScrollInterop = {
             this.observer.disconnect();
             this.observer = null;
         }
+        this.isLoading = false;
     }
 };
 

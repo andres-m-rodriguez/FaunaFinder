@@ -66,13 +66,19 @@
         </MudGrid>
     }
 
-    @* Infinite scroll trigger *@
+    @* Infinite scroll trigger / Load more button *@
     @if (hasMore)
     {
         <div @ref="loadMoreTrigger" class="d-flex justify-center py-4">
             @if (isLoadingMore)
             {
                 <MudProgressCircular Indeterminate="true" Size="Size.Small" />
+            }
+            else
+            {
+                <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="LoadMore">
+                    @L["LoadMore"]
+                </MudButton>
             }
         </div>
     }
