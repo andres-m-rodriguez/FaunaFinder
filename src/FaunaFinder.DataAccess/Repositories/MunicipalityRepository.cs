@@ -2,6 +2,7 @@ using FaunaFinder.Contracts.Dtos.Municipalities;
 using FaunaFinder.Contracts.Parameters;
 using FaunaFinder.Database;
 using FaunaFinder.DataAccess.Interfaces;
+using FaunaFinder.Pagination.Contracts;
 using Microsoft.EntityFrameworkCore;
 
 namespace FaunaFinder.DataAccess.Repositories;
@@ -85,5 +86,50 @@ public sealed class MunicipalityRepository(
         }
 
         return await query.CountAsync(cancellationToken);
+    }
+
+    public async Task<CursorPage<MunicipalityCardDto>> GetMunicipalitiesCursorPageAsync(
+        CursorPageRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
+
+        var query = context.Municipalities.AsNoTracking().AsQueryable();
+
+        // Apply search filter
+        if (!string.IsNullOrWhiteSpace(request.Search))
+        {
+            var search = request.Search.ToLower();
+            query = query.Where(m => m.Name.ToLower().Contains(search));
+        }
+
+        // Apply cursor filter
+        if (request.Cursor is not null && CursorHelper.TryDecode(request.Cursor, out var cursorId))
+        {
+            query = query.Where(m => m.Id > cursorId);
+        }
+
+        // Fetch one extra to determine HasMore
+        var items = await query
+            .OrderBy(m => m.Id)
+            .Take(request.PageSize + 1)
+            .Select(static m => new MunicipalityCardDto(
+                m.Id,
+                m.Name,
+                m.MunicipalitySpecies.Count
+            ))
+            .ToListAsync(cancellationToken);
+
+        var hasMore = items.Count > request.PageSize;
+        if (hasMore)
+        {
+            items.RemoveAt(items.Count - 1);
+        }
+
+        var nextCursor = hasMore && items.Count > 0
+            ? CursorHelper.Encode(items[^1].Id)
+            : null;
+
+        return new CursorPage<MunicipalityCardDto>(items, nextCursor, hasMore);
     }
 }

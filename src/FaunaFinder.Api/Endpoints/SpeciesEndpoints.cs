@@ -1,5 +1,6 @@
 using FaunaFinder.Contracts.Parameters;
 using FaunaFinder.DataAccess.Interfaces;
+using FaunaFinder.Pagination.Contracts;
 
 namespace FaunaFinder.Api.Endpoints;
 
@@ -54,5 +55,17 @@ public static class SpeciesEndpoints
             var species = await repository.GetSpeciesNearbyAsync(latitude, longitude, radiusMeters, ct);
             return Results.Ok(species);
         }).WithName("GetSpeciesNearby");
+
+        group.MapGet("/cursor", async (
+            string? cursor,
+            int pageSize,
+            string? search,
+            ISpeciesRepository repository,
+            CancellationToken ct) =>
+        {
+            var request = new CursorPageRequest(cursor, pageSize, search);
+            var page = await repository.GetSpeciesCursorPageAsync(request, ct);
+            return Results.Ok(page);
+        }).WithName("GetSpeciesCursor");
     }
 }

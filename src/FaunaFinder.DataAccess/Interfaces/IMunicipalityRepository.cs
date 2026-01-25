@@ -1,5 +1,6 @@
 using FaunaFinder.Contracts.Dtos.Municipalities;
 using FaunaFinder.Contracts.Parameters;
+using FaunaFinder.Pagination.Contracts;
 
 namespace FaunaFinder.DataAccess.Interfaces;
 
@@ -18,5 +19,9 @@ public interface IMunicipalityRepository
 
     Task<int> GetTotalMunicipalitiesCountAsync(
         string? search = null,
+        CancellationToken cancellationToken = default);
+
+    Task<CursorPage<MunicipalityCardDto>> GetMunicipalitiesCursorPageAsync(
+        CursorPageRequest request,
         CancellationToken cancellationToken = default);
 }

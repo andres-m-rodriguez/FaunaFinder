@@ -17,6 +17,7 @@
   <ItemGroup>
     <ProjectReference Include="..\FaunaFinder.Contracts\FaunaFinder.Contracts.csproj" />
     <ProjectReference Include="..\FaunaFinder.Contracts.Localization\FaunaFinder.Contracts.Localization.csproj" />
+    <ProjectReference Include="..\FaunaFinder.Pagination.Contracts\FaunaFinder.Pagination.Contracts.csproj" />
   </ItemGroup>
 
 </Project>

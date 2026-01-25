@@ -2,6 +2,7 @@ using System.Text.Json;
 using FaunaFinder.Contracts.Parameters;
 using FaunaFinder.Database;
 using FaunaFinder.DataAccess.Interfaces;
+using FaunaFinder.Pagination.Contracts;
 using Microsoft.EntityFrameworkCore;
 using NetTopologySuite.IO.Converters;
 
@@ -74,5 +75,17 @@ public static class MunicipalityEndpoints
 
             return Results.Json(featureCollection, jsonOptions, contentType: "application/geo+json");
         }).WithName("GetMunicipalitiesGeoJson");
+
+        group.MapGet("/cursor", async (
+            string? cursor,
+            int pageSize,
+            string? search,
+            IMunicipalityRepository repository,
+            CancellationToken ct) =>
+        {
+            var request = new CursorPageRequest(cursor, pageSize, search);
+            var page = await repository.GetMunicipalitiesCursorPageAsync(request, ct);
+            return Results.Ok(page);
+        }).WithName("GetMunicipalitiesCursor");
     }
 }

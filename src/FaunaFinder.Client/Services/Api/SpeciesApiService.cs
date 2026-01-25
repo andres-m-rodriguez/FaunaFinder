@@ -1,6 +1,7 @@
 using System.Net.Http.Json;
 using FaunaFinder.Contracts.Dtos.Species;
 using FaunaFinder.Contracts.Parameters;
+using FaunaFinder.Pagination.Contracts;
 
 namespace FaunaFinder.Client.Services.Api;
 
@@ -81,6 +82,37 @@ public sealed class SpeciesApiService : ISpeciesService
         if (parameters.MunicipalityId.HasValue)
         {
             queryParams.Add($"municipalityId={parameters.MunicipalityId.Value}");
+        }
+
+        return "?" + string.Join("&", queryParams);
+    }
+
+    public async Task<CursorPage<SpeciesForSearchDto>> GetSpeciesCursorPageAsync(
+        CursorPageRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        var queryString = BuildCursorQueryString(request);
+        var result = await _httpClient.GetFromJsonAsync<CursorPage<SpeciesForSearchDto>>(
+            $"api/species/cursor{queryString}",
+            cancellationToken);
+        return result ?? new CursorPage<SpeciesForSearchDto>([], null, false);
+    }
+
+    private static string BuildCursorQueryString(CursorPageRequest request)
+    {
+        var queryParams = new List<string>
+        {
+            $"pageSize={request.PageSize}"
+        };
+
+        if (!string.IsNullOrEmpty(request.Cursor))
+        {
+            queryParams.Add($"cursor={Uri.EscapeDataString(request.Cursor)}");
+        }
+
+        if (!string.IsNullOrEmpty(request.Search))
+        {
+            queryParams.Add($"search={Uri.EscapeDataString(request.Search)}");
         }
 
         return "?" + string.Join("&", queryParams);

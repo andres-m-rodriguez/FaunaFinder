@@ -6,6 +6,7 @@ using FaunaFinder.Contracts.Localization;
 using FaunaFinder.Contracts.Parameters;
 using FaunaFinder.Database;
 using FaunaFinder.DataAccess.Interfaces;
+using FaunaFinder.Pagination.Contracts;
 using Microsoft.EntityFrameworkCore;
 
 namespace FaunaFinder.DataAccess.Repositories;
@@ -246,5 +247,56 @@ public sealed class SpeciesRepository(
     private static double DegreesToRadians(double degrees)
     {
         return degrees * Math.PI / 180;
+    }
+
+    public async Task<CursorPage<SpeciesForSearchDto>> GetSpeciesCursorPageAsync(
+        CursorPageRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
+
+        var query = context.Species.AsNoTracking().AsQueryable();
+
+        // Apply search filter
+        if (!string.IsNullOrWhiteSpace(request.Search))
+        {
+            var search = request.Search.ToLower();
+            query = query.Where(s =>
+                s.CommonName.Any(cn => cn.Value.ToLower().Contains(search)) ||
+                s.ScientificName.ToLower().Contains(search));
+        }
+
+        // Apply cursor filter
+        if (request.Cursor is not null && CursorHelper.TryDecode(request.Cursor, out var cursorId))
+        {
+            query = query.Where(s => s.Id > cursorId);
+        }
+
+        // Fetch one extra to determine HasMore
+        var items = await query
+            .OrderBy(s => s.Id)
+            .Take(request.PageSize + 1)
+            .Select(s => new SpeciesForSearchDto(
+                s.Id,
+                s.CommonName.ToList(),
+                s.ScientificName,
+                s.MunicipalitySpecies
+                    .Select(ms => ms.Municipality.Name)
+                    .OrderBy(n => n)
+                    .ToList()
+            ))
+            .ToListAsync(cancellationToken);
+
+        var hasMore = items.Count > request.PageSize;
+        if (hasMore)
+        {
+            items.RemoveAt(items.Count - 1);
+        }
+
+        var nextCursor = hasMore && items.Count > 0
+            ? CursorHelper.Encode(items[^1].Id)
+            : null;
+
+        return new CursorPage<SpeciesForSearchDto>(items, nextCursor, hasMore);
     }
 }
