@@ -210,6 +210,10 @@ window.leafletInterop = {
     },
     loadGeoJson: function () {
         const self = this;
+        const CACHE_KEY = 'pr-municipios-geojson';
+        const VERSION_KEY = 'pr-municipios-version';
+        const CURRENT_VERSION = 'v1';
+
         const processGeoJson = (data) => {
             self.geojsonLayer = L.geoJSON(data, {
                 style: () => self.getDefaultStyle(),
@@ -232,6 +236,24 @@ window.leafletInterop = {
             }).addTo(self.map);
             console.log('GeoJSON loaded successfully with', data.features.length, 'features');
         };
+
+        // Check localStorage cache first
+        const cached = localStorage.getItem(CACHE_KEY);
+        const cacheVersion = localStorage.getItem(VERSION_KEY);
+
+        if (cached && cacheVersion === CURRENT_VERSION) {
+            try {
+                const data = JSON.parse(cached);
+                if (data.features && data.features.length > 0) {
+                    console.log('GeoJSON loaded from localStorage cache');
+                    processGeoJson(data);
+                    return;
+                }
+            } catch (e) {
+                console.warn('Failed to parse cached GeoJSON, fetching from API');
+            }
+        }
+
         // Load from API endpoint
         const apiUrl = this.apiBaseUrl ? this.apiBaseUrl + '/api/municipalities/geojson' : '/api/municipalities/geojson';
         fetch(apiUrl)
@@ -242,6 +264,14 @@ window.leafletInterop = {
             })
             .then((data) => {
                 if (data.features && data.features.length > 0) {
+                    // Store in localStorage for future use
+                    try {
+                        localStorage.setItem(CACHE_KEY, JSON.stringify(data));
+                        localStorage.setItem(VERSION_KEY, CURRENT_VERSION);
+                        console.log('GeoJSON cached to localStorage');
+                    } catch (e) {
+                        console.warn('Failed to cache GeoJSON to localStorage:', e.message);
+                    }
                     processGeoJson(data);
                 } else {
                     throw new Error('No features in API response');
