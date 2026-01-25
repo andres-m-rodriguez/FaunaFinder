@@ -1,9 +1,13 @@
+using System.Reflection;
+using System.Text.Json;
 using FaunaFinder.Contracts.Localization;
 using FaunaFinder.Database;
 using FaunaFinder.Database.Models.Conservation;
 using FaunaFinder.Database.Models.Municipalities;
 using FaunaFinder.Database.Models.Species;
 using Microsoft.EntityFrameworkCore;
+using NetTopologySuite.Features;
+using NetTopologySuite.IO.Converters;
 
 namespace FaunaFinder.Seeder;
 
@@ -11,7 +15,18 @@ public static class DatabaseSeeder
 {
     public static async Task SeedAsync(FaunaFinderContext context, CancellationToken cancellationToken = default)
     {
-        if (await context.Municipalities.AnyAsync(cancellationToken))
+        // Check if we need to seed boundaries for existing municipalities
+        var hasMunicipalities = await context.Municipalities.AnyAsync(cancellationToken);
+        var hasBoundaries = await context.Municipalities.AnyAsync(m => m.Boundary != null, cancellationToken);
+
+        if (hasMunicipalities && !hasBoundaries)
+        {
+            // Municipalities exist but boundaries are missing - seed them
+            await SeedMunicipalityBoundariesAsync(context, cancellationToken);
+            return;
+        }
+
+        if (hasMunicipalities)
             return;
 
         // === MUNICIPALITIES ===
@@ -53,6 +68,9 @@ public static class DatabaseSeeder
         };
         context.Municipalities.AddRange(municipalities);
         await context.SaveChangesAsync(cancellationToken);
+
+        // Seed municipality boundaries from GeoJSON
+        await SeedMunicipalityBoundariesAsync(context, cancellationToken);
 
         // === NRCS PRACTICES ===
         var practices = new List<NrcsPractice>
@@ -358,5 +376,45 @@ public static class DatabaseSeeder
         }
 
         return links;
+    }
+
+    private static async Task SeedMunicipalityBoundariesAsync(FaunaFinderContext context, CancellationToken cancellationToken)
+    {
+        var assembly = Assembly.GetExecutingAssembly();
+        const string resourceName = "FaunaFinder.Seeder.Data.pr-municipios.geojson";
+
+        await using var stream = assembly.GetManifestResourceStream(resourceName);
+        if (stream is null)
+        {
+            throw new InvalidOperationException($"Embedded resource '{resourceName}' not found.");
+        }
+
+        var jsonOptions = new JsonSerializerOptions();
+        jsonOptions.Converters.Add(new GeoJsonConverterFactory());
+
+        var featureCollection = await JsonSerializer.DeserializeAsync<FeatureCollection>(stream, jsonOptions, cancellationToken);
+        if (featureCollection is null)
+        {
+            throw new InvalidOperationException("Failed to deserialize GeoJSON feature collection.");
+        }
+
+        var municipalities = await context.Municipalities.ToListAsync(cancellationToken);
+        var municipalityLookup = municipalities.ToDictionary(m => m.GeoJsonId, m => m);
+
+        foreach (var feature in featureCollection)
+        {
+            var state = feature.Attributes["STATE"]?.ToString() ?? "";
+            var county = feature.Attributes["COUNTY"]?.ToString() ?? "";
+            var geoJsonId = state + county;
+
+            if (municipalityLookup.TryGetValue(geoJsonId, out var municipality))
+            {
+                municipality.Boundary = feature.Geometry;
+                // Explicitly mark the entity as modified so EF Core saves the boundary
+                context.Entry(municipality).State = EntityState.Modified;
+            }
+        }
+
+        await context.SaveChangesAsync(cancellationToken);
     }
 }
