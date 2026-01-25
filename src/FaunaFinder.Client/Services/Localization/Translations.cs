@@ -13,6 +13,7 @@ public static class Translations
         // Common
         ["AppTitle"] = "FaunaFinder",
         ["Loading"] = "Loading...",
+        ["LoadMore"] = "Load More",
         ["Back"] = "Back",
         ["TryAgain"] = "Try Again",
         ["ViewDetails"] = "View Details",
@@ -131,6 +132,7 @@ public static class Translations
         // Common
         ["AppTitle"] = "FaunaFinder",
         ["Loading"] = "Cargando...",
+        ["LoadMore"] = "Cargar más",
         ["Back"] = "Volver",
         ["TryAgain"] = "Intentar de nuevo",
         ["ViewDetails"] = "Ver detalles",

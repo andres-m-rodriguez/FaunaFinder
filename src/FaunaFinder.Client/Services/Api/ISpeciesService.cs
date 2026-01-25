@@ -1,5 +1,6 @@
 using FaunaFinder.Contracts.Dtos.Species;
 using FaunaFinder.Contracts.Parameters;
+using FaunaFinder.Pagination.Contracts;
 
 namespace FaunaFinder.Client.Services.Api;
 
@@ -25,5 +26,9 @@ public interface ISpeciesService
         double latitude,
         double longitude,
         double radiusMeters,
+        CancellationToken cancellationToken = default);
+
+    Task<CursorPage<SpeciesForSearchDto>> GetSpeciesCursorPageAsync(
+        CursorPageRequest request,
         CancellationToken cancellationToken = default);
 }

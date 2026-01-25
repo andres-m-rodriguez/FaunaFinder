@@ -9,6 +9,7 @@
   <ItemGroup>
     <ProjectReference Include="..\FaunaFinder.Database\FaunaFinder.Database.csproj" />
     <ProjectReference Include="..\FaunaFinder.Contracts\FaunaFinder.Contracts.csproj" />
+    <ProjectReference Include="..\FaunaFinder.Pagination.Contracts\FaunaFinder.Pagination.Contracts.csproj" />
   </ItemGroup>
 
 </Project>

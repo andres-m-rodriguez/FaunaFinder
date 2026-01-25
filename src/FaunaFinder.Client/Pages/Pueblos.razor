@@ -1,6 +1,8 @@
 @page "/pueblos"
+@implements IDisposable
 @inject IMunicipalityService MunicipalityService
 @inject NavigationManager NavigationManager
+@inject IJSRuntime JS
 @inject IAppLocalizer L
 
 <PageTitle>@L["PageTitle_Pueblos"]</PageTitle>
@@ -22,7 +24,7 @@
                   Class="mb-4" />
 
     @* Municipalities Grid *@
-    @if (isLoadingMunicipalities)
+    @if (isInitialLoading)
     {
         <MudGrid Spacing="3">
             @for (int i = 0; i < 8; i++)
@@ -61,105 +63,113 @@
         </MudGrid>
     }
 
-    @* Pagination - show skeleton while count is loading *@
-    @if (municipalities.Count > 0 || isLoadingMunicipalities)
+    @* Infinite scroll trigger / Load more button *@
+    @if (hasMore)
     {
-        <div class="d-flex justify-center mt-6">
-            @if (isLoadingCount)
+        <div @ref="loadMoreTrigger" class="d-flex justify-center py-4">
+            @if (isLoadingMore)
             {
-                <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="40px" Width="300px" Class="rounded" />
+                <MudProgressCircular Indeterminate="true" Size="Size.Small" />
             }
             else
             {
-                <MudPagination Count="@totalPages"
-                              Selected="@(currentPage + 1)"
-                              SelectedChanged="OnPageChanged"
-                              Color="Color.Primary"
-                              Variant="Variant.Filled"
-                              ShowFirstButton="true"
-                              ShowLastButton="true" />
-            }
-        </div>
-
-        <div class="d-flex justify-center mt-2">
-            @if (isLoadingCount)
-            {
-                <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="20px" Width="200px" Class="rounded" />
-            }
-            else
-            {
-                <MudText Typo="Typo.caption" Color="Color.Secondary" Align="Align.Center">
-                    @L["Pueblos_Showing", (currentPage * pageSize) + 1, Math.Min((currentPage + 1) * pageSize, totalCount), totalCount]
-                </MudText>
+                <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="LoadMore">
+                    @L["LoadMore"]
+                </MudButton>
             }
         </div>
     }
 </MudContainer>
 
 @code {
-    private IReadOnlyList<MunicipalityCardDto> municipalities = [];
+    private List<MunicipalityCardDto> municipalities = new();
     private string searchTerm = string.Empty;
-    private int currentPage = 0;
-    private int pageSize = 12;
-    private int totalCount = 0;
-    private int totalPages = 0;
+    private string? nextCursor;
+    private bool hasMore = true;
+    private bool isInitialLoading = true;
+    private bool isLoadingMore = false;
+    private ElementReference loadMoreTrigger;
+    private DotNetObjectReference<Pueblos>? dotNetRef;
+    private bool isObserverInitialized = false;
 
-    private bool isLoadingMunicipalities = true;
-    private bool isLoadingCount = true;
+    private const int PageSize = 20;
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadDataAsync();
+        await LoadPageAsync();
+        isInitialLoading = false;
     }
 
-    private async Task LoadDataAsync()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        isLoadingMunicipalities = true;
-        isLoadingCount = true;
-
-        var municipalitiesTask = LoadMunicipalitiesAsync();
-        var countTask = LoadCountAsync();
-
-        await Task.WhenAll(municipalitiesTask, countTask);
+        if (firstRender && hasMore && !isObserverInitialized)
+        {
+            await InitializeObserverAsync();
+        }
     }
 
-    private async Task LoadMunicipalitiesAsync()
+    private async Task InitializeObserverAsync()
     {
-        var parameters = new MunicipalityParameters(
-            PageSize: pageSize,
-            Page: currentPage,
-            Search: string.IsNullOrWhiteSpace(searchTerm) ? null : searchTerm
-        );
+        dotNetRef = DotNetObjectReference.Create(this);
+        await JS.InvokeVoidAsync("infiniteScrollInterop.observe", loadMoreTrigger, dotNetRef);
+        isObserverInitialized = true;
+    }
 
-        municipalities = await MunicipalityService.GetMunicipalitiesWithSpeciesCountAsync(parameters);
-        isLoadingMunicipalities = false;
+    [JSInvokable]
+    public async Task LoadMore()
+    {
+        if (isLoadingMore || !hasMore) return;
+        await LoadPageAsync();
+    }
+
+    private async Task LoadPageAsync()
+    {
+        isLoadingMore = true;
         StateHasChanged();
-    }
 
-    private async Task LoadCountAsync()
-    {
-        totalCount = await MunicipalityService.GetTotalMunicipalitiesCountAsync(
-            string.IsNullOrWhiteSpace(searchTerm) ? null : searchTerm
-        );
-        totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
-        isLoadingCount = false;
+        var request = new CursorPageRequest(nextCursor, PageSize, string.IsNullOrWhiteSpace(searchTerm) ? null : searchTerm);
+        var page = await MunicipalityService.GetMunicipalitiesCursorPageAsync(request);
+
+        municipalities.AddRange(page.Items);
+        nextCursor = page.NextCursor;
+        hasMore = page.HasMore;
+
+        isLoadingMore = false;
         StateHasChanged();
     }
 
     private async Task OnSearchChanged()
     {
-        currentPage = 0;
-        await LoadDataAsync();
-    }
+        // Reset state for new search
+        municipalities.Clear();
+        nextCursor = null;
+        hasMore = true;
+        isInitialLoading = true;
+        isObserverInitialized = false;
 
-    private async Task OnPageChanged(int page)
-    {
-        currentPage = page - 1;
-        await LoadDataAsync();
+        // Disconnect existing observer
+        await JS.InvokeVoidAsync("infiniteScrollInterop.disconnect");
+
+        await LoadPageAsync();
+        isInitialLoading = false;
+
+        // Re-initialize observer if there are more results
+        if (hasMore)
+        {
+            StateHasChanged();
+            await Task.Yield(); // Allow render to complete
+            await InitializeObserverAsync();
+        }
     }
 
     private void NavigateToDetail(int municipalityId)
     {
         NavigationManager.NavigateTo($"/pueblos/{municipalityId}?returnUrl=/pueblos");
+    }
+
+    public void Dispose()
+    {
+        dotNetRef?.Dispose();
+        _ = JS.InvokeVoidAsync("infiniteScrollInterop.disconnect");
     }
 }

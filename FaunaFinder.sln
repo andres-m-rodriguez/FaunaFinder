@@ -23,6 +23,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FaunaFinder.Contracts.Local
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FaunaFinder.Client", "src\FaunaFinder.Client\FaunaFinder.Client.csproj", "{252CC04A-A94A-461B-A9EE-3EC8852B933F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FaunaFinder.Pagination.Contracts", "src\FaunaFinder.Pagination.Contracts\FaunaFinder.Pagination.Contracts.csproj", "{76498C24-5BED-4EED-AA8D-8CB35493EAA7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -141,6 +143,18 @@ Global
 		{252CC04A-A94A-461B-A9EE-3EC8852B933F}.Release|x64.Build.0 = Release|Any CPU
 		{252CC04A-A94A-461B-A9EE-3EC8852B933F}.Release|x86.ActiveCfg = Release|Any CPU
 		{252CC04A-A94A-461B-A9EE-3EC8852B933F}.Release|x86.Build.0 = Release|Any CPU
+		{76498C24-5BED-4EED-AA8D-8CB35493EAA7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{76498C24-5BED-4EED-AA8D-8CB35493EAA7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{76498C24-5BED-4EED-AA8D-8CB35493EAA7}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{76498C24-5BED-4EED-AA8D-8CB35493EAA7}.Debug|x64.Build.0 = Debug|Any CPU
+		{76498C24-5BED-4EED-AA8D-8CB35493EAA7}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{76498C24-5BED-4EED-AA8D-8CB35493EAA7}.Debug|x86.Build.0 = Debug|Any CPU
+		{76498C24-5BED-4EED-AA8D-8CB35493EAA7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{76498C24-5BED-4EED-AA8D-8CB35493EAA7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{76498C24-5BED-4EED-AA8D-8CB35493EAA7}.Release|x64.ActiveCfg = Release|Any CPU
+		{76498C24-5BED-4EED-AA8D-8CB35493EAA7}.Release|x64.Build.0 = Release|Any CPU
+		{76498C24-5BED-4EED-AA8D-8CB35493EAA7}.Release|x86.ActiveCfg = Release|Any CPU
+		{76498C24-5BED-4EED-AA8D-8CB35493EAA7}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -148,5 +162,6 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{FD7E8FB2-4FC8-4815-9B7D-F9E88DFE904A} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
 		{252CC04A-A94A-461B-A9EE-3EC8852B933F} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
+		{76498C24-5BED-4EED-AA8D-8CB35493EAA7} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
 	EndGlobalSection
 EndGlobal
