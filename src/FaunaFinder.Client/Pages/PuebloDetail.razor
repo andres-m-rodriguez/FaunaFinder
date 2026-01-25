@@ -19,9 +19,19 @@
 
     @if (LoadDataCommand.IsLoading)
     {
-        <MudContainer Class="d-flex justify-center py-8">
-            <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
-        </MudContainer>
+        @* Municipality Header Skeleton *@
+        <MudPaper Elevation="2" Class="pa-4 mb-6">
+            <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="40px" Width="50%" Class="mb-3 rounded" />
+            <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="24px" Width="30%" Class="rounded" />
+        </MudPaper>
+
+        @* Species List Section Skeleton *@
+        <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="32px" Width="40%" Class="mb-4 rounded" />
+
+        @for (int i = 0; i < 5; i++)
+        {
+            <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="60px" Class="mb-3 rounded" />
+        }
     }
     else if (municipality == null)
     {

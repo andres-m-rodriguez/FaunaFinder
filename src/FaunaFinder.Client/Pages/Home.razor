@@ -22,16 +22,13 @@
         @if (clickedMunicipalityName != null || showNearbySpecies)
         {
             <div class="desktop-sidebar @(sidebarOpen ? "open" : "")">
-                @if (LoadMunicipalitySpeciesCommand.IsLoading)
+                @if (isLoadingMunicipalitySpecies)
                 {
                     <SidebarHeader Title="@clickedMunicipalityName" OnClose="CloseSidebar" />
                     <div class="pa-3">
-                        @for (int i = 0; i < 5; i++)
+                        @for (int i = 0; i < 8; i++)
                         {
-                            <div class="mb-3">
-                                <MudSkeleton SkeletonType="SkeletonType.Text" Width="70%" Height="24px" />
-                                <MudSkeleton SkeletonType="SkeletonType.Text" Width="50%" Height="16px" Class="mt-1" />
-                            </div>
+                            <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="60px" Class="mb-3 rounded" />
                         }
                     </div>
                 }
@@ -310,15 +307,12 @@
                     </div>
                 }
 
-                @if (LoadMunicipalitySpeciesCommand.IsLoading)
+                @if (isLoadingMunicipalitySpecies)
                 {
                     <div class="pa-3">
-                        @for (int i = 0; i < 5; i++)
+                        @for (int i = 0; i < 8; i++)
                         {
-                            <div class="mb-3">
-                                <MudSkeleton SkeletonType="SkeletonType.Text" Width="70%" Height="24px" />
-                                <MudSkeleton SkeletonType="SkeletonType.Text" Width="50%" Height="16px" Class="mt-1" />
-                            </div>
+                            <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="60px" Class="mb-3 rounded" />
                         }
                     </div>
                 }
@@ -489,6 +483,9 @@
 
     // Export state
     private bool isExporting = false;
+
+    // Loading state for municipality species (set immediately on click)
+    private bool isLoadingMunicipalitySpecies = false;
 
     // Species Near Me state
     private double? userLatitude;
@@ -734,7 +731,7 @@
         expandedSpeciesId = null;
         selectedMunicipality = municipality;
         clickedMunicipalityName = name;
-        species = [];
+        isLoadingMunicipalitySpecies = true;
         sheetOpen = false;
         sidebarOpen = true;
 
@@ -753,6 +750,7 @@
         StateHasChanged();
 
         await LoadMunicipalitySpeciesCommand.ExecuteAsync();
+        isLoadingMunicipalitySpecies = false;
         StateHasChanged();
     }
 
