@@ -1,6 +1,6 @@
 @page "/species/{Id:int}"
 @using BlazingSingularity.Commands
-@inject ISpeciesRepository SpeciesRepository
+@inject ISpeciesService SpeciesService
 @inject NavigationManager NavigationManager
 @inject IAppLocalizer L
 
@@ -140,7 +140,7 @@
     [RelayCommand]
     private async Task LoadData()
     {
-        species = await SpeciesRepository.GetSpeciesDetailAsync(Id);
+        species = await SpeciesService.GetSpeciesDetailAsync(Id);
     }
 
     private void NavigateBack()

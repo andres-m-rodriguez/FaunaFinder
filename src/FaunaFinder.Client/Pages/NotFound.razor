@@ -1,0 +1,17 @@
+@page "/notfound"
+@inject IAppLocalizer L
+
+<PageTitle>Not Found - FaunaFinder</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Small" Class="d-flex flex-column align-center justify-center" Style="height: calc(100vh - 64px);">
+    <MudPaper Elevation="3" Class="pa-6 text-center">
+        <MudIcon Icon="@Icons.Material.Filled.SearchOff" Color="Color.Warning" Size="Size.Large" Class="mb-4" />
+        <MudText Typo="Typo.h5" Class="mb-2">Page Not Found</MudText>
+        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-4">
+            The page you're looking for doesn't exist.
+        </MudText>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/">
+            @L["Back"]
+        </MudButton>
+    </MudPaper>
+</MudContainer>

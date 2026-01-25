@@ -1,19 +1,19 @@
-@page "/pueblos"
+@page "/species"
 @using BlazingSingularity.Commands
-@inject IMunicipalityRepository MunicipalityRepository
+@inject ISpeciesService SpeciesService
 @inject NavigationManager NavigationManager
 @inject IAppLocalizer L
 
-<PageTitle>@L["PageTitle_Pueblos"]</PageTitle>
+<PageTitle>@L["PageTitle_Species"]</PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.Large" Class="py-6">
-    <MudText Typo="Typo.h4" Color="Color.Primary" GutterBottom="true">@L["Pueblos_Title"]</MudText>
+    <MudText Typo="Typo.h4" Color="Color.Primary" GutterBottom="true">@L["Species_Title"]</MudText>
     <MudText Typo="Typo.body1" Color="Color.Secondary" Class="mb-4">
-        @L["Pueblos_Description"]
+        @L["Species_Description"]
     </MudText>
 
     <MudTextField @bind-Value="searchTerm"
-                  Placeholder="@L["Pueblos_SearchPlaceholder"]"
+                  Placeholder="@L["Species_SearchPlaceholder"]"
                   Adornment="Adornment.Start"
                   AdornmentIcon="@Icons.Material.Filled.Search"
                   Variant="Variant.Outlined"
@@ -22,31 +22,34 @@
                   OnDebounceIntervalElapsed="OnSearchChanged"
                   Class="mb-4" />
 
-    @if (LoadMunicipalitiesCommand.IsLoading)
+    @if (LoadSpeciesCommand.IsLoading)
     {
         <MudContainer Class="d-flex justify-center py-8">
             <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
         </MudContainer>
     }
-    else if (municipalities.Count == 0)
+    else if (species.Count == 0)
     {
         <MudAlert Severity="Severity.Info" Variant="Variant.Text" Class="mb-4">
-            @L["Pueblos_NoResults"]
+            @L["Species_NoResults"]
         </MudAlert>
     }
     else
     {
         <MudGrid Spacing="3">
-            @foreach (var municipality in municipalities)
+            @foreach (var s in species)
             {
                 <MudItem xs="12" sm="6" md="4" lg="3">
-                    <MudCard Elevation="2" Class="municipality-card" Style="cursor: pointer;" @onclick="() => NavigateToDetail(municipality.Id)">
+                    <MudCard Elevation="2" Class="species-card" @onclick="() => NavigateToSpecies(s.Id)">
                         <MudCardContent>
-                            <MudText Typo="Typo.h6" Color="Color.Primary">@municipality.Name</MudText>
+                            <MudText Typo="Typo.h6" Color="Color.Primary">@L.GetLocalizedValue(s.CommonName)</MudText>
+                            <MudText Typo="Typo.body2" Color="Color.Secondary" Class="font-italic">
+                                @s.ScientificName
+                            </MudText>
                             <div class="d-flex align-center mt-2">
-                                <MudIcon Icon="@Icons.Material.Filled.Pets" Size="Size.Small" Color="Color.Secondary" Class="mr-2" />
+                                <MudIcon Icon="@Icons.Material.Filled.LocationOn" Size="Size.Small" Color="Color.Secondary" Class="mr-2" />
                                 <MudText Typo="Typo.body2" Color="Color.Secondary">
-                                    @municipality.SpeciesCount @L["Pueblos_Species"]
+                                    @s.MunicipalityNames.Count @(s.MunicipalityNames.Count == 1 ? L["Species_Municipality"] : L["Species_Municipalities"])
                                 </MudText>
                             </div>
                         </MudCardContent>
@@ -66,13 +69,16 @@
         </div>
 
         <MudText Typo="Typo.caption" Color="Color.Secondary" Align="Align.Center" Class="mt-2">
-            @L["Pueblos_Showing", (currentPage * pageSize) + 1, Math.Min((currentPage + 1) * pageSize, totalCount), totalCount]
+            @L["Species_Showing", (currentPage * pageSize) + 1, Math.Min((currentPage + 1) * pageSize, totalCount), totalCount]
         </MudText>
     }
 </MudContainer>
 
 @code {
-    private IReadOnlyList<MunicipalityCardDto> municipalities = [];
+    [CascadingParameter(Name = "LanguageRefresh")]
+    private int LanguageRefresh { get; set; }
+
+    private IReadOnlyList<SpeciesForSearchDto> species = [];
     private string searchTerm = string.Empty;
     private int currentPage = 0;
     private int pageSize = 12;
@@ -81,20 +87,20 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadMunicipalitiesCommand.ExecuteAsync();
+        await LoadSpeciesCommand.ExecuteAsync();
     }
 
     [RelayCommand]
-    private async Task LoadMunicipalities()
+    private async Task LoadSpecies()
     {
-        var parameters = new MunicipalityParameters(
+        var parameters = new SpeciesParameters(
             PageSize: pageSize,
             Page: currentPage,
             Search: string.IsNullOrWhiteSpace(searchTerm) ? null : searchTerm
         );
 
-        municipalities = await MunicipalityRepository.GetMunicipalitiesWithSpeciesCountAsync(parameters);
-        totalCount = await MunicipalityRepository.GetTotalMunicipalitiesCountAsync(
+        species = await SpeciesService.GetSpeciesAsync(parameters);
+        totalCount = await SpeciesService.GetTotalSpeciesCountAsync(
             string.IsNullOrWhiteSpace(searchTerm) ? null : searchTerm
         );
         totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
@@ -103,17 +109,17 @@
     private async Task OnSearchChanged()
     {
         currentPage = 0;
-        await LoadMunicipalitiesCommand.ExecuteAsync();
+        await LoadSpeciesCommand.ExecuteAsync();
     }
 
     private async Task OnPageChanged(int page)
     {
         currentPage = page - 1;
-        await LoadMunicipalitiesCommand.ExecuteAsync();
+        await LoadSpeciesCommand.ExecuteAsync();
     }
 
-    private void NavigateToDetail(int municipalityId)
+    private void NavigateToSpecies(int speciesId)
     {
-        NavigationManager.NavigateTo($"/pueblos/{municipalityId}?returnUrl=/pueblos");
+        NavigationManager.NavigateTo($"/species/{speciesId}?returnUrl=/species");
     }
 }

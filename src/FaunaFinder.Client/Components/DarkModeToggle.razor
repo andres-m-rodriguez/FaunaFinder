@@ -17,7 +17,6 @@
         {
             try
             {
-                // First check localStorage for saved preference
                 var savedPreference = await JS.InvokeAsync<string?>("localStorage.getItem", "faunafinder-darkmode");
 
                 if (!string.IsNullOrEmpty(savedPreference))
@@ -26,21 +25,16 @@
                 }
                 else
                 {
-                    // Check system preference
                     var prefersDark = await JS.InvokeAsync<bool>("eval", "window.matchMedia('(prefers-color-scheme: dark)').matches");
                     _isDarkMode = prefersDark;
                 }
 
                 DarkModeService.SetDarkMode(_isDarkMode);
-
-                // Sync the map if it exists
-                await JS.InvokeVoidAsync("leafletInterop.setDarkMode", _isDarkMode);
-
                 StateHasChanged();
             }
             catch
             {
-                // Ignore JS interop errors during prerendering or if map not initialized
+                // Ignore JS interop errors
             }
         }
     }
@@ -53,12 +47,10 @@
         try
         {
             await JS.InvokeVoidAsync("localStorage.setItem", "faunafinder-darkmode", _isDarkMode.ToString().ToLower());
-            // Update the map if it exists
-            await JS.InvokeVoidAsync("leafletInterop.setDarkMode", _isDarkMode);
         }
         catch
         {
-            // Ignore JS interop errors (map might not be initialized on non-map pages)
+            // Ignore JS interop errors
         }
     }
 }

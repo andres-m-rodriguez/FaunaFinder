@@ -18,7 +18,7 @@ var seeder = builder.AddProject<Projects.FaunaFinder_Seeder>("seeder")
     .WithReference(db)
     .WaitFor(db);
 
-// API + Blazor Server app
+// API + WASM Client
 builder.AddProject<Projects.FaunaFinder_Api>("api")
     .WithReference(db)
     .WaitFor(seeder)

@@ -46,10 +46,11 @@
     </MudDrawer>
 
     <MudMainContent Class="pt-14">
-        <ErrorBoundary @ref="errorBoundary">
-            <ChildContent>
-                @Body
-            </ChildContent>
+        <LanguageProvider>
+            <ErrorBoundary @ref="errorBoundary">
+                <ChildContent>
+                    @Body
+                </ChildContent>
             <ErrorContent Context="ex">
                 <MudContainer MaxWidth="MaxWidth.Small" Class="d-flex flex-column align-center justify-center" Style="height: calc(100vh - 64px);">
                     <MudPaper Elevation="3" Class="pa-6 text-center">
@@ -65,6 +66,7 @@
                 </MudContainer>
             </ErrorContent>
         </ErrorBoundary>
+        </LanguageProvider>
     </MudMainContent>
 </MudLayout>
 
