@@ -29,12 +29,12 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-app.UseBlazorFrameworkFiles();
-app.UseStaticFiles();
-app.UseRouting();
-app.UseAntiforgery();
-app.MapDefaultEndpoints();
 
+app.UseStaticFiles();
+app.UseAntiforgery();
+
+app.MapDefaultEndpoints();
+app.MapStaticAssets();
 // API endpoints
 var api = app.MapGroup("/api");
 api.MapMunicipalityEndpoints();
