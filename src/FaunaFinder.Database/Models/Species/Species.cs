@@ -11,6 +11,8 @@ public sealed class Species
     public required int Id { get; set; }
     public required List<LocaleValue> CommonName { get; set; }
     public required string ScientificName { get; set; }
+    public required byte[]? ProfileImageData { get; set; }
+    public required string? ProfileImageContentType { get; set; }
 
     public ICollection<FwsLink> FwsLinks { get; set; } = [];
     public ICollection<MunicipalitySpecies> MunicipalitySpecies { get; set; } = [];
@@ -28,6 +30,9 @@ public sealed class Species
             builder.Property(static e => e.ScientificName)
                 .HasMaxLength(200)
                 .IsRequired();
+
+            builder.Property(static e => e.ProfileImageContentType)
+                .HasMaxLength(100);
 
             builder.HasIndex(static e => e.ScientificName)
                 .IsUnique()

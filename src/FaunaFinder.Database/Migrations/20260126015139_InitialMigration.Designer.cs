@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace FaunaFinder.Database.Migrations
 {
     [DbContext(typeof(FaunaFinderContext))]
-    [Migration("20260124202330_Initial")]
-    partial class Initial
+    [Migration("20260126015139_InitialMigration")]
+    partial class InitialMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -211,6 +211,15 @@ namespace FaunaFinder.Database.Migrations
                         .HasColumnName("id");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ProfileImageContentType")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("profile_image_content_type");
+
+                    b.Property<byte[]>("ProfileImageData")
+                        .HasColumnType("bytea")
+                        .HasColumnName("profile_image_data");
 
                     b.Property<string>("ScientificName")
                         .IsRequired()

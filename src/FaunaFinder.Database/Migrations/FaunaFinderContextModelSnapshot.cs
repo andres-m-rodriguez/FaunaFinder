@@ -209,6 +209,15 @@ namespace FaunaFinder.Database.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("ProfileImageContentType")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("profile_image_content_type");
+
+                    b.Property<byte[]>("ProfileImageData")
+                        .HasColumnType("bytea")
+                        .HasColumnName("profile_image_data");
+
                     b.Property<string>("ScientificName")
                         .IsRequired()
                         .HasMaxLength(200)

@@ -90,7 +90,8 @@ public sealed class SpeciesRepository(
                         l.RadiusMeters,
                         l.Description
                     ))
-                    .ToList()
+                    .ToList(),
+                s.ProfileImageData != null
             ))
             .FirstOrDefaultAsync(cancellationToken);
     }

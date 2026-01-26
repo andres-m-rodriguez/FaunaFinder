@@ -51,24 +51,38 @@
     {
         @* Species Header *@
         <MudPaper Elevation="2" Class="pa-4 mb-6">
-            <MudText Typo="Typo.h4" Color="Color.Primary" GutterBottom="true">@L.GetLocalizedValue(species.CommonName)</MudText>
-            <MudText Typo="Typo.h6" Color="Color.Secondary" Class="font-italic">@species.ScientificName</MudText>
-            <div class="d-flex align-center mt-3">
-                <MudIcon Icon="@Icons.Material.Filled.LocationOn" Size="Size.Medium" Color="Color.Secondary" Class="mr-2" />
-                <MudText Typo="Typo.body1" Color="Color.Secondary">
-                    @L["SpeciesDetail_FoundIn", species.Municipalities.Count, species.Municipalities.Count == 1 ? L["Species_Municipality"] : L["Species_Municipalities"]]
-                </MudText>
-            </div>
-            @if (species.Locations.Count > 0)
-            {
-                <MudButton Variant="Variant.Filled"
-                           Color="Color.Primary"
-                           StartIcon="@Icons.Material.Filled.Map"
-                           OnClick="ViewLocations"
-                           Class="mt-4">
-                    @L["SpeciesDetail_ViewLocations"]
-                </MudButton>
-            }
+            <MudGrid>
+                @if (species.HasProfileImage)
+                {
+                    <MudItem xs="12" sm="4" md="3">
+                        <MudImage Src="@GetProfileImageUrl()"
+                                  Alt="@L.GetLocalizedValue(species.CommonName)"
+                                  ObjectFit="ObjectFit.Cover"
+                                  Class="rounded-lg species-image"
+                                  Style="width: 100%; max-height: 200px;" />
+                    </MudItem>
+                }
+                <MudItem xs="12" sm="@(species.HasProfileImage ? 8 : 12)" md="@(species.HasProfileImage ? 9 : 12)">
+                    <MudText Typo="Typo.h4" Color="Color.Primary" GutterBottom="true">@L.GetLocalizedValue(species.CommonName)</MudText>
+                    <MudText Typo="Typo.h6" Color="Color.Secondary" Class="font-italic">@species.ScientificName</MudText>
+                    <div class="d-flex align-center mt-3">
+                        <MudIcon Icon="@Icons.Material.Filled.LocationOn" Size="Size.Medium" Color="Color.Secondary" Class="mr-2" />
+                        <MudText Typo="Typo.body1" Color="Color.Secondary">
+                            @L["SpeciesDetail_FoundIn", species.Municipalities.Count, species.Municipalities.Count == 1 ? L["Species_Municipality"] : L["Species_Municipalities"]]
+                        </MudText>
+                    </div>
+                    @if (species.Locations.Count > 0)
+                    {
+                        <MudButton Variant="Variant.Filled"
+                                   Color="Color.Primary"
+                                   StartIcon="@Icons.Material.Filled.Map"
+                                   OnClick="ViewLocations"
+                                   Class="mt-4">
+                            @L["SpeciesDetail_ViewLocations"]
+                        </MudButton>
+                    }
+                </MudItem>
+            </MudGrid>
         </MudPaper>
 
         @* Municipalities Section *@
@@ -175,5 +189,10 @@
     private void ViewLocations()
     {
         NavigationManager.NavigateTo($"/?speciesId={Id}");
+    }
+
+    private string GetProfileImageUrl()
+    {
+        return species != null ? $"api/species/{species.Id}/image" : string.Empty;
     }
 }
