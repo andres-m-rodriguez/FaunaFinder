@@ -15,20 +15,47 @@ public static class DatabaseSeeder
 {
     public static async Task SeedAsync(FaunaFinderContext context, CancellationToken cancellationToken = default)
     {
-        // Check if we need to seed boundaries for existing municipalities
+        // Check what needs to be seeded
         var hasMunicipalities = await context.Municipalities.AnyAsync(cancellationToken);
         var hasBoundaries = await context.Municipalities.AnyAsync(m => m.Boundary != null, cancellationToken);
+        var hasSpecies = await context.Species.AnyAsync(cancellationToken);
+        var hasPractices = await context.NrcsPractices.AnyAsync(cancellationToken);
+        var hasActions = await context.FwsActions.AnyAsync(cancellationToken);
 
-        if (hasMunicipalities && !hasBoundaries)
+        // Seed municipalities if needed
+        if (!hasMunicipalities)
         {
-            // Municipalities exist but boundaries are missing - seed them
-            await SeedMunicipalityBoundariesAsync(context, cancellationToken);
-            return;
+            await SeedMunicipalitiesAsync(context, cancellationToken);
+            hasMunicipalities = true;
         }
 
-        if (hasMunicipalities)
-            return;
+        // Seed boundaries if municipalities exist but boundaries are missing
+        if (hasMunicipalities && !hasBoundaries)
+        {
+            await SeedMunicipalityBoundariesAsync(context, cancellationToken);
+        }
 
+        // Seed practices if needed
+        if (!hasPractices)
+        {
+            await SeedNrcsPracticesAsync(context, cancellationToken);
+        }
+
+        // Seed actions if needed
+        if (!hasActions)
+        {
+            await SeedFwsActionsAsync(context, cancellationToken);
+        }
+
+        // Seed species if needed
+        if (!hasSpecies)
+        {
+            await SeedSpeciesAsync(context, cancellationToken);
+        }
+    }
+
+    private static async Task SeedMunicipalitiesAsync(FaunaFinderContext context, CancellationToken cancellationToken)
+    {
         // === MUNICIPALITIES ===
         // Grouped by region for species distribution
         // GeoJsonId uses full FIPS code format: STATE (72 = Puerto Rico) + COUNTY
@@ -68,11 +95,10 @@ public static class DatabaseSeeder
         };
         context.Municipalities.AddRange(municipalities);
         await context.SaveChangesAsync(cancellationToken);
+    }
 
-        // Seed municipality boundaries from GeoJSON
-        await SeedMunicipalityBoundariesAsync(context, cancellationToken);
-
-        // === NRCS PRACTICES ===
+    private static async Task SeedNrcsPracticesAsync(FaunaFinderContext context, CancellationToken cancellationToken)
+    {
         var practices = new List<NrcsPractice>
         {
             new() { Id = 0, Code = "314", Name = "Brush Management" },
@@ -93,8 +119,10 @@ public static class DatabaseSeeder
         };
         context.NrcsPractices.AddRange(practices);
         await context.SaveChangesAsync(cancellationToken);
+    }
 
-        // === FWS ACTIONS ===
+    private static async Task SeedFwsActionsAsync(FaunaFinderContext context, CancellationToken cancellationToken)
+    {
         var actions = new List<FwsAction>
         {
             new() { Id = 0, Code = "1.1", Name = "Protect existing habitat" },
@@ -112,8 +140,10 @@ public static class DatabaseSeeder
         };
         context.FwsActions.AddRange(actions);
         await context.SaveChangesAsync(cancellationToken);
+    }
 
-        // === SPECIES WITH GEOGRAPHIC DISTRIBUTIONS ===
+    private static async Task SeedSpeciesAsync(FaunaFinderContext context, CancellationToken cancellationToken)
+    {
         // Each species has specific municipalities where it lives
         // Tuple: (English Common Name, Scientific Name, Spanish Common Name, Regions)
         var speciesData = new List<(string Common, string Scientific, string Spanish, string[] Regions)>
