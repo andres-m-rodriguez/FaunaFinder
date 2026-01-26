@@ -22,37 +22,33 @@
 
         @if (Species.FwsLinks.Any() || (ShowViewDetails && OnViewDetails.HasDelegate))
         {
-            <div class="d-flex justify-space-between align-center mt-3">
-                <div>
-                    @if (HasMoreLinks)
-                    {
-                        <MudButton Variant="Variant.Text"
-                                   Color="Color.Primary"
-                                   Size="Size.Small"
-                                   OnClick="@ToggleShowAll">
-                            @if (_showAllLinks)
-                            {
-                                @L["ShowLess"]
-                            }
-                            else
-                            {
-                                @L["LoadMore"]
-                            }
-                        </MudButton>
-                    }
-                </div>
-                <div>
-                    @if (ShowViewDetails && OnViewDetails.HasDelegate)
-                    {
-                        <MudButton Variant="Variant.Text"
-                                   Color="Color.Primary"
-                                   Size="Size.Small"
-                                   EndIcon="@Icons.Material.Filled.OpenInNew"
-                                   OnClick="OnViewDetails">
-                            @L["ViewDetails"]
-                        </MudButton>
-                    }
-                </div>
+            <div class="d-flex align-center mt-3 gap-2">
+                @if (HasMoreLinks)
+                {
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               Size="Size.Small"
+                               OnClick="@ToggleShowAll">
+                        @if (_showAllLinks)
+                        {
+                            @L["ShowLess"]
+                        }
+                        else
+                        {
+                            @L["LoadMore"]
+                        }
+                    </MudButton>
+                }
+                @if (ShowViewDetails && OnViewDetails.HasDelegate)
+                {
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               Size="Size.Small"
+                               EndIcon="@Icons.Material.Filled.OpenInNew"
+                               OnClick="OnViewDetails">
+                        @L["ViewDetails"]
+                    </MudButton>
+                }
             </div>
         }
     </ChildContent>
