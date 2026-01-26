@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace FaunaFinder.Database.Migrations
 {
     [DbContext(typeof(FaunaFinderContext))]
-    [Migration("20260126011318_SimplifyToSingleProfileImage")]
-    partial class SimplifyToSingleProfileImage
+    [Migration("20260126015139_InitialMigration")]
+    partial class InitialMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

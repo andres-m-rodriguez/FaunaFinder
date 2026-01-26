@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace FaunaFinder.Database.Migrations
 {
     /// <inheritdoc />
-    public partial class Initial : Migration
+    public partial class InitialMigration : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -65,6 +65,8 @@ namespace FaunaFinder.Database.Migrations
                     id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     scientific_name = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    profile_image_data = table.Column<byte[]>(type: "bytea", nullable: true),
+                    profile_image_content_type = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
                     common_name = table.Column<string>(type: "jsonb", nullable: true)
                 },
                 constraints: table =>
