@@ -4,15 +4,13 @@
                    ExpandedChanged="@OnExpandedChanged"
                    Class="mb-2">
     <TitleContent>
-        <div class="d-flex flex-column flex-sm-row align-start align-sm-center justify-space-between" style="width: 100%;">
-            <div class="d-flex flex-column flex-sm-row align-start align-sm-center">
-                <MudText Typo="@TitleTypo" Color="Color.Primary">
-                    @L.GetLocalizedValue(Species.CommonName)
-                </MudText>
-                <MudText Typo="Typo.caption" Color="Color.Secondary">
-                    <em>@Species.ScientificName</em>
-                </MudText>
-            </div>
+        <div class="d-flex flex-column">
+            <MudText Typo="@TitleTypo" Color="Color.Primary" Style="font-weight: 600;">
+                @L.GetLocalizedValue(Species.CommonName)
+            </MudText>
+            <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-1" Style="font-style: italic;">
+                @Species.ScientificName
+            </MudText>
         </div>
     </TitleContent>
     <ChildContent>
