@@ -1,0 +1,142 @@
+[
+  {
+    "code": "311",
+    "name": "Alley Cropping"
+  },
+  {
+    "code": "379",
+    "name": "Multi-Story Cropping"
+  },
+  {
+    "code": "380",
+    "name": "Windbreak/Shelterbelt Establishment and Renovation"
+  },
+  {
+    "code": "381",
+    "name": "Silvopasture"
+  },
+  {
+    "code": "383",
+    "name": "Fuel Break"
+  },
+  {
+    "code": "384",
+    "name": "Woody Residue Treatment"
+  },
+  {
+    "code": "390",
+    "name": "Riparian Herbaceous Cover"
+  },
+  {
+    "code": "391",
+    "name": "Riparian Forest Buffer"
+  },
+  {
+    "code": "394",
+    "name": "Firebreak"
+  },
+  {
+    "code": "395",
+    "name": "Stream Habitat Improvement and Management"
+  },
+  {
+    "code": "396",
+    "name": "Aquatic Organism Passage"
+  },
+  {
+    "code": "398",
+    "name": "Fish Raceway or Tank"
+  },
+  {
+    "code": "399",
+    "name": "Fishpond Management"
+  },
+  {
+    "code": "400",
+    "name": "Bivalve Aquaculture Gear and Biofouling Control"
+  },
+  {
+    "code": "420",
+    "name": "Wildlife Habitat Planting"
+  },
+  {
+    "code": "422",
+    "name": "Hedgerow Planting"
+  },
+  {
+    "code": "472",
+    "name": "Access Control"
+  },
+  {
+    "code": "490",
+    "name": "Tree/Shrub Site Preparation"
+  },
+  {
+    "code": "562",
+    "name": "Recreation Area Improvement"
+  },
+  {
+    "code": "612",
+    "name": "Tree-Shrub Establishment"
+  },
+  {
+    "code": "614",
+    "name": "Watering Facility"
+  },
+  {
+    "code": "643",
+    "name": "Restoration of Rare or Declining Natural Communities"
+  },
+  {
+    "code": "644",
+    "name": "Wetland Wildlife Habitat Management"
+  },
+  {
+    "code": "645",
+    "name": "Upland Wildlife Habitat Management"
+  },
+  {
+    "code": "646",
+    "name": "Shallow Water Development and Management"
+  },
+  {
+    "code": "647",
+    "name": "Early Successional Habitat Development/Management"
+  },
+  {
+    "code": "649",
+    "name": "Structures for Wildlife"
+  },
+  {
+    "code": "650",
+    "name": "Windbreak-Shelterbelt Renovation"
+  },
+  {
+    "code": "654",
+    "name": "Road-Trail-Landing Closure and Treatment"
+  },
+  {
+    "code": "655",
+    "name": "Forest Trails and Landings"
+  },
+  {
+    "code": "657",
+    "name": "Wetland Restoration"
+  },
+  {
+    "code": "658",
+    "name": "Wetland Creation"
+  },
+  {
+    "code": "659",
+    "name": "Wetland Enhancement"
+  },
+  {
+    "code": "660",
+    "name": "Tree-Shrub Pruning"
+  },
+  {
+    "code": "666",
+    "name": "Forest Stand Improvement"
+  }
+]

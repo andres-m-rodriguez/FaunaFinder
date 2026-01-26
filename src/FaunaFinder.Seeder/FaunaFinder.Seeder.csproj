@@ -14,6 +14,10 @@
 
   <ItemGroup>
     <EmbeddedResource Include="Data\pr-municipios.geojson" />
+    <EmbeddedResource Include="Data\species.json" />
+    <EmbeddedResource Include="Data\nrcs_practices.json" />
+    <EmbeddedResource Include="Data\fws_actions.json" />
+    <EmbeddedResource Include="Data\fws_links.json" />
   </ItemGroup>
 
   <ItemGroup>

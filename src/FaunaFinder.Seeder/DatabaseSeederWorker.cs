@@ -18,7 +18,6 @@ public sealed class DatabaseSeederWorker(
 
             logger.LogInformation("Applying database migrations...");
             await context.Database.MigrateAsync(stoppingToken);
-
             logger.LogInformation("Seeding database...");
             await DatabaseSeeder.SeedAsync(context, stoppingToken);
 
