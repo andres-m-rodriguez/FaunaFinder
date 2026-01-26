@@ -90,6 +90,19 @@ public sealed class SpeciesRepository(
                         l.RadiusMeters,
                         l.Description
                     ))
+                    .ToList(),
+                s.Images
+                    .OrderByDescending(i => i.IsPrimary)
+                    .ThenByDescending(i => i.CreatedAt)
+                    .Select(i => new SpeciesImageDto(
+                        i.Id,
+                        i.SpeciesId,
+                        i.ContentType,
+                        i.FileName,
+                        i.Description,
+                        i.IsPrimary,
+                        i.CreatedAt
+                    ))
                     .ToList()
             ))
             .FirstOrDefaultAsync(cancellationToken);

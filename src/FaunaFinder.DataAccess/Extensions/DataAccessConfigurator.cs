@@ -10,6 +10,7 @@ public static class DataAccessConfigurator
     {
         services.AddScoped<IMunicipalityRepository, MunicipalityRepository>();
         services.AddScoped<ISpeciesRepository, SpeciesRepository>();
+        services.AddScoped<ISpeciesImageRepository, SpeciesImageRepository>();
 
         return services;
     }

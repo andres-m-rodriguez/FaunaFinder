@@ -39,6 +39,7 @@ app.MapStaticAssets();
 var api = app.MapGroup("/api");
 api.MapMunicipalityEndpoints();
 api.MapSpeciesEndpoints();
+api.MapSpeciesImageEndpoints();
 api.MapExportEndpoints();
 
 // Serve App.razor as the shell with WASM interactivity

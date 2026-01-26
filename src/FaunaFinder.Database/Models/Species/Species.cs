@@ -15,6 +15,7 @@ public sealed class Species
     public ICollection<FwsLink> FwsLinks { get; set; } = [];
     public ICollection<MunicipalitySpecies> MunicipalitySpecies { get; set; } = [];
     public ICollection<SpeciesLocation> Locations { get; set; } = [];
+    public ICollection<SpeciesImage> Images { get; set; } = [];
 
     public sealed class EntityConfiguration : IEntityTypeConfiguration<Species>
     {
