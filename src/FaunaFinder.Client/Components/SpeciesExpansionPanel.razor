@@ -6,35 +6,63 @@
     <TitleContent>
         <div class="d-flex flex-column flex-sm-row align-start align-sm-center justify-space-between" style="width: 100%;">
             <div class="d-flex flex-column flex-sm-row align-start align-sm-center">
-                <MudText Typo="@TitleTypo" Color="Color.Primary" Class="@(ShowViewDetails ? "mr-4" : "")">
+                <MudText Typo="@TitleTypo" Color="Color.Primary">
                     @L.GetLocalizedValue(Species.CommonName)
                 </MudText>
                 <MudText Typo="Typo.caption" Color="Color.Secondary">
                     <em>@Species.ScientificName</em>
                 </MudText>
             </div>
-            @if (ShowViewDetails && OnViewDetails.HasDelegate)
-            {
-                <div @onclick:stopPropagation="true">
-                    <MudButton Variant="Variant.Text"
-                               Color="Color.Primary"
-                               Size="Size.Small"
-                               EndIcon="@Icons.Material.Filled.OpenInNew"
-                               OnClick="OnViewDetails">
-                        @L["ViewDetails"]
-                    </MudButton>
-                </div>
-            }
         </div>
     </TitleContent>
     <ChildContent>
-        <ConservationLinksList Links="Species.FwsLinks"
+        <ConservationLinksList Links="@DisplayedLinks"
                                UseGrid="UseGridLayout"
                                ShowEmptyMessage="ShowEmptyMessage" />
+
+        @if (Species.FwsLinks.Any() || (ShowViewDetails && OnViewDetails.HasDelegate))
+        {
+            <div class="d-flex justify-space-between align-center mt-3">
+                <div>
+                    @if (HasMoreLinks)
+                    {
+                        <MudButton Variant="Variant.Text"
+                                   Color="Color.Primary"
+                                   Size="Size.Small"
+                                   OnClick="@ToggleShowAll">
+                            @if (_showAllLinks)
+                            {
+                                @L["ShowLess"]
+                            }
+                            else
+                            {
+                                @L["LoadMore"]
+                            }
+                        </MudButton>
+                    }
+                </div>
+                <div>
+                    @if (ShowViewDetails && OnViewDetails.HasDelegate)
+                    {
+                        <MudButton Variant="Variant.Text"
+                                   Color="Color.Primary"
+                                   Size="Size.Small"
+                                   EndIcon="@Icons.Material.Filled.OpenInNew"
+                                   OnClick="OnViewDetails">
+                            @L["ViewDetails"]
+                        </MudButton>
+                    }
+                </div>
+            </div>
+        }
     </ChildContent>
 </MudExpansionPanel>
 
 @code {
+    private const int InitialLinksToShow = 3;
+    private bool _showAllLinks;
+    private string? _previousSpeciesName;
+
     [CascadingParameter(Name = "LanguageRefresh")]
     private int LanguageRefresh { get; set; }
 
@@ -61,4 +89,24 @@
 
     [Parameter]
     public Typo TitleTypo { get; set; } = Typo.subtitle2;
+
+    private bool HasMoreLinks => Species.FwsLinks.Count() > InitialLinksToShow;
+
+    private IEnumerable<FwsLinkDto> DisplayedLinks =>
+        _showAllLinks ? Species.FwsLinks : Species.FwsLinks.Take(InitialLinksToShow);
+
+    protected override void OnParametersSet()
+    {
+        // Reset "show all" when species changes or panel collapses
+        if (Species.ScientificName != _previousSpeciesName || !IsExpanded)
+        {
+            _showAllLinks = false;
+            _previousSpeciesName = Species.ScientificName;
+        }
+    }
+
+    private void ToggleShowAll()
+    {
+        _showAllLinks = !_showAllLinks;
+    }
 }
