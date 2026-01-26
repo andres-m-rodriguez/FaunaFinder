@@ -412,8 +412,6 @@ public static class DatabaseSeeder
             if (municipalityLookup.TryGetValue(geoJsonId, out var municipality))
             {
                 municipality.Boundary = feature.Geometry;
-                // Explicitly mark the entity as modified so EF Core saves the boundary
-                context.Entry(municipality).State = EntityState.Modified;
             }
         }
 
