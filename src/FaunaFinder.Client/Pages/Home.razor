@@ -154,7 +154,9 @@
                                     {
                                         <SpeciesExpansionPanel Species="s"
                                                                IsExpanded="@(expandedSpeciesId == s.Id)"
-                                                               OnExpandedChanged="@((bool expanded) => ToggleSpecies(s.Id, expanded))" />
+                                                               OnExpandedChanged="@((bool expanded) => ToggleSpecies(s.Id, expanded))"
+                                                               ShowViewDetails="true"
+                                                               OnViewDetails="@(() => NavigateToSpecies(s.Id))" />
                                     }
                                 </MudExpansionPanels>
                             </div>
@@ -359,7 +361,9 @@
                                 {
                                     <SpeciesExpansionPanel Species="s"
                                                            IsExpanded="@(expandedSpeciesId == s.Id)"
-                                                           OnExpandedChanged="@((bool expanded) => ToggleSpecies(s.Id, expanded))" />
+                                                           OnExpandedChanged="@((bool expanded) => ToggleSpecies(s.Id, expanded))"
+                                                           ShowViewDetails="true"
+                                                           OnViewDetails="@(() => NavigateToSpecies(s.Id))" />
                                 }
                             </MudExpansionPanels>
                         }
@@ -647,6 +651,11 @@
     private void ToggleSpecies(int speciesId, bool expanded)
     {
         expandedSpeciesId = expanded ? speciesId : null;
+    }
+
+    private void NavigateToSpecies(int speciesId)
+    {
+        NavigationManager.NavigateTo($"/species/{speciesId}?returnUrl=/");
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
