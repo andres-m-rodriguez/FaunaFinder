@@ -57,9 +57,12 @@ public static class DatabaseSeeder
             throw new InvalidOperationException("Failed to deserialize GeoJSON feature collection.");
         }
 
-        // Get existing municipalities
+        // Get existing municipalities by name (unique constraint is on name)
         var existingMunicipalities = await context.Municipalities
-            .ToDictionaryAsync(m => m.GeoJsonId, m => m, cancellationToken);
+            .ToDictionaryAsync(m => m.Name, m => m, cancellationToken);
+
+        // Track municipalities we're adding in this batch by name
+        var pendingMunicipalities = new Dictionary<string, Municipality>();
 
         foreach (var feature in featureCollection)
         {
@@ -68,17 +71,22 @@ public static class DatabaseSeeder
             var name = feature.Attributes["NAME"]?.ToString() ?? "";
             var geoJsonId = state + county;
 
-            // Skip if not Puerto Rico
-            if (state != "72")
+            // Skip if not Puerto Rico or empty name
+            if (state != "72" || string.IsNullOrEmpty(name))
                 continue;
 
-            if (existingMunicipalities.TryGetValue(geoJsonId, out var existing))
+            if (existingMunicipalities.TryGetValue(name, out var existing))
             {
                 // Update boundary if needed
                 if (existing.Boundary is null)
                 {
                     existing.Boundary = feature.Geometry;
                 }
+            }
+            else if (pendingMunicipalities.TryGetValue(name, out var pending))
+            {
+                // Already adding this municipality, skip duplicate
+                continue;
             }
             else
             {
@@ -91,7 +99,7 @@ public static class DatabaseSeeder
                     Boundary = feature.Geometry
                 };
                 context.Municipalities.Add(municipality);
-                existingMunicipalities[geoJsonId] = municipality;
+                pendingMunicipalities[name] = municipality;
             }
         }
 
