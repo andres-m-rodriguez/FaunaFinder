@@ -1,0 +1,98 @@
+[
+  {
+    "code": "1.1",
+    "name": "Site/Area Stewardship"
+  },
+  {
+    "code": "1.2",
+    "name": "Ecosystem & Natural Process (Re)Creation"
+  },
+  {
+    "code": "10.1",
+    "name": "Internal Organizational Management & Administration"
+  },
+  {
+    "code": "10.2",
+    "name": "External Organizational Development & Support"
+  },
+  {
+    "code": "10.3",
+    "name": "Alliance & Partnership Development"
+  },
+  {
+    "code": "10.4",
+    "name": "Financing Conservation"
+  },
+  {
+    "code": "2.1",
+    "name": "Species Stewardship"
+  },
+  {
+    "code": "2.2",
+    "name": "Species Re-Introduction & Translocation"
+  },
+  {
+    "code": "3.1",
+    "name": "Outreach & Communications"
+  },
+  {
+    "code": "4.1",
+    "name": "Detection & Arrest"
+  },
+  {
+    "code": "4.2",
+    "name": "Criminal Prosecution & Conviction"
+  },
+  {
+    "code": "4.3",
+    "name": "Non-Criminal Legal Action"
+  },
+  {
+    "code": "5.1",
+    "name": "Linked Enterprises & Alternative Livelihoods"
+  },
+  {
+    "code": "6.1",
+    "name": "Protected Area Designation &/or Acquisition"
+  },
+  {
+    "code": "6.2",
+    "name": "Easements & Resource Rights"
+  },
+  {
+    "code": "6.3",
+    "name": "Land/Water Use Zoning & Designation"
+  },
+  {
+    "code": "6.4",
+    "name": "Conservation Planning"
+  },
+  {
+    "code": "6.5",
+    "name": "Site Infrastructure"
+  },
+  {
+    "code": "7.1",
+    "name": "Laws, Regulations & Codes"
+  },
+  {
+    "code": "7.2",
+    "name": "Policies & Guidelines"
+  },
+  {
+    "code": "8.1",
+    "name": "Basic Research & Status Monitoring"
+  },
+  {
+    "code": "8.2",
+    "name": "Evaluation, Effectiveness Measures & Learning"
+  },
+  {
+    "code": "9.1",
+    "name": "Formal Education"
+  },
+  {
+    "code": "9.2",
+    "name": "Training & Individual Capacity Development"
+  }
+]
