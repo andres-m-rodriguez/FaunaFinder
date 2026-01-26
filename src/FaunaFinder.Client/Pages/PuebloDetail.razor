@@ -21,8 +21,8 @@
     @if (isLoadingMunicipality)
     {
         <MudPaper Elevation="2" Class="pa-4 mb-6">
-            <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="40px" Width="50%" Class="mb-3 rounded" />
-            <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="24px" Width="30%" Class="rounded" />
+            <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="40px" Width="50%" Class="mb-3 rounded" Style="border: 1px solid rgba(255,255,255,0.1);" />
+            <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="24px" Width="30%" Class="rounded" Style="border: 1px solid rgba(255,255,255,0.1);" />
         </MudPaper>
     }
     else if (municipality == null)
@@ -53,7 +53,7 @@
         {
             @for (int i = 0; i < 6; i++)
             {
-                <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="60px" Class="mb-3 rounded" />
+                <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="60px" Class="mb-3 rounded" Style="border: 1px solid rgba(255,255,255,0.1);" />
             }
         }
         else if (species.Count == 0)
