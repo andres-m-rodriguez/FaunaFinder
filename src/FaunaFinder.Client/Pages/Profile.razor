@@ -1,0 +1,104 @@
+@page "/profile"
+@using FaunaFinder.Client.Services.Auth
+@inject CookieAuthenticationStateProvider AuthStateProvider
+@inject NavigationManager NavigationManager
+@inject IAppLocalizer L
+
+<PageTitle>@L["Login_Profile"] - FaunaFinder</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Small" Class="py-16">
+    <MudPaper Elevation="4" Class="pa-8">
+        <AuthorizeView>
+            <Authorized Context="authContext">
+                <div class="d-flex flex-column align-center">
+                    <MudAvatar Size="Size.Large" Color="Color.Primary" Class="mb-4">
+                        <MudIcon Icon="@Icons.Material.Filled.Person" Size="Size.Large" />
+                    </MudAvatar>
+
+                    <MudText Typo="Typo.h4" Color="Color.Primary" GutterBottom="true" Align="Align.Center">
+                        @authContext.User.Identity?.Name
+                    </MudText>
+
+                    <MudText Typo="Typo.body1" Color="Color.Secondary" Class="mb-6" Align="Align.Center">
+                        @authContext.User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value
+                    </MudText>
+
+                    <MudDivider Class="my-4" Style="width: 100%;" />
+
+                    <MudList T="string" Dense="true" Class="w-100">
+                        <MudListItem Icon="@Icons.Material.Filled.Badge">
+                            <div class="d-flex justify-space-between w-100">
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">@L["Admin_Role"]</MudText>
+                                <MudChip T="string" Size="Size.Small" Color="Color.Primary">
+                                    @authContext.User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value
+                                </MudChip>
+                            </div>
+                        </MudListItem>
+                        <MudListItem Icon="@Icons.Material.Filled.Verified">
+                            <div class="d-flex justify-space-between w-100">
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">@L["Admin_Status"]</MudText>
+                                <MudChip T="string" Size="Size.Small" Color="@GetStatusColor(authContext.User.FindFirst("status")?.Value)">
+                                    @GetStatusText(authContext.User.FindFirst("status")?.Value)
+                                </MudChip>
+                            </div>
+                        </MudListItem>
+                    </MudList>
+
+                    <MudDivider Class="my-4" Style="width: 100%;" />
+
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Error"
+                               StartIcon="@Icons.Material.Filled.Logout"
+                               OnClick="HandleLogout"
+                               Class="mt-4">
+                        @L["UserMenu_Logout"]
+                    </MudButton>
+                </div>
+            </Authorized>
+            <NotAuthorized>
+                <div class="d-flex flex-column align-center">
+                    <MudIcon Icon="@Icons.Material.Filled.Lock" Size="Size.Large" Color="Color.Warning" Class="mb-4" />
+
+                    <MudText Typo="Typo.h5" Color="Color.Warning" GutterBottom="true" Align="Align.Center">
+                        @L["Admin_AccessDenied"]
+                    </MudText>
+
+                    <MudText Typo="Typo.body1" Color="Color.Secondary" Class="mb-6" Align="Align.Center">
+                        @L["Login_Description"]
+                    </MudText>
+
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               StartIcon="@Icons.Material.Filled.Login"
+                               Href="/login">
+                        @L["Login_SignIn"]
+                    </MudButton>
+                </div>
+            </NotAuthorized>
+        </AuthorizeView>
+    </MudPaper>
+</MudContainer>
+
+@code {
+    private async Task HandleLogout()
+    {
+        await AuthStateProvider.LogoutAsync();
+        NavigationManager.NavigateTo("/");
+    }
+
+    private Color GetStatusColor(string? status) => status switch
+    {
+        "Approved" => Color.Success,
+        "Pending" => Color.Warning,
+        "Rejected" => Color.Error,
+        _ => Color.Default
+    };
+
+    private string GetStatusText(string? status) => status switch
+    {
+        "Approved" => L["Admin_Approved"],
+        "Pending" => L["Admin_Pending"],
+        "Rejected" => L["Admin_Rejected"],
+        _ => status ?? ""
+    };
+}
