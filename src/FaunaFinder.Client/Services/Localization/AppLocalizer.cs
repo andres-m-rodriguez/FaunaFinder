@@ -32,8 +32,9 @@ public sealed class AppLocalizer : IAppLocalizer
 
     public string GetLocalizedValue(IEnumerable<LocaleValue> values)
     {
+        if (values is null) return string.Empty;
         var targetLocale = IsSpanish ? SupportedLocales.Spanish : SupportedLocales.English;
-        var value = values.FirstOrDefault(v => v.Code.StartsWith(targetLocale));
+        var value = values.FirstOrDefault(v => v.Code?.StartsWith(targetLocale) ?? false);
         return value?.Value ?? values.FirstOrDefault()?.Value ?? string.Empty;
     }
 }
