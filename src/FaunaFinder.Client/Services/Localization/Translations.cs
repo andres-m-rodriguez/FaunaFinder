@@ -97,7 +97,10 @@ public static class Translations
         ["Filter_NrcsPractices"] = "NRCS Practices",
         ["Filter_FwsActions"] = "FWS Actions",
         ["Filter_ShowingFiltered"] = "Showing {0} of {1} species",
+        ["Filter_ShowingFilteredLinks"] = "Showing {0} of {1} links",
         ["Filter_NoMatches"] = "No species match the selected filters.",
+        ["Filter_NoMatchesLinks"] = "No conservation links match the selected filters.",
+        ["Filter_SearchLinks"] = "Search conservation links...",
 
         // Page Titles
         ["PageTitle_Map"] = "FaunaFinder - Puerto Rico",
@@ -218,7 +221,10 @@ public static class Translations
         ["Filter_NrcsPractices"] = "Prácticas NRCS",
         ["Filter_FwsActions"] = "Acciones FWS",
         ["Filter_ShowingFiltered"] = "Mostrando {0} de {1} especies",
+        ["Filter_ShowingFilteredLinks"] = "Mostrando {0} de {1} enlaces",
         ["Filter_NoMatches"] = "Ninguna especie coincide con los filtros seleccionados.",
+        ["Filter_NoMatchesLinks"] = "Ningun enlace de conservacion coincide con los filtros seleccionados.",
+        ["Filter_SearchLinks"] = "Buscar enlaces de conservacion...",
 
         // Page Titles
         ["PageTitle_Map"] = "FaunaFinder - Puerto Rico",
