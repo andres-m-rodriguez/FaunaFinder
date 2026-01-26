@@ -1,12 +1,15 @@
 using FaunaFinder.Database.Models.Conservation;
 using FaunaFinder.Database.Models.Municipalities;
 using FaunaFinder.Database.Models.Species;
+using FaunaFinder.Database.Models.Users;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace FaunaFinder.Database;
 
 public sealed class FaunaFinderContext(DbContextOptions<FaunaFinderContext> options)
-    : DbContext(options)
+    : IdentityDbContext<User, IdentityRole<int>, int>(options)
 {
     // DbSets organized by domain
     public DbSet<Municipality> Municipalities => Set<Municipality>();
@@ -19,6 +22,8 @@ public sealed class FaunaFinderContext(DbContextOptions<FaunaFinderContext> opti
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        base.OnModelCreating(modelBuilder);
+
         // Apply all configurations from nested classes
         modelBuilder.ApplyConfiguration(new Municipality.EntityConfiguration());
         modelBuilder.ApplyConfiguration(new MunicipalitySpecies.EntityConfiguration());
@@ -27,5 +32,15 @@ public sealed class FaunaFinderContext(DbContextOptions<FaunaFinderContext> opti
         modelBuilder.ApplyConfiguration(new FwsAction.EntityConfiguration());
         modelBuilder.ApplyConfiguration(new FwsLink.EntityConfiguration());
         modelBuilder.ApplyConfiguration(new NrcsPractice.EntityConfiguration());
+        modelBuilder.ApplyConfiguration(new User.EntityConfiguration());
+
+        // Configure Identity table names to use snake_case
+        modelBuilder.Entity<User>().ToTable("users");
+        modelBuilder.Entity<IdentityRole<int>>().ToTable("roles");
+        modelBuilder.Entity<IdentityUserRole<int>>().ToTable("user_roles");
+        modelBuilder.Entity<IdentityUserClaim<int>>().ToTable("user_claims");
+        modelBuilder.Entity<IdentityUserLogin<int>>().ToTable("user_logins");
+        modelBuilder.Entity<IdentityUserToken<int>>().ToTable("user_tokens");
+        modelBuilder.Entity<IdentityRoleClaim<int>>().ToTable("role_claims");
     }
 }

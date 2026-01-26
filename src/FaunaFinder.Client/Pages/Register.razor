@@ -1,0 +1,156 @@
+@page "/register"
+@using FaunaFinder.Client.Services.Auth
+@inject CookieAuthenticationStateProvider AuthStateProvider
+@inject NavigationManager NavigationManager
+@inject IAppLocalizer L
+
+<PageTitle>@L["Register_Title"] - FaunaFinder</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Small" Class="py-16">
+    <MudPaper Elevation="4" Class="pa-8">
+        <div class="d-flex flex-column align-center">
+            <MudIcon Icon="@Icons.Material.Filled.PersonAdd" Size="Size.Large" Color="Color.Primary" Class="mb-4" />
+
+            <MudText Typo="Typo.h4" Color="Color.Primary" GutterBottom="true" Align="Align.Center">
+                @L["Register_Title"]
+            </MudText>
+
+            <MudText Typo="Typo.body1" Color="Color.Secondary" Class="mb-6" Align="Align.Center">
+                @L["Register_Description"]
+            </MudText>
+
+            <AuthorizeView>
+                <Authorized Context="authContext">
+                    <MudAlert Severity="Severity.Success" Class="mb-4">
+                        @L["Login_AlreadyLoggedIn", authContext.User.Identity?.Name ?? "User"]
+                    </MudAlert>
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               Size="Size.Large"
+                               StartIcon="@Icons.Material.Filled.Home"
+                               OnClick="@(() => NavigationManager.NavigateTo("/"))">
+                        @L["Login_GoToHome"]
+                    </MudButton>
+                </Authorized>
+                <NotAuthorized Context="_">
+                    @if (!string.IsNullOrEmpty(_error))
+                    {
+                        <MudAlert Severity="Severity.Error" Class="mb-4" Dense="true">
+                            @_error
+                        </MudAlert>
+                    }
+
+                    @if (_success)
+                    {
+                        <MudAlert Severity="Severity.Success" Class="mb-4">
+                            @L["Register_Success"]
+                        </MudAlert>
+                        <MudButton Variant="Variant.Filled"
+                                   Color="Color.Primary"
+                                   Size="Size.Large"
+                                   StartIcon="@Icons.Material.Filled.Home"
+                                   OnClick="@(() => NavigationManager.NavigateTo("/"))">
+                            @L["Login_GoToHome"]
+                        </MudButton>
+                    }
+                    else
+                    {
+                        <EditForm Model="_model" OnValidSubmit="HandleRegister" style="width: 100%;">
+                            <DataAnnotationsValidator />
+
+                            <MudTextField @bind-Value="_model.DisplayName"
+                                          Label="@L["Register_DisplayName"]"
+                                          Variant="Variant.Outlined"
+                                          Class="mb-4"
+                                          Required="true"
+                                          RequiredError="@L["Register_DisplayNameRequired"]" />
+
+                            <MudTextField @bind-Value="_model.Email"
+                                          Label="@L["Login_Email"]"
+                                          InputType="InputType.Email"
+                                          Variant="Variant.Outlined"
+                                          Class="mb-4"
+                                          Required="true"
+                                          RequiredError="@L["Login_EmailRequired"]" />
+
+                            <MudTextField @bind-Value="_model.Password"
+                                          Label="@L["Login_Password"]"
+                                          InputType="InputType.Password"
+                                          Variant="Variant.Outlined"
+                                          Class="mb-4"
+                                          Required="true"
+                                          RequiredError="@L["Login_PasswordRequired"]"
+                                          HelperText="@L["Register_PasswordRequirements"]" />
+
+                            <MudTextField @bind-Value="_model.ConfirmPassword"
+                                          Label="@L["Register_ConfirmPassword"]"
+                                          InputType="InputType.Password"
+                                          Variant="Variant.Outlined"
+                                          Class="mb-4"
+                                          Required="true"
+                                          RequiredError="@L["Register_ConfirmPasswordRequired"]" />
+
+                            <MudButton ButtonType="ButtonType.Submit"
+                                       Variant="Variant.Filled"
+                                       Color="Color.Primary"
+                                       Size="Size.Large"
+                                       FullWidth="true"
+                                       Disabled="_isLoading"
+                                       Class="mb-4">
+                                @if (_isLoading)
+                                {
+                                    <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                                }
+                                @L["Register_CreateAccount"]
+                            </MudButton>
+                        </EditForm>
+
+                        <MudText Typo="Typo.body2" Align="Align.Center">
+                            @L["Register_HasAccount"]
+                            <MudLink Href="/login">@L["Login_SignIn"]</MudLink>
+                        </MudText>
+                    }
+                </NotAuthorized>
+            </AuthorizeView>
+        </div>
+    </MudPaper>
+</MudContainer>
+
+@code {
+    private RegisterModel _model = new();
+    private bool _isLoading;
+    private string? _error;
+    private bool _success;
+
+    private async Task HandleRegister()
+    {
+        if (_model.Password != _model.ConfirmPassword)
+        {
+            _error = L["Register_PasswordMismatch"];
+            return;
+        }
+
+        _isLoading = true;
+        _error = null;
+        StateHasChanged();
+
+        var result = await AuthStateProvider.RegisterAsync(_model.Email, _model.Password, _model.DisplayName);
+
+        result.Switch(
+            user => _success = true,
+            emailExists => _error = emailExists.Message,
+            registrationFailed => _error = registrationFailed.Message,
+            validationError => _error = validationError.Message,
+            unexpected => _error = unexpected.Message);
+
+        _isLoading = false;
+    }
+
+    private class RegisterModel
+    {
+        public string DisplayName { get; set; } = "";
+        public string Email { get; set; } = "";
+        public string Password { get; set; } = "";
+        public string ConfirmPassword { get; set; } = "";
+    }
+}
