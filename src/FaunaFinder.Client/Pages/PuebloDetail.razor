@@ -64,91 +64,18 @@
         }
         else
         {
-            @* Search and Filter Controls *@
-            <MudPaper Elevation="1" Class="pa-3 mb-4">
-                <MudGrid Spacing="2">
-                    <MudItem xs="12" md="6">
-                        <MudTextField @bind-Value="searchText"
-                                      Placeholder="@L["Species_SearchPlaceholder"]"
-                                      Adornment="Adornment.Start"
-                                      AdornmentIcon="@Icons.Material.Filled.Search"
-                                      Variant="Variant.Outlined"
-                                      Margin="Margin.Dense"
-                                      Immediate="true"
-                                      Clearable="true" />
-                    </MudItem>
-                    <MudItem xs="12" md="6" Class="d-flex align-center gap-2 flex-wrap">
-                        <MudSelect T="string"
-                                   Value="selectedNrcsPractice"
-                                   ValueChanged="OnNrcsPracticeChanged"
-                                   Label="@L["Filter_NrcsPractices"]"
-                                   Variant="Variant.Outlined"
-                                   Margin="Margin.Dense"
-                                   Dense="true"
-                                   Clearable="true"
-                                   Style="min-width: 150px;">
-                            @foreach (var practice in AvailableNrcsPractices)
-                            {
-                                <MudSelectItem Value="@practice">@practice</MudSelectItem>
-                            }
-                        </MudSelect>
-                        <MudSelect T="string"
-                                   Value="selectedFwsAction"
-                                   ValueChanged="OnFwsActionChanged"
-                                   Label="@L["Filter_FwsActions"]"
-                                   Variant="Variant.Outlined"
-                                   Margin="Margin.Dense"
-                                   Dense="true"
-                                   Clearable="true"
-                                   Style="min-width: 150px;">
-                            @foreach (var action in AvailableFwsActions)
-                            {
-                                <MudSelectItem Value="@action">@action</MudSelectItem>
-                            }
-                        </MudSelect>
-                        @if (HasActiveFilters)
-                        {
-                            <MudButton Variant="Variant.Text"
-                                       Color="Color.Primary"
-                                       Size="Size.Small"
-                                       StartIcon="@Icons.Material.Filled.Clear"
-                                       OnClick="ClearAllFilters">
-                                @L["Filter_ClearAll"]
-                            </MudButton>
-                        }
-                    </MudItem>
-                </MudGrid>
-
-                @* Active Filter Chips *@
-                @if (HasActiveFilters)
-                {
-                    <div class="d-flex flex-wrap gap-1 mt-3">
-                        @if (!string.IsNullOrWhiteSpace(searchText))
-                        {
-                            <MudChip T="string" Size="Size.Small" Color="Color.Info" OnClose="ClearSearchText">
-                                "@searchText"
-                            </MudChip>
-                        }
-                        @if (!string.IsNullOrEmpty(selectedNrcsPractice))
-                        {
-                            <MudChip T="string" Size="Size.Small" Color="Color.Primary" OnClose="ClearNrcsPractice">
-                                NRCS @selectedNrcsPractice
-                            </MudChip>
-                        }
-                        @if (!string.IsNullOrEmpty(selectedFwsAction))
-                        {
-                            <MudChip T="string" Size="Size.Small" Color="Color.Secondary" OnClose="ClearFwsAction">
-                                FWS @selectedFwsAction
-                            </MudChip>
-                        }
-                    </div>
-                }
-
-                @* Filtered Count *@
-                <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-2">
-                    @string.Format(L["Filter_ShowingFiltered"], FilteredSpecies.Count, species.Count)
-                </MudText>
-            </MudPaper>
+            <SpeciesFilterToolbar SearchText="@searchText"
+                                   SearchTextChanged="OnSearchTextChanged"
+                                   SelectedNrcsPractice="@selectedNrcsPractice"
+                                   SelectedNrcsPracticeChanged="OnNrcsPracticeChanged"
+                                   SelectedFwsAction="@selectedFwsAction"
+                                   SelectedFwsActionChanged="OnFwsActionChanged"
+                                   AvailableNrcsPractices="@AvailableNrcsPractices"
+                                   AvailableFwsActions="@AvailableFwsActions"
+                                   FilteredCount="@FilteredSpecies.Count"
+                                   TotalCount="@species.Count"
+                                   SearchPlaceholder="@L["Species_SearchPlaceholder"]"
+                                   FilteredCountFormat="@L["Filter_ShowingFiltered"]" />
 
             @if (FilteredSpecies.Count == 0)
             {
@@ -194,10 +121,6 @@
     private string searchText = string.Empty;
     private string? selectedNrcsPractice;
     private string? selectedFwsAction;
-
-    private bool HasActiveFilters => !string.IsNullOrWhiteSpace(searchText) ||
-                                      !string.IsNullOrEmpty(selectedNrcsPractice) ||
-                                      !string.IsNullOrEmpty(selectedFwsAction);
 
     private IEnumerable<string> AvailableNrcsPractices => species
         .SelectMany(s => s.FwsLinks)
@@ -268,6 +191,11 @@
         StateHasChanged();
     }
 
+    private void OnSearchTextChanged(string value)
+    {
+        searchText = value;
+    }
+
     private void OnNrcsPracticeChanged(string? value)
     {
         selectedNrcsPractice = value;
@@ -276,28 +204,6 @@
     private void OnFwsActionChanged(string? value)
     {
         selectedFwsAction = value;
-    }
-
-    private void ClearSearchText()
-    {
-        searchText = string.Empty;
-    }
-
-    private void ClearNrcsPractice()
-    {
-        selectedNrcsPractice = null;
-    }
-
-    private void ClearFwsAction()
-    {
-        selectedFwsAction = null;
-    }
-
-    private void ClearAllFilters()
-    {
-        searchText = string.Empty;
-        selectedNrcsPractice = null;
-        selectedFwsAction = null;
     }
 
     private void ToggleSpecies(int speciesId, bool expanded)

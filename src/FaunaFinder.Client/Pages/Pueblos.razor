@@ -47,17 +47,9 @@
             @foreach (var municipality in municipalities)
             {
                 <MudItem xs="12" sm="6" md="4" lg="3">
-                    <MudCard Elevation="2" Class="municipality-card" Style="cursor: pointer;" @onclick="() => NavigateToDetail(municipality.Id)">
-                        <MudCardContent>
-                            <MudText Typo="Typo.h6" Color="Color.Primary">@municipality.Name</MudText>
-                            <div class="d-flex align-center mt-2">
-                                <MudIcon Icon="@Icons.Material.Filled.Pets" Size="Size.Small" Color="Color.Secondary" Class="mr-2" />
-                                <MudText Typo="Typo.body2" Color="Color.Secondary">
-                                    @municipality.SpeciesCount @L["Pueblos_Species"]
-                                </MudText>
-                            </div>
-                        </MudCardContent>
-                    </MudCard>
+                    <MunicipalityCard Name="@municipality.Name"
+                                      SpeciesCount="@municipality.SpeciesCount"
+                                      OnClick="() => NavigateToDetail(municipality.Id)" />
                 </MudItem>
             }
         </MudGrid>

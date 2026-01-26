@@ -1,0 +1,177 @@
+@inject IAppLocalizer L
+
+<MudPaper Elevation="1" Class="pa-3 mb-4">
+    <MudGrid Spacing="2">
+        <MudItem xs="12" md="6">
+            <MudTextField @bind-Value="SearchText"
+                          @bind-Value:after="OnSearchTextChanged"
+                          Placeholder="@SearchPlaceholder"
+                          Adornment="Adornment.Start"
+                          AdornmentIcon="@Icons.Material.Filled.Search"
+                          Variant="Variant.Outlined"
+                          Margin="Margin.Dense"
+                          Immediate="true"
+                          Clearable="true" />
+        </MudItem>
+        <MudItem xs="12" md="6" Class="d-flex align-center gap-2 flex-wrap">
+            <MudSelect T="string"
+                       Value="SelectedNrcsPractice"
+                       ValueChanged="OnNrcsPracticeChanged"
+                       Label="@L["Filter_NrcsPractices"]"
+                       Variant="Variant.Outlined"
+                       Margin="Margin.Dense"
+                       Dense="true"
+                       Clearable="true"
+                       Style="min-width: 150px;">
+                @foreach (var practice in AvailableNrcsPractices)
+                {
+                    <MudSelectItem Value="@practice">@practice</MudSelectItem>
+                }
+            </MudSelect>
+            <MudSelect T="string"
+                       Value="SelectedFwsAction"
+                       ValueChanged="OnFwsActionChanged"
+                       Label="@L["Filter_FwsActions"]"
+                       Variant="Variant.Outlined"
+                       Margin="Margin.Dense"
+                       Dense="true"
+                       Clearable="true"
+                       Style="min-width: 150px;">
+                @foreach (var action in AvailableFwsActions)
+                {
+                    <MudSelectItem Value="@action">@action</MudSelectItem>
+                }
+            </MudSelect>
+            @if (HasActiveFilters)
+            {
+                <MudButton Variant="Variant.Text"
+                           Color="Color.Primary"
+                           Size="Size.Small"
+                           StartIcon="@Icons.Material.Filled.Clear"
+                           OnClick="ClearAllFilters">
+                    @L["Filter_ClearAll"]
+                </MudButton>
+            }
+        </MudItem>
+    </MudGrid>
+
+    @* Active Filter Chips *@
+    @if (HasActiveFilters)
+    {
+        <div class="d-flex flex-wrap gap-1 mt-3">
+            @if (!string.IsNullOrWhiteSpace(SearchText))
+            {
+                <MudChip T="string" Size="Size.Small" Color="Color.Info" OnClose="ClearSearchText">
+                    "@SearchText"
+                </MudChip>
+            }
+            @if (!string.IsNullOrEmpty(SelectedNrcsPractice))
+            {
+                <MudChip T="string" Size="Size.Small" Color="Color.Primary" OnClose="ClearNrcsPractice">
+                    NRCS @SelectedNrcsPractice
+                </MudChip>
+            }
+            @if (!string.IsNullOrEmpty(SelectedFwsAction))
+            {
+                <MudChip T="string" Size="Size.Small" Color="Color.Secondary" OnClose="ClearFwsAction">
+                    FWS @SelectedFwsAction
+                </MudChip>
+            }
+        </div>
+    }
+
+    @* Filtered Count *@
+    <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-2">
+        @string.Format(FilteredCountFormat, FilteredCount, TotalCount)
+    </MudText>
+</MudPaper>
+
+@code {
+    [CascadingParameter(Name = "LanguageRefresh")]
+    private int LanguageRefresh { get; set; }
+
+    [Parameter]
+    public string SearchText { get; set; } = string.Empty;
+
+    [Parameter]
+    public EventCallback<string> SearchTextChanged { get; set; }
+
+    [Parameter]
+    public string? SelectedNrcsPractice { get; set; }
+
+    [Parameter]
+    public EventCallback<string?> SelectedNrcsPracticeChanged { get; set; }
+
+    [Parameter]
+    public string? SelectedFwsAction { get; set; }
+
+    [Parameter]
+    public EventCallback<string?> SelectedFwsActionChanged { get; set; }
+
+    [Parameter, EditorRequired]
+    public IEnumerable<string> AvailableNrcsPractices { get; set; } = [];
+
+    [Parameter, EditorRequired]
+    public IEnumerable<string> AvailableFwsActions { get; set; } = [];
+
+    [Parameter]
+    public int FilteredCount { get; set; }
+
+    [Parameter]
+    public int TotalCount { get; set; }
+
+    [Parameter]
+    public string SearchPlaceholder { get; set; } = string.Empty;
+
+    [Parameter]
+    public string FilteredCountFormat { get; set; } = string.Empty;
+
+    private bool HasActiveFilters => !string.IsNullOrWhiteSpace(SearchText) ||
+                                      !string.IsNullOrEmpty(SelectedNrcsPractice) ||
+                                      !string.IsNullOrEmpty(SelectedFwsAction);
+
+    private async Task OnSearchTextChanged()
+    {
+        await SearchTextChanged.InvokeAsync(SearchText);
+    }
+
+    private async Task OnNrcsPracticeChanged(string? value)
+    {
+        SelectedNrcsPractice = value;
+        await SelectedNrcsPracticeChanged.InvokeAsync(value);
+    }
+
+    private async Task OnFwsActionChanged(string? value)
+    {
+        SelectedFwsAction = value;
+        await SelectedFwsActionChanged.InvokeAsync(value);
+    }
+
+    private async Task ClearSearchText()
+    {
+        SearchText = string.Empty;
+        await SearchTextChanged.InvokeAsync(string.Empty);
+    }
+
+    private async Task ClearNrcsPractice()
+    {
+        SelectedNrcsPractice = null;
+        await SelectedNrcsPracticeChanged.InvokeAsync(null);
+    }
+
+    private async Task ClearFwsAction()
+    {
+        SelectedFwsAction = null;
+        await SelectedFwsActionChanged.InvokeAsync(null);
+    }
+
+    private async Task ClearAllFilters()
+    {
+        SearchText = string.Empty;
+        SelectedNrcsPractice = null;
+        SelectedFwsAction = null;
+        await SearchTextChanged.InvokeAsync(string.Empty);
+        await SelectedNrcsPracticeChanged.InvokeAsync(null);
+        await SelectedFwsActionChanged.InvokeAsync(null);
+    }
+}
