@@ -1,5 +1,6 @@
 @page "/species/{Id:int}"
 @using BlazingSingularity.Commands
+@using FaunaFinder.Contracts.Dtos.FwsLinks
 @inject ISpeciesService SpeciesService
 @inject NavigationManager NavigationManager
 @inject IAppLocalizer L
@@ -122,34 +123,129 @@
         }
         else
         {
-            <MudGrid Spacing="3">
-                @foreach (var link in species.FwsLinks)
-                {
+            @* Search and Filter Controls *@
+            <MudPaper Elevation="1" Class="pa-3 mb-4">
+                <MudGrid Spacing="2">
                     <MudItem xs="12" md="6">
-                        <MudPaper Elevation="1" Class="pa-4">
-                            <div class="d-flex flex-wrap align-start gap-2 mb-2">
-                                <MudChip T="string" Size="Size.Small" Color="Color.Primary" Variant="Variant.Filled">
-                                    NRCS @link.NrcsPractice.Code
-                                </MudChip>
-                                <MudText Typo="Typo.body1">@link.NrcsPractice.Name</MudText>
-                            </div>
-                            <div class="d-flex flex-wrap align-start gap-2 mb-2">
-                                <MudChip T="string" Size="Size.Small" Color="Color.Secondary" Variant="Variant.Filled">
-                                    FWS @link.FwsAction.Code
-                                </MudChip>
-                                <MudText Typo="Typo.body1">@link.FwsAction.Name</MudText>
-                            </div>
-                            @if (!string.IsNullOrEmpty(link.Justification))
-                            {
-                                <MudDivider Class="my-3" />
-                                <MudText Typo="Typo.body2" Color="Color.Secondary">
-                                    @link.Justification
-                                </MudText>
-                            }
-                        </MudPaper>
+                        <MudTextField @bind-Value="searchText"
+                                      Placeholder="@L["Filter_SearchLinks"]"
+                                      Adornment="Adornment.Start"
+                                      AdornmentIcon="@Icons.Material.Filled.Search"
+                                      Variant="Variant.Outlined"
+                                      Margin="Margin.Dense"
+                                      Immediate="true"
+                                      Clearable="true" />
                     </MudItem>
+                    <MudItem xs="12" md="6" Class="d-flex align-center gap-2 flex-wrap">
+                        <MudSelect T="string"
+                                   Value="selectedNrcsPractice"
+                                   ValueChanged="OnNrcsPracticeChanged"
+                                   Label="@L["Filter_NrcsPractices"]"
+                                   Variant="Variant.Outlined"
+                                   Margin="Margin.Dense"
+                                   Dense="true"
+                                   Clearable="true"
+                                   Style="min-width: 150px;">
+                            @foreach (var practice in AvailableNrcsPractices)
+                            {
+                                <MudSelectItem Value="@practice">@practice</MudSelectItem>
+                            }
+                        </MudSelect>
+                        <MudSelect T="string"
+                                   Value="selectedFwsAction"
+                                   ValueChanged="OnFwsActionChanged"
+                                   Label="@L["Filter_FwsActions"]"
+                                   Variant="Variant.Outlined"
+                                   Margin="Margin.Dense"
+                                   Dense="true"
+                                   Clearable="true"
+                                   Style="min-width: 150px;">
+                            @foreach (var action in AvailableFwsActions)
+                            {
+                                <MudSelectItem Value="@action">@action</MudSelectItem>
+                            }
+                        </MudSelect>
+                        @if (HasActiveFilters)
+                        {
+                            <MudButton Variant="Variant.Text"
+                                       Color="Color.Primary"
+                                       Size="Size.Small"
+                                       StartIcon="@Icons.Material.Filled.Clear"
+                                       OnClick="ClearAllFilters">
+                                @L["Filter_ClearAll"]
+                            </MudButton>
+                        }
+                    </MudItem>
+                </MudGrid>
+
+                @* Active Filter Chips *@
+                @if (HasActiveFilters)
+                {
+                    <div class="d-flex flex-wrap gap-1 mt-3">
+                        @if (!string.IsNullOrWhiteSpace(searchText))
+                        {
+                            <MudChip T="string" Size="Size.Small" Color="Color.Info" OnClose="ClearSearchText">
+                                "@searchText"
+                            </MudChip>
+                        }
+                        @if (!string.IsNullOrEmpty(selectedNrcsPractice))
+                        {
+                            <MudChip T="string" Size="Size.Small" Color="Color.Primary" OnClose="ClearNrcsPractice">
+                                NRCS @selectedNrcsPractice
+                            </MudChip>
+                        }
+                        @if (!string.IsNullOrEmpty(selectedFwsAction))
+                        {
+                            <MudChip T="string" Size="Size.Small" Color="Color.Secondary" OnClose="ClearFwsAction">
+                                FWS @selectedFwsAction
+                            </MudChip>
+                        }
+                    </div>
                 }
-            </MudGrid>
+
+                @* Filtered Count *@
+                <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-2">
+                    @string.Format(L["Filter_ShowingFilteredLinks"], FilteredLinks.Count, species.FwsLinks.Count)
+                </MudText>
+            </MudPaper>
+
+            @if (FilteredLinks.Count == 0)
+            {
+                <MudAlert Severity="Severity.Warning" Variant="Variant.Text" Class="mb-4">
+                    @L["Filter_NoMatchesLinks"]
+                </MudAlert>
+            }
+            else
+            {
+                <MudGrid Spacing="3">
+                    @foreach (var link in FilteredLinks)
+                    {
+                        <MudItem xs="12" md="6">
+                            <MudPaper Elevation="1" Class="pa-4">
+                                <div class="d-flex flex-wrap align-start gap-2 mb-2">
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Primary" Variant="Variant.Filled">
+                                        NRCS @link.NrcsPractice.Code
+                                    </MudChip>
+                                    <MudText Typo="Typo.body1">@link.NrcsPractice.Name</MudText>
+                                </div>
+                                <div class="d-flex flex-wrap align-start gap-2 mb-2">
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Secondary" Variant="Variant.Filled">
+                                        FWS @link.FwsAction.Code
+                                    </MudChip>
+                                    <MudText Typo="Typo.body1">@link.FwsAction.Name</MudText>
+                                </div>
+                                @if (!string.IsNullOrEmpty(link.Justification))
+                                {
+                                    <MudDivider Class="my-3" />
+                                    <MudText Typo="Typo.body2" Color="Color.Secondary">
+                                        @link.Justification
+                                    </MudText>
+                                }
+                            </MudPaper>
+                        </MudItem>
+                    }
+                </MudGrid>
+            }
         }
     }
 </MudContainer>
@@ -166,14 +262,102 @@
 
     private SpeciesForDetailDto? species;
 
+    // Filter state
+    private string searchText = string.Empty;
+    private string? selectedNrcsPractice;
+    private string? selectedFwsAction;
+
+    private bool HasActiveFilters => !string.IsNullOrWhiteSpace(searchText) ||
+                                      !string.IsNullOrEmpty(selectedNrcsPractice) ||
+                                      !string.IsNullOrEmpty(selectedFwsAction);
+
+    private IEnumerable<string> AvailableNrcsPractices => species?.FwsLinks
+        .Select(l => l.NrcsPractice.Code)
+        .Distinct()
+        .OrderBy(c => c) ?? Enumerable.Empty<string>();
+
+    private IEnumerable<string> AvailableFwsActions => species?.FwsLinks
+        .Select(l => l.FwsAction.Code)
+        .Distinct()
+        .OrderBy(c => c) ?? Enumerable.Empty<string>();
+
+    private IReadOnlyList<FwsLinkDto> FilteredLinks
+    {
+        get
+        {
+            if (species == null) return [];
+
+            var filtered = species.FwsLinks.AsEnumerable();
+
+            // Apply text search filter
+            if (!string.IsNullOrWhiteSpace(searchText))
+            {
+                var searchLower = searchText.ToLowerInvariant();
+                filtered = filtered.Where(l =>
+                    l.NrcsPractice.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+                    l.NrcsPractice.Code.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+                    l.FwsAction.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+                    l.FwsAction.Code.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+                    (l.Justification?.Contains(searchText, StringComparison.OrdinalIgnoreCase) ?? false));
+            }
+
+            // Apply NRCS Practice filter
+            if (!string.IsNullOrEmpty(selectedNrcsPractice))
+            {
+                filtered = filtered.Where(l => l.NrcsPractice.Code == selectedNrcsPractice);
+            }
+
+            // Apply FWS Action filter
+            if (!string.IsNullOrEmpty(selectedFwsAction))
+            {
+                filtered = filtered.Where(l => l.FwsAction.Code == selectedFwsAction);
+            }
+
+            return filtered.ToList();
+        }
+    }
+
     protected override async Task OnInitializedAsync()
     {
         await this.LoadDataCommand.ExecuteAsync();
     }
+
     [RelayCommand]
     private async Task LoadData()
     {
         species = await SpeciesService.GetSpeciesDetailAsync(Id);
+    }
+
+    private void OnNrcsPracticeChanged(string? value)
+    {
+        selectedNrcsPractice = value;
+    }
+
+    private void OnFwsActionChanged(string? value)
+    {
+        selectedFwsAction = value;
+    }
+
+    private void ClearSearchText()
+    {
+        searchText = string.Empty;
+    }
+
+    private void ClearNrcsPractice()
+    {
+        selectedNrcsPractice = null;
+    }
+
+    private void ClearFwsAction()
+    {
+        selectedFwsAction = null;
+    }
+
+    private void ClearAllFilters()
+    {
+        searchText = string.Empty;
+        selectedNrcsPractice = null;
+        selectedFwsAction = null;
     }
 
     private void NavigateBack()
