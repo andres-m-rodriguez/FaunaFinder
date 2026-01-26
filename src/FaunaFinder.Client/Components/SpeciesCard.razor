@@ -1,0 +1,39 @@
+@inject IAppLocalizer L
+
+<MudCard Elevation="2" Class="species-card" @onclick="OnClick">
+    <MudCardContent>
+        <MudText Typo="Typo.h6" Color="Color.Primary">@L.GetLocalizedValue(CommonName)</MudText>
+        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="font-italic">
+            @ScientificName
+        </MudText>
+        @if (ShowMunicipalityCount)
+        {
+            <div class="d-flex align-center mt-2">
+                <MudIcon Icon="@Icons.Material.Filled.LocationOn" Size="Size.Small" Color="Color.Secondary" Class="mr-2" />
+                <MudText Typo="Typo.body2" Color="Color.Secondary">
+                    @MunicipalityCount @(MunicipalityCount == 1 ? L["Species_Municipality"] : L["Species_Municipalities"])
+                </MudText>
+            </div>
+        }
+    </MudCardContent>
+</MudCard>
+
+@code {
+    [CascadingParameter(Name = "LanguageRefresh")]
+    private int LanguageRefresh { get; set; }
+
+    [Parameter, EditorRequired]
+    public List<LocaleValue> CommonName { get; set; } = [];
+
+    [Parameter, EditorRequired]
+    public string ScientificName { get; set; } = string.Empty;
+
+    [Parameter]
+    public int MunicipalityCount { get; set; }
+
+    [Parameter]
+    public bool ShowMunicipalityCount { get; set; } = true;
+
+    [Parameter]
+    public EventCallback OnClick { get; set; }
+}

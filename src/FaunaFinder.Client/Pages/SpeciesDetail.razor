@@ -101,12 +101,9 @@
                 @foreach (var municipality in species.Municipalities)
                 {
                     <MudItem xs="6" sm="4" md="3">
-                        <MudCard Elevation="2" Class="municipality-card" @onclick="() => NavigateToMunicipality(municipality.Id)">
-                            <MudCardContent Class="d-flex align-center justify-center pa-3">
-                                <MudIcon Icon="@Icons.Material.Filled.LocationCity" Size="Size.Small" Color="Color.Primary" Class="mr-2" />
-                                <MudText Typo="Typo.body1" Color="Color.Primary">@municipality.Name</MudText>
-                            </MudCardContent>
-                        </MudCard>
+                        <MunicipalityCard Name="@municipality.Name"
+                                          Compact="true"
+                                          OnClick="() => NavigateToMunicipality(municipality.Id)" />
                     </MudItem>
                 }
             </MudGrid>

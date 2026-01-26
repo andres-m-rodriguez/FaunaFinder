@@ -1,0 +1,46 @@
+@inject IAppLocalizer L
+
+<MudCard Elevation="2" Class="municipality-card" Style="cursor: pointer;" @onclick="OnClick">
+    <MudCardContent Class="@ContentClass">
+        @if (Compact)
+        {
+            <MudIcon Icon="@Icons.Material.Filled.LocationCity" Size="Size.Small" Color="Color.Primary" Class="mr-2" />
+            <MudText Typo="Typo.body1" Color="Color.Primary">@Name</MudText>
+        }
+        else
+        {
+            <MudText Typo="Typo.h6" Color="Color.Primary">@Name</MudText>
+            @if (ShowSpeciesCount)
+            {
+                <div class="d-flex align-center mt-2">
+                    <MudIcon Icon="@Icons.Material.Filled.Pets" Size="Size.Small" Color="Color.Secondary" Class="mr-2" />
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">
+                        @SpeciesCount @L["Pueblos_Species"]
+                    </MudText>
+                </div>
+            }
+        }
+    </MudCardContent>
+</MudCard>
+
+@code {
+    [CascadingParameter(Name = "LanguageRefresh")]
+    private int LanguageRefresh { get; set; }
+
+    [Parameter, EditorRequired]
+    public string Name { get; set; } = string.Empty;
+
+    [Parameter]
+    public int SpeciesCount { get; set; }
+
+    [Parameter]
+    public bool ShowSpeciesCount { get; set; } = true;
+
+    [Parameter]
+    public bool Compact { get; set; }
+
+    [Parameter]
+    public EventCallback OnClick { get; set; }
+
+    private string ContentClass => Compact ? "d-flex align-center justify-center pa-3" : string.Empty;
+}
