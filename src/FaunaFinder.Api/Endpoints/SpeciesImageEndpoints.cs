@@ -6,63 +6,27 @@ public static class SpeciesImageEndpoints
 {
     public static void MapSpeciesImageEndpoints(this IEndpointRouteBuilder app)
     {
-        var group = app.MapGroup("/species")
-            .WithTags("Species Images");
+        var group = app.MapGroup("/api/species")
+            .WithTags("Species Profile Image");
 
-        // Get all images for a species (metadata only)
-        group.MapGet("/{speciesId:int}/images", async (
+        // Get the profile image for a species
+        group.MapGet("/{speciesId:int}/image", async (
             int speciesId,
             ISpeciesImageRepository repository,
             CancellationToken ct) =>
         {
-            var images = await repository.GetImagesBySpeciesIdAsync(speciesId, ct);
-            return Results.Ok(images);
-        }).WithName("GetSpeciesImages");
-
-        // Get image data by ID
-        group.MapGet("/images/{imageId:int}", async (
-            int imageId,
-            ISpeciesImageRepository repository,
-            CancellationToken ct) =>
-        {
-            var image = await repository.GetImageAsync(imageId, ct);
+            var image = await repository.GetProfileImageAsync(speciesId, ct);
             if (image is null)
             {
                 return Results.NotFound();
             }
-            return Results.File(image.ImageData, image.ContentType, image.FileName);
-        }).WithName("GetSpeciesImage");
+            return Results.File(image.ImageData, image.ContentType);
+        }).WithName("GetSpeciesProfileImage");
 
-        // Get image metadata by ID
-        group.MapGet("/images/{imageId:int}/metadata", async (
-            int imageId,
-            ISpeciesImageRepository repository,
-            CancellationToken ct) =>
-        {
-            var metadata = await repository.GetImageMetadataAsync(imageId, ct);
-            return metadata is not null ? Results.Ok(metadata) : Results.NotFound();
-        }).WithName("GetSpeciesImageMetadata");
-
-        // Get primary image for a species
-        group.MapGet("/{speciesId:int}/images/primary", async (
-            int speciesId,
-            ISpeciesImageRepository repository,
-            CancellationToken ct) =>
-        {
-            var image = await repository.GetPrimaryImageAsync(speciesId, ct);
-            if (image is null)
-            {
-                return Results.NotFound();
-            }
-            return Results.File(image.ImageData, image.ContentType, image.FileName);
-        }).WithName("GetSpeciesPrimaryImage");
-
-        // Upload a new image for a species
-        group.MapPost("/{speciesId:int}/images", async (
+        // Upload or replace the profile image for a species
+        group.MapPost("/{speciesId:int}/image", async (
             int speciesId,
             IFormFile file,
-            string? description,
-            bool isPrimary,
             ISpeciesImageRepository repository,
             CancellationToken ct) =>
         {
@@ -82,38 +46,27 @@ public static class SpeciesImageEndpoints
             await file.CopyToAsync(memoryStream, ct);
             var imageData = memoryStream.ToArray();
 
-            var imageId = await repository.AddImageAsync(
+            var success = await repository.SetProfileImageAsync(
                 speciesId,
                 imageData,
                 file.ContentType,
-                file.FileName,
-                description,
-                isPrimary,
                 ct);
 
-            return Results.Created($"/species/images/{imageId}", new { id = imageId });
+            return success
+                ? Results.Ok(new { message = "Profile image updated" })
+                : Results.NotFound();
         })
         .DisableAntiforgery()
-        .WithName("UploadSpeciesImage");
+        .WithName("UploadSpeciesProfileImage");
 
-        // Delete an image
-        group.MapDelete("/images/{imageId:int}", async (
-            int imageId,
+        // Delete the profile image for a species
+        group.MapDelete("/{speciesId:int}/image", async (
+            int speciesId,
             ISpeciesImageRepository repository,
             CancellationToken ct) =>
         {
-            var deleted = await repository.DeleteImageAsync(imageId, ct);
+            var deleted = await repository.DeleteProfileImageAsync(speciesId, ct);
             return deleted ? Results.NoContent() : Results.NotFound();
-        }).WithName("DeleteSpeciesImage");
-
-        // Set an image as primary
-        group.MapPut("/images/{imageId:int}/primary", async (
-            int imageId,
-            ISpeciesImageRepository repository,
-            CancellationToken ct) =>
-        {
-            var updated = await repository.SetPrimaryImageAsync(imageId, ct);
-            return updated ? Results.NoContent() : Results.NotFound();
-        }).WithName("SetPrimarySpeciesImage");
+        }).WithName("DeleteSpeciesProfileImage");
     }
 }

@@ -91,19 +91,7 @@ public sealed class SpeciesRepository(
                         l.Description
                     ))
                     .ToList(),
-                s.Images
-                    .OrderByDescending(i => i.IsPrimary)
-                    .ThenByDescending(i => i.CreatedAt)
-                    .Select(i => new SpeciesImageDto(
-                        i.Id,
-                        i.SpeciesId,
-                        i.ContentType,
-                        i.FileName,
-                        i.Description,
-                        i.IsPrimary,
-                        i.CreatedAt
-                    ))
-                    .ToList()
+                s.ProfileImageData != null
             ))
             .FirstOrDefaultAsync(cancellationToken);
     }

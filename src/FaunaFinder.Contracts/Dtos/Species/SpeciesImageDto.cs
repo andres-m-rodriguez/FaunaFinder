@@ -1,22 +1,10 @@
 namespace FaunaFinder.Contracts.Dtos.Species;
 
-public sealed record SpeciesImageDto(
-    int Id,
-    int SpeciesId,
-    string ContentType,
-    string? FileName,
-    string? Description,
-    bool IsPrimary,
-    DateTime CreatedAt
-);
-
-public sealed record SpeciesImageDataDto(
-    int Id,
+/// <summary>
+/// DTO for species profile image data retrieval.
+/// </summary>
+public sealed record SpeciesProfileImageDto(
     int SpeciesId,
     byte[] ImageData,
-    string ContentType,
-    string? FileName,
-    string? Description,
-    bool IsPrimary,
-    DateTime CreatedAt
+    string ContentType
 );

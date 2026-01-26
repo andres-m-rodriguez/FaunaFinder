@@ -52,17 +52,17 @@
         @* Species Header *@
         <MudPaper Elevation="2" Class="pa-4 mb-6">
             <MudGrid>
-                @if (species.Images.Count > 0)
+                @if (species.HasProfileImage)
                 {
                     <MudItem xs="12" sm="4" md="3">
-                        <MudImage Src="@GetPrimaryImageUrl()"
+                        <MudImage Src="@GetProfileImageUrl()"
                                   Alt="@L.GetLocalizedValue(species.CommonName)"
                                   ObjectFit="ObjectFit.Cover"
                                   Class="rounded-lg species-image"
                                   Style="width: 100%; max-height: 200px;" />
                     </MudItem>
                 }
-                <MudItem xs="12" sm="@(species.Images.Count > 0 ? 8 : 12)" md="@(species.Images.Count > 0 ? 9 : 12)">
+                <MudItem xs="12" sm="@(species.HasProfileImage ? 8 : 12)" md="@(species.HasProfileImage ? 9 : 12)">
                     <MudText Typo="Typo.h4" Color="Color.Primary" GutterBottom="true">@L.GetLocalizedValue(species.CommonName)</MudText>
                     <MudText Typo="Typo.h6" Color="Color.Secondary" Class="font-italic">@species.ScientificName</MudText>
                     <div class="d-flex align-center mt-3">
@@ -191,13 +191,8 @@
         NavigationManager.NavigateTo($"/?speciesId={Id}");
     }
 
-    private string GetPrimaryImageUrl()
+    private string GetProfileImageUrl()
     {
-        if (species == null || species.Images.Count == 0)
-            return string.Empty;
-
-        // Get the primary image, or fall back to the first image
-        var image = species.Images.FirstOrDefault(i => i.IsPrimary) ?? species.Images.First();
-        return $"api/species/images/{image.Id}";
+        return species != null ? $"api/species/{species.Id}/image" : string.Empty;
     }
 }

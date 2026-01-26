@@ -10,7 +10,7 @@ public sealed record SpeciesForDetailDto(
     List<FwsLinkDto> FwsLinks,
     List<SpeciesMunicipalityDto> Municipalities,
     List<SpeciesLocationDto> Locations,
-    List<SpeciesImageDto> Images
+    bool HasProfileImage
 );
 
 public sealed record SpeciesMunicipalityDto(

@@ -12,10 +12,13 @@ public sealed class Species
     public required List<LocaleValue> CommonName { get; set; }
     public required string ScientificName { get; set; }
 
+    // Profile image stored directly on the species
+    public byte[]? ProfileImageData { get; set; }
+    public string? ProfileImageContentType { get; set; }
+
     public ICollection<FwsLink> FwsLinks { get; set; } = [];
     public ICollection<MunicipalitySpecies> MunicipalitySpecies { get; set; } = [];
     public ICollection<SpeciesLocation> Locations { get; set; } = [];
-    public ICollection<SpeciesImage> Images { get; set; } = [];
 
     public sealed class EntityConfiguration : IEntityTypeConfiguration<Species>
     {
@@ -29,6 +32,9 @@ public sealed class Species
             builder.Property(static e => e.ScientificName)
                 .HasMaxLength(200)
                 .IsRequired();
+
+            builder.Property(static e => e.ProfileImageContentType)
+                .HasMaxLength(100);
 
             builder.HasIndex(static e => e.ScientificName)
                 .IsUnique()
