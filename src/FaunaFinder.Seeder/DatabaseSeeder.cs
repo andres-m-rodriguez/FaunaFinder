@@ -175,7 +175,9 @@ public static class DatabaseSeeder
                     new LocaleValue(SupportedLocales.English, commonName),
                     new LocaleValue(SupportedLocales.Spanish, spanishName)
                 ],
-                ScientificName = scientificName
+                ScientificName = scientificName,
+                ProfileImageContentType = null,
+                ProfileImageData = null,
             };
             context.Species.Add(species);
             await context.SaveChangesAsync(cancellationToken);
