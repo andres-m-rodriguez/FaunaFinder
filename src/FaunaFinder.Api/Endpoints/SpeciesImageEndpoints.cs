@@ -6,7 +6,7 @@ public static class SpeciesImageEndpoints
 {
     public static void MapSpeciesImageEndpoints(this IEndpointRouteBuilder app)
     {
-        var group = app.MapGroup("/api/species")
+        var group = app.MapGroup("/species")
             .WithTags("Species Profile Image");
 
         // Get the profile image for a species
