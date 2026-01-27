@@ -1,0 +1,213 @@
+@page "/sightings/{Id:int}"
+@using FaunaFinder.WildlifeDiscovery.Application.Client
+@using FaunaFinder.WildlifeDiscovery.Contracts.Responses
+@using Microsoft.AspNetCore.Authorization
+@inject IWildlifeDiscoveryClient WildlifeClient
+@inject NavigationManager Navigation
+@attribute [Authorize]
+
+<PageTitle>Sighting Details - FaunaFinder</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Medium" Class="py-4">
+    @if (_isLoading)
+    {
+        <MudProgressLinear Color="Color.Primary" Indeterminate="true" />
+    }
+    else if (!string.IsNullOrEmpty(_errorMessage))
+    {
+        <MudAlert Severity="Severity.Error">@_errorMessage</MudAlert>
+    }
+    else if (_sighting != null)
+    {
+        <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-4">
+            <MudText Typo="Typo.h4">Sighting Details</MudText>
+            <MudChip T="string" Color="@GetStatusColor(_sighting.Status)" Size="Size.Large">
+                @_sighting.Status
+            </MudChip>
+        </MudStack>
+
+        <MudPaper Class="pa-4 mb-4">
+            <MudText Typo="Typo.h5" Class="mb-3">
+                @(_sighting.SpeciesName ?? _sighting.UserSpeciesName)
+            </MudText>
+
+            @if (_sighting.IsFlaggedForReview)
+            {
+                <MudAlert Severity="Severity.Warning" Class="mb-3">
+                    This sighting is flagged for priority review
+                </MudAlert>
+            }
+            @if (_sighting.IsNewMunicipalityRecord)
+            {
+                <MudAlert Severity="Severity.Success" Class="mb-3">
+                    This is a new species record for @(_sighting.MunicipalityName ?? "this location")!
+                </MudAlert>
+            }
+
+            <MudGrid>
+                <MudItem xs="12" sm="6">
+                    <MudText Typo="Typo.subtitle2" Color="Color.Primary">Mode</MudText>
+                    <MudText>@_sighting.Mode</MudText>
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    <MudText Typo="Typo.subtitle2" Color="Color.Primary">Confidence</MudText>
+                    <MudText>@FormatConfidence(_sighting.Confidence)</MudText>
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    <MudText Typo="Typo.subtitle2" Color="Color.Primary">Count</MudText>
+                    <MudText>@FormatCount(_sighting.Count)</MudText>
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    <MudText Typo="Typo.subtitle2" Color="Color.Primary">Weather</MudText>
+                    <MudText>@(_sighting.Weather ?? "Not recorded")</MudText>
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    <MudText Typo="Typo.subtitle2" Color="Color.Primary">Behaviors</MudText>
+                    <MudText>@(string.Join(", ", _sighting.Behaviors.Length > 0 ? _sighting.Behaviors : ["None observed"]))</MudText>
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    <MudText Typo="Typo.subtitle2" Color="Color.Primary">Evidence</MudText>
+                    <MudText>@string.Join(", ", _sighting.Evidence)</MudText>
+                </MudItem>
+            </MudGrid>
+
+            @if (!string.IsNullOrEmpty(_sighting.Notes))
+            {
+                <MudDivider Class="my-3" />
+                <MudText Typo="Typo.subtitle2" Color="Color.Primary">Notes</MudText>
+                <MudText>@_sighting.Notes</MudText>
+            }
+        </MudPaper>
+
+        <MudPaper Class="pa-4 mb-4">
+            <MudText Typo="Typo.h6" Class="mb-3">Location & Time</MudText>
+            <MudGrid>
+                <MudItem xs="12" sm="6">
+                    <MudText Typo="Typo.subtitle2" Color="Color.Primary">Coordinates</MudText>
+                    <MudText>@_sighting.Latitude.ToString("F6"), @_sighting.Longitude.ToString("F6")</MudText>
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    <MudText Typo="Typo.subtitle2" Color="Color.Primary">Municipality</MudText>
+                    <MudText>@(_sighting.MunicipalityName ?? "Unknown")</MudText>
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    <MudText Typo="Typo.subtitle2" Color="Color.Primary">Observed At</MudText>
+                    <MudText>@_sighting.ObservedAt.ToLocalTime().ToString("f")</MudText>
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    <MudText Typo="Typo.subtitle2" Color="Color.Primary">Reported At</MudText>
+                    <MudText>@_sighting.CreatedAt.ToLocalTime().ToString("f")</MudText>
+                </MudItem>
+            </MudGrid>
+        </MudPaper>
+
+        @if (_sighting.HasPhoto || _sighting.HasAudio)
+        {
+            <MudPaper Class="pa-4 mb-4">
+                <MudText Typo="Typo.h6" Class="mb-3">Media</MudText>
+                @if (_sighting.HasPhoto)
+                {
+                    <MudImage Src="@WildlifeClient.GetSightingPhotoUrl(_sighting.Id)" Alt="Sighting photo"
+                              ObjectFit="ObjectFit.Contain" Width="100" Height="300" Class="rounded mb-3" />
+                }
+                @if (_sighting.HasAudio)
+                {
+                    <audio controls class="w-100">
+                        <source src="@WildlifeClient.GetSightingAudioUrl(_sighting.Id)" type="audio/mpeg">
+                        Your browser does not support the audio element.
+                    </audio>
+                }
+            </MudPaper>
+        }
+
+        <MudPaper Class="pa-4 mb-4">
+            <MudText Typo="Typo.h6" Class="mb-3">Reporter</MudText>
+            <MudText>@_sighting.ReportedByUserName</MudText>
+        </MudPaper>
+
+        @if (_sighting.ReviewedAt.HasValue)
+        {
+            <MudPaper Class="pa-4 mb-4">
+                <MudText Typo="Typo.h6" Class="mb-3">Review</MudText>
+                <MudGrid>
+                    <MudItem xs="12" sm="6">
+                        <MudText Typo="Typo.subtitle2" Color="Color.Primary">Reviewed At</MudText>
+                        <MudText>@_sighting.ReviewedAt.Value.ToLocalTime().ToString("f")</MudText>
+                    </MudItem>
+                    @if (!string.IsNullOrEmpty(_sighting.ReviewNotes))
+                    {
+                        <MudItem xs="12">
+                            <MudText Typo="Typo.subtitle2" Color="Color.Primary">Review Notes</MudText>
+                            <MudText>@_sighting.ReviewNotes</MudText>
+                        </MudItem>
+                    }
+                </MudGrid>
+            </MudPaper>
+        }
+
+        <MudButton Color="Color.Default" Variant="Variant.Outlined" OnClick="@(() => Navigation.NavigateTo("/sightings/my"))">
+            Back to My Sightings
+        </MudButton>
+    }
+</MudContainer>
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private SightingDto? _sighting;
+    private bool _isLoading = true;
+    private string? _errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadSighting();
+    }
+
+    private async Task LoadSighting()
+    {
+        _isLoading = true;
+        _errorMessage = null;
+        StateHasChanged();
+
+        try
+        {
+            var result = await WildlifeClient.GetSightingAsync(Id);
+
+            result.Switch(
+                sighting => _sighting = sighting,
+                notFoundError => _errorMessage = notFoundError.Message,
+                unauthorizedError => _errorMessage = "You must be logged in to view sighting details",
+                unexpectedError => _errorMessage = unexpectedError.Message);
+        }
+        finally
+        {
+            _isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private Color GetStatusColor(string status) => status switch
+    {
+        "Approved" => Color.Success,
+        "Rejected" => Color.Error,
+        _ => Color.Warning
+    };
+
+    private string FormatConfidence(string confidence) => confidence switch
+    {
+        "Certain" => "Certain - Definitely identified",
+        "FairlySure" => "Fairly Sure - Likely correct",
+        "Unsure" => "Unsure - Best guess",
+        _ => confidence
+    };
+
+    private string FormatCount(string count) => count switch
+    {
+        "One" => "1",
+        "TwoToFive" => "2-5",
+        "SixToTwenty" => "6-20",
+        "TwentyPlus" => "20+",
+        _ => count
+    };
+}

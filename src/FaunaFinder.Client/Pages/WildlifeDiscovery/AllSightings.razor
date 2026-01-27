@@ -1,0 +1,189 @@
+@page "/sightings"
+@using FaunaFinder.WildlifeDiscovery.Application.Client
+@using FaunaFinder.WildlifeDiscovery.Contracts.Responses
+@using FaunaFinder.WildlifeDiscovery.Contracts.Results
+@using Microsoft.AspNetCore.Authorization
+@inject IWildlifeDiscoveryClient WildlifeClient
+@inject NavigationManager Navigation
+@attribute [Authorize]
+
+<PageTitle>All Sightings - FaunaFinder</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="py-4">
+    <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-4">
+        <MudText Typo="Typo.h4">Wildlife Sightings</MudText>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Add"
+                   Href="/sightings/report">Report New Sighting</MudButton>
+    </MudStack>
+
+    <MudPaper Class="pa-4 mb-4">
+        <MudGrid>
+            <MudItem xs="12" sm="4">
+                <MudSelect T="string" @bind-Value="_statusFilter" Label="Status Filter" Clearable="true">
+                    <MudSelectItem Value="@("Pending")">Pending</MudSelectItem>
+                    <MudSelectItem Value="@("Approved")">Approved</MudSelectItem>
+                    <MudSelectItem Value="@("Rejected")">Rejected</MudSelectItem>
+                </MudSelect>
+            </MudItem>
+        </MudGrid>
+    </MudPaper>
+
+    @if (_isLoading)
+    {
+        <MudProgressLinear Color="Color.Primary" Indeterminate="true" />
+    }
+    else if (!string.IsNullOrEmpty(_errorMessage))
+    {
+        <MudAlert Severity="Severity.Error">@_errorMessage</MudAlert>
+    }
+    else if (_sightings.Count == 0)
+    {
+        <MudPaper Class="pa-6 text-center">
+            <MudIcon Icon="@Icons.Material.Filled.Search" Size="Size.Large" Color="Color.Primary" Class="mb-3" />
+            <MudText Typo="Typo.h6">No sightings found</MudText>
+            <MudText Typo="Typo.body1">Try adjusting your filters or report a new sighting.</MudText>
+        </MudPaper>
+    }
+    else
+    {
+        <MudGrid>
+            @foreach (var sighting in _sightings)
+            {
+                <MudItem xs="12" sm="6" md="4">
+                    <MudCard Class="h-100" Elevation="2">
+                        <MudCardHeader>
+                            <CardHeaderContent>
+                                <MudText Typo="Typo.h6">@sighting.SpeciesName</MudText>
+                                <MudText Typo="Typo.caption">
+                                    @sighting.ObservedAt.ToLocalTime().ToString("g")
+                                </MudText>
+                            </CardHeaderContent>
+                            <CardHeaderActions>
+                                <MudChip T="string" Size="Size.Small" Color="@GetStatusColor(sighting.Status)">
+                                    @sighting.Status
+                                </MudChip>
+                            </CardHeaderActions>
+                        </MudCardHeader>
+                        <MudCardContent>
+                            <MudStack>
+                                <MudStack Row="true" Spacing="2">
+                                    <MudIcon Icon="@Icons.Material.Filled.LocationOn" Size="Size.Small" />
+                                    <MudText Typo="Typo.body2">
+                                        @(sighting.MunicipalityName ?? $"{sighting.Latitude:F4}, {sighting.Longitude:F4}")
+                                    </MudText>
+                                </MudStack>
+                                <MudStack Row="true" Spacing="2">
+                                    <MudIcon Icon="@Icons.Material.Filled.Person" Size="Size.Small" />
+                                    <MudText Typo="Typo.body2">@sighting.ReportedByUserName</MudText>
+                                </MudStack>
+                                <MudStack Row="true" Spacing="1">
+                                    <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@sighting.Mode</MudChip>
+                                    <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@FormatCount(sighting.Count)</MudChip>
+                                    @if (sighting.IsFlaggedForReview)
+                                    {
+                                        <MudTooltip Text="Flagged for review">
+                                            <MudIcon Icon="@Icons.Material.Filled.Flag" Color="Color.Warning" Size="Size.Small" />
+                                        </MudTooltip>
+                                    }
+                                    @if (sighting.IsNewMunicipalityRecord)
+                                    {
+                                        <MudTooltip Text="New municipality record">
+                                            <MudIcon Icon="@Icons.Material.Filled.NewReleases" Color="Color.Success" Size="Size.Small" />
+                                        </MudTooltip>
+                                    }
+                                </MudStack>
+                            </MudStack>
+                        </MudCardContent>
+                        <MudCardActions>
+                            <MudButton Variant="Variant.Text" Color="Color.Primary"
+                                       OnClick="@(() => Navigation.NavigateTo($"/sightings/{sighting.Id}"))">
+                                View Details
+                            </MudButton>
+                        </MudCardActions>
+                    </MudCard>
+                </MudItem>
+            }
+        </MudGrid>
+
+        @if (_sightings.Count >= _pageSize)
+        {
+            <MudStack Row="true" Justify="Justify.Center" Class="mt-4">
+                <MudButton Variant="Variant.Outlined" OnClick="LoadMore" Disabled="_isLoading">
+                    Load More
+                </MudButton>
+            </MudStack>
+        }
+    }
+</MudContainer>
+
+@code {
+    private List<SightingListDto> _sightings = [];
+    private string? _statusFilter;
+    private int _page = 1;
+    private int _pageSize = 20;
+    private bool _isLoading = true;
+    private string? _errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadSightings();
+    }
+
+    private async Task OnFilterChanged(string? value)
+    {
+        _statusFilter = value;
+        _page = 1;
+        _sightings.Clear();
+        await LoadSightings();
+    }
+
+    private async Task LoadSightings()
+    {
+        _isLoading = true;
+        _errorMessage = null;
+        StateHasChanged();
+
+        try
+        {
+            var result = await WildlifeClient.GetSightingsAsync(_page, _pageSize, _statusFilter);
+
+            result.Switch(
+                sightings =>
+                {
+                    if (_page == 1)
+                        _sightings = sightings.Items;
+                    else
+                        _sightings.AddRange(sightings.Items);
+                },
+                unauthorizedError => _errorMessage = "You must be logged in to view sightings",
+                unexpectedError => _errorMessage = unexpectedError.Message);
+        }
+        finally
+        {
+            _isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task LoadMore()
+    {
+        _page++;
+        await LoadSightings();
+    }
+
+    private Color GetStatusColor(string status) => status switch
+    {
+        "Approved" => Color.Success,
+        "Rejected" => Color.Error,
+        _ => Color.Warning
+    };
+
+    private string FormatCount(string count) => count switch
+    {
+        "One" => "1",
+        "TwoToFive" => "2-5",
+        "SixToTwenty" => "6-20",
+        "TwentyPlus" => "20+",
+        _ => count
+    };
+}

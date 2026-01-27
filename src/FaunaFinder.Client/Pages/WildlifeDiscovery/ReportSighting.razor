@@ -1,0 +1,449 @@
+@page "/sightings/report"
+@using FaunaFinder.WildlifeDiscovery.Application.Client
+@using FaunaFinder.WildlifeDiscovery.Contracts.Requests
+@using FaunaFinder.WildlifeDiscovery.Contracts.Responses
+@using FaunaFinder.WildlifeDiscovery.Contracts.Results
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@inject IWildlifeDiscoveryClient WildlifeClient
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+@attribute [Authorize]
+
+<PageTitle>Report Sighting - FaunaFinder</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Medium" Class="py-4">
+    <MudText Typo="Typo.h4" Class="mb-4">Report Wildlife Sighting</MudText>
+
+    <MudPaper Class="pa-4">
+        <MudForm @ref="_form" @bind-IsValid="_formIsValid">
+            @* Mode Selection *@
+            <MudText Typo="Typo.h6" Class="mb-2">Sighting Mode</MudText>
+            <MudRadioGroup @bind-Value="_mode" Required="true">
+                <MudRadio Value="@("Casual")" Color="Color.Primary">Casual - Anytime sighting</MudRadio>
+                <MudRadio Value="@("Survey")" Color="Color.Primary">Survey - Systematic search</MudRadio>
+            </MudRadioGroup>
+
+            <MudDivider Class="my-4" />
+
+            @* Species Selection *@
+            <MudText Typo="Typo.h6" Class="mb-2">Species</MudText>
+            @if (_isCreatingNewSpecies)
+            {
+                <MudAlert Severity="Severity.Info" Class="mb-3">
+                    You are adding a new species that is not in the database.
+                    <MudButton Color="Color.Primary" Variant="Variant.Text" OnClick="CancelNewSpecies" Class="ml-2">
+                        Cancel and search again
+                    </MudButton>
+                </MudAlert>
+                <MudTextField @bind-Value="_newSpeciesCommonName" Label="Common Name" Required="true" RequiredError="Common name is required" />
+                <MudTextField @bind-Value="_newSpeciesScientificName" Label="Scientific Name (if known)" Class="mt-2" />
+                <MudTextField @bind-Value="_newSpeciesDescription" Label="Description" Lines="3" Class="mt-2" />
+                <MudFileUpload T="IBrowserFile" Accept=".jpg,.jpeg,.png,.gif" MaximumFileCount="1" OnFilesChanged="OnNewSpeciesPhotoChanged" Class="mt-2">
+                    <ActivatorContent>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.CloudUpload">
+                            Upload Species Photo (recommended)
+                        </MudButton>
+                    </ActivatorContent>
+                </MudFileUpload>
+                @if (!string.IsNullOrEmpty(_newSpeciesPhotoName))
+                {
+                    <MudText Typo="Typo.caption" Class="mt-1">Selected: @_newSpeciesPhotoName</MudText>
+                }
+            }
+            else
+            {
+                <MudAutocomplete T="SpeciesSearchDto" Label="Search Species" @bind-Value="_selectedSpecies"
+                                 SearchFunc="SearchSpecies" ToStringFunc="@(s => s?.CommonName ?? "")"
+                                 ShowProgressIndicator="true" Required="true" RequiredError="Species is required"
+                                 Placeholder="Start typing to search...">
+                    <ItemTemplate Context="item">
+                        <MudText>@item.CommonName</MudText>
+                        <MudText Typo="Typo.caption" Class="text-muted">@item.ScientificName</MudText>
+                    </ItemTemplate>
+                </MudAutocomplete>
+                <MudButton Color="Color.Secondary" Variant="Variant.Text" OnClick="StartNewSpecies" Class="mt-2">
+                    Species not found? Add new species
+                </MudButton>
+            }
+
+            <MudDivider Class="my-4" />
+
+            @* Observation Details *@
+            <MudText Typo="Typo.h6" Class="mb-2">Observation Details</MudText>
+
+            <MudSelect T="string" @bind-Value="_confidence" Label="Confidence Level" Required="true" RequiredError="Confidence level is required">
+                <MudSelectItem Value="@("Certain")">Certain - Definitely identified</MudSelectItem>
+                <MudSelectItem Value="@("FairlySure")">Fairly Sure - Likely correct</MudSelectItem>
+                <MudSelectItem Value="@("Unsure")">Unsure - Best guess</MudSelectItem>
+            </MudSelect>
+
+            <MudSelect T="string" @bind-Value="_count" Label="Count Estimate" Required="true" RequiredError="Count estimate is required" Class="mt-3">
+                <MudSelectItem Value="@("One")">1</MudSelectItem>
+                <MudSelectItem Value="@("TwoToFive")">2-5</MudSelectItem>
+                <MudSelectItem Value="@("SixToTwenty")">6-20</MudSelectItem>
+                <MudSelectItem Value="@("TwentyPlus")">20+</MudSelectItem>
+            </MudSelect>
+
+            <MudText Typo="Typo.subtitle1" Class="mt-3 mb-2">Behavior Observed</MudText>
+            <MudCheckBox @bind-Value="_behaviorFeeding" Label="Feeding" Color="Color.Primary" />
+            <MudCheckBox @bind-Value="_behaviorResting" Label="Resting" Color="Color.Primary" />
+            <MudCheckBox @bind-Value="_behaviorMoving" Label="Moving" Color="Color.Primary" />
+            <MudCheckBox @bind-Value="_behaviorCalling" Label="Calling" Color="Color.Primary" />
+
+            <MudText Typo="Typo.subtitle1" Class="mt-3 mb-2">Evidence Type</MudText>
+            <MudCheckBox @bind-Value="_evidenceVisual" Label="Visual" Color="Color.Primary" />
+            <MudCheckBox @bind-Value="_evidenceHeard" Label="Heard" Color="Color.Primary" />
+            <MudCheckBox @bind-Value="_evidenceTracks" Label="Tracks/Signs" Color="Color.Primary" />
+            <MudCheckBox @bind-Value="_evidencePhoto" Label="Photo" Color="Color.Primary" />
+
+            <MudSelect T="string" @bind-Value="_weather" Label="Weather (optional)" Clearable="true" Class="mt-3">
+                <MudSelectItem Value="@("Clear")">Clear</MudSelectItem>
+                <MudSelectItem Value="@("PartlyCloudy")">Partly Cloudy</MudSelectItem>
+                <MudSelectItem Value="@("Cloudy")">Cloudy</MudSelectItem>
+                <MudSelectItem Value="@("Rainy")">Rainy</MudSelectItem>
+                <MudSelectItem Value="@("Stormy")">Stormy</MudSelectItem>
+                <MudSelectItem Value="@("Foggy")">Foggy</MudSelectItem>
+                <MudSelectItem Value="@("Windy")">Windy</MudSelectItem>
+            </MudSelect>
+
+            <MudTextField @bind-Value="_notes" Label="Notes (optional)" Lines="3" Class="mt-3" />
+
+            <MudDivider Class="my-4" />
+
+            @* Location *@
+            <MudText Typo="Typo.h6" Class="mb-2">Location</MudText>
+            <MudGrid>
+                <MudItem xs="12" sm="6">
+                    <MudNumericField @bind-Value="_latitude" Label="Latitude" Required="true" RequiredError="Latitude is required"
+                                    Min="-90" Max="90" Step="0.000001" Format="F6" />
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    <MudNumericField @bind-Value="_longitude" Label="Longitude" Required="true" RequiredError="Longitude is required"
+                                    Min="-180" Max="180" Step="0.000001" Format="F6" />
+                </MudItem>
+            </MudGrid>
+            <MudButton Color="Color.Secondary" Variant="Variant.Outlined" OnClick="GetCurrentLocation" Class="mt-2" Disabled="_isGettingLocation">
+                @if (_isGettingLocation)
+                {
+                    <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                }
+                Get Current Location
+            </MudButton>
+
+            <MudDivider Class="my-4" />
+
+            @* Timestamp *@
+            <MudText Typo="Typo.h6" Class="mb-2">Observation Time</MudText>
+            <MudDatePicker @bind-Date="_observedDate" Label="Date" Required="true" RequiredError="Date is required" />
+            <MudTimePicker @bind-Time="_observedTime" Label="Time" Required="true" RequiredError="Time is required" Class="mt-3" />
+
+            <MudDivider Class="my-4" />
+
+            @* Media Upload *@
+            <MudText Typo="Typo.h6" Class="mb-2">Media (optional)</MudText>
+            <MudFileUpload T="IBrowserFile" Accept=".jpg,.jpeg,.png,.gif" MaximumFileCount="1" OnFilesChanged="OnPhotoChanged">
+                <ActivatorContent>
+                    <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.PhotoCamera">
+                        Upload Photo
+                    </MudButton>
+                </ActivatorContent>
+            </MudFileUpload>
+            @if (!string.IsNullOrEmpty(_photoName))
+            {
+                <MudText Typo="Typo.caption" Class="mt-1">Selected: @_photoName</MudText>
+            }
+
+            <MudFileUpload T="IBrowserFile" Accept=".mp3,.wav,.m4a,.ogg" MaximumFileCount="1" OnFilesChanged="OnAudioChanged" Class="mt-3">
+                <ActivatorContent>
+                    <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Mic">
+                        Upload Audio
+                    </MudButton>
+                </ActivatorContent>
+            </MudFileUpload>
+            @if (!string.IsNullOrEmpty(_audioName))
+            {
+                <MudText Typo="Typo.caption" Class="mt-1">Selected: @_audioName</MudText>
+            }
+
+            <MudDivider Class="my-4" />
+
+            @* Submit Button *@
+            @if (!string.IsNullOrEmpty(_errorMessage))
+            {
+                <MudAlert Severity="Severity.Error" Class="mb-3">@_errorMessage</MudAlert>
+            }
+
+            <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="SubmitSighting" Disabled="_isSubmitting || !_formIsValid"
+                       FullWidth="true" Size="Size.Large">
+                @if (_isSubmitting)
+                {
+                    <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                }
+                Submit Sighting Report
+            </MudButton>
+        </MudForm>
+    </MudPaper>
+</MudContainer>
+
+@code {
+    private MudForm _form = null!;
+    private bool _formIsValid;
+
+    // Form fields
+    private string _mode = "Casual";
+    private SpeciesSearchDto? _selectedSpecies;
+    private string _confidence = "";
+    private string _count = "";
+    private bool _behaviorFeeding;
+    private bool _behaviorResting;
+    private bool _behaviorMoving;
+    private bool _behaviorCalling;
+    private bool _evidenceVisual;
+    private bool _evidenceHeard;
+    private bool _evidenceTracks;
+    private bool _evidencePhoto;
+    private string? _weather;
+    private string? _notes;
+    private double _latitude;
+    private double _longitude;
+    private DateTime? _observedDate = DateTime.Today;
+    private TimeSpan? _observedTime = DateTime.Now.TimeOfDay;
+
+    // New species fields
+    private bool _isCreatingNewSpecies;
+    private string _newSpeciesCommonName = "";
+    private string? _newSpeciesScientificName;
+    private string? _newSpeciesDescription;
+    private string? _newSpeciesPhotoBase64;
+    private string? _newSpeciesPhotoContentType;
+    private string? _newSpeciesPhotoName;
+
+    // Media fields
+    private string? _photoBase64;
+    private string? _photoContentType;
+    private string? _photoName;
+    private string? _audioBase64;
+    private string? _audioContentType;
+    private string? _audioName;
+
+    // State
+    private bool _isSubmitting;
+    private bool _isGettingLocation;
+    private string? _errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetCurrentLocation();
+    }
+
+    private async Task<IEnumerable<SpeciesSearchDto>> SearchSpecies(string value, CancellationToken token)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return [];
+
+        var result = await WildlifeClient.SearchSpeciesAsync(value, 10, token);
+        return result.Match<IEnumerable<SpeciesSearchDto>>(
+            species => species.Items,
+            error => []);
+    }
+
+    private void StartNewSpecies()
+    {
+        _isCreatingNewSpecies = true;
+        _selectedSpecies = null;
+    }
+
+    private void CancelNewSpecies()
+    {
+        _isCreatingNewSpecies = false;
+        _newSpeciesCommonName = "";
+        _newSpeciesScientificName = null;
+        _newSpeciesDescription = null;
+        _newSpeciesPhotoBase64 = null;
+        _newSpeciesPhotoContentType = null;
+        _newSpeciesPhotoName = null;
+    }
+
+    private async Task GetCurrentLocation()
+    {
+        _isGettingLocation = true;
+        StateHasChanged();
+
+        try
+        {
+            var position = await JS.InvokeAsync<GeolocationPosition>("navigator.geolocation.getCurrentPosition", new object[] { });
+            // Note: This simplified approach may need JS interop implementation
+            // For now, set to Puerto Rico center as default
+            _latitude = 18.2208;
+            _longitude = -66.5901;
+        }
+        catch
+        {
+            // Default to Puerto Rico center
+            _latitude = 18.2208;
+            _longitude = -66.5901;
+        }
+        finally
+        {
+            _isGettingLocation = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task OnPhotoChanged(InputFileChangeEventArgs e)
+    {
+        var file = e.File;
+        if (file != null)
+        {
+            _photoName = file.Name;
+            _photoContentType = file.ContentType;
+            using var stream = file.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024);
+            using var ms = new MemoryStream();
+            await stream.CopyToAsync(ms);
+            _photoBase64 = Convert.ToBase64String(ms.ToArray());
+        }
+    }
+
+    private async Task OnAudioChanged(InputFileChangeEventArgs e)
+    {
+        var file = e.File;
+        if (file != null)
+        {
+            _audioName = file.Name;
+            _audioContentType = file.ContentType;
+            using var stream = file.OpenReadStream(maxAllowedSize: 50 * 1024 * 1024);
+            using var ms = new MemoryStream();
+            await stream.CopyToAsync(ms);
+            _audioBase64 = Convert.ToBase64String(ms.ToArray());
+        }
+    }
+
+    private async Task OnNewSpeciesPhotoChanged(InputFileChangeEventArgs e)
+    {
+        var file = e.File;
+        if (file != null)
+        {
+            _newSpeciesPhotoName = file.Name;
+            _newSpeciesPhotoContentType = file.ContentType;
+            using var stream = file.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024);
+            using var ms = new MemoryStream();
+            await stream.CopyToAsync(ms);
+            _newSpeciesPhotoBase64 = Convert.ToBase64String(ms.ToArray());
+        }
+    }
+
+    private int GetBehaviors()
+    {
+        int behaviors = 0;
+        if (_behaviorFeeding) behaviors |= 1;
+        if (_behaviorResting) behaviors |= 2;
+        if (_behaviorMoving) behaviors |= 4;
+        if (_behaviorCalling) behaviors |= 8;
+        return behaviors;
+    }
+
+    private int GetEvidence()
+    {
+        int evidence = 0;
+        if (_evidenceVisual) evidence |= 1;
+        if (_evidenceHeard) evidence |= 2;
+        if (_evidenceTracks) evidence |= 4;
+        if (_evidencePhoto) evidence |= 8;
+        return evidence;
+    }
+
+    private async Task SubmitSighting()
+    {
+        await _form.Validate();
+        if (!_formIsValid)
+            return;
+
+        if (GetEvidence() == 0)
+        {
+            _errorMessage = "Please select at least one evidence type";
+            return;
+        }
+
+        _isSubmitting = true;
+        _errorMessage = null;
+        StateHasChanged();
+
+        try
+        {
+            int? speciesId = null;
+            int? userSpeciesId = null;
+
+            if (_isCreatingNewSpecies)
+            {
+                // First create the new species
+                var createSpeciesRequest = new CreateUserSpeciesRequest(
+                    _newSpeciesCommonName,
+                    _newSpeciesScientificName,
+                    _newSpeciesDescription,
+                    _newSpeciesPhotoBase64,
+                    _newSpeciesPhotoContentType);
+
+                var speciesResult = await WildlifeClient.CreateUserSpeciesAsync(createSpeciesRequest);
+                speciesResult.Switch(
+                    userSpecies => userSpeciesId = userSpecies.Id,
+                    validationError => _errorMessage = string.Join(", ", validationError.Errors.Values.SelectMany(v => v)),
+                    unauthorizedError => _errorMessage = "You must be logged in to submit a sighting",
+                    unexpectedError => _errorMessage = unexpectedError.Message);
+
+                if (_errorMessage != null)
+                {
+                    _isSubmitting = false;
+                    return;
+                }
+            }
+            else
+            {
+                speciesId = _selectedSpecies?.Id;
+                if (!speciesId.HasValue)
+                {
+                    _errorMessage = "Please select a species";
+                    _isSubmitting = false;
+                    return;
+                }
+            }
+
+            var observedAt = _observedDate!.Value.Date + _observedTime!.Value;
+
+            var request = new CreateSightingRequest(
+                speciesId,
+                userSpeciesId,
+                _mode,
+                _confidence,
+                _count,
+                GetBehaviors(),
+                GetEvidence(),
+                _weather,
+                _notes,
+                _latitude,
+                _longitude,
+                DateTime.SpecifyKind(observedAt, DateTimeKind.Utc),
+                _photoBase64,
+                _photoContentType,
+                _audioBase64,
+                _audioContentType);
+
+            var result = await WildlifeClient.CreateSightingAsync(request);
+
+            result.Switch(
+                sighting => Navigation.NavigateTo($"/sightings/{sighting.Id}"),
+                validationError => _errorMessage = string.Join(", ", validationError.Errors.Values.SelectMany(v => v)),
+                unauthorizedError => _errorMessage = "You must be logged in to submit a sighting",
+                speciesNotFoundError => _errorMessage = speciesNotFoundError.Message,
+                userSpeciesNotFoundError => _errorMessage = userSpeciesNotFoundError.Message,
+                unexpectedError => _errorMessage = unexpectedError.Message);
+        }
+        finally
+        {
+            _isSubmitting = false;
+            StateHasChanged();
+        }
+    }
+
+    private record GeolocationPosition(double Latitude, double Longitude);
+}

@@ -6,6 +6,7 @@ using FaunaFinder.Client.Services.Auth;
 using FaunaFinder.Client.Services.DarkMode;
 using FaunaFinder.Client.Services.Localization;
 using FaunaFinder.Identity.Application.Client;
+using FaunaFinder.WildlifeDiscovery.Application.Client;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
@@ -30,6 +31,9 @@ builder.Services.AddHttpClient<IExportService, ExportApiService>(client =>
 
 // Identity client
 builder.Services.AddIdentityClient(baseAddress);
+
+// Wildlife Discovery client
+builder.Services.AddWildlifeDiscoveryClient(baseAddress);
 
 // Store base address for JS interop
 builder.Services.AddSingleton(new ApiConfiguration(baseAddress.ToString()));

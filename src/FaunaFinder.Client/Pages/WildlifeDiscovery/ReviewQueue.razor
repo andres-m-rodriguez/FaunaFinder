@@ -1,0 +1,337 @@
+@page "/review"
+@using FaunaFinder.WildlifeDiscovery.Application.Client
+@using FaunaFinder.WildlifeDiscovery.Contracts.Requests
+@using FaunaFinder.WildlifeDiscovery.Contracts.Responses
+@using Microsoft.AspNetCore.Authorization
+@inject IWildlifeDiscoveryClient WildlifeClient
+@inject NavigationManager Navigation
+@attribute [Authorize(Roles = "Teacher,Admin")]
+
+<PageTitle>Review Queue - FaunaFinder</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="py-4">
+    <MudText Typo="Typo.h4" Class="mb-4">Review Queue</MudText>
+
+    @if (_isLoading)
+    {
+        <MudProgressLinear Color="Color.Primary" Indeterminate="true" />
+    }
+    else if (!string.IsNullOrEmpty(_errorMessage))
+    {
+        <MudAlert Severity="Severity.Error">@_errorMessage</MudAlert>
+    }
+    else if (_reviewQueue != null)
+    {
+        <MudGrid>
+            <MudItem xs="12" md="6">
+                <MudPaper Class="pa-4">
+                    <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-3">
+                        <MudText Typo="Typo.h6">Pending Sightings</MudText>
+                        <MudChip T="string" Color="Color.Warning">@_reviewQueue.TotalSightings</MudChip>
+                    </MudStack>
+
+                    @if (_reviewQueue.Sightings.Count == 0)
+                    {
+                        <MudText Color="Color.Secondary">No pending sightings to review</MudText>
+                    }
+                    else
+                    {
+                        <MudList T="SightingListDto" Dense="true">
+                            @foreach (var sighting in _reviewQueue.Sightings)
+                            {
+                                <MudListItem OnClick="@(() => SelectSighting(sighting))"
+                                             Class="@(_selectedSighting?.Id == sighting.Id ? "mud-primary-lighten" : "")">
+                                    <MudStack>
+                                        <MudStack Row="true" Justify="Justify.SpaceBetween">
+                                            <MudText Typo="Typo.subtitle1">@sighting.SpeciesName</MudText>
+                                            @if (sighting.IsFlaggedForReview)
+                                            {
+                                                <MudIcon Icon="@Icons.Material.Filled.Flag" Color="Color.Warning" Size="Size.Small" />
+                                            }
+                                        </MudStack>
+                                        <MudText Typo="Typo.caption">
+                                            @sighting.MunicipalityName - @sighting.ObservedAt.ToLocalTime().ToString("g")
+                                        </MudText>
+                                        <MudText Typo="Typo.caption">
+                                            By @sighting.ReportedByUserName
+                                            @if (sighting.IsNewMunicipalityRecord)
+                                            {
+                                                <MudChip T="string" Size="Size.Small" Color="Color.Success" Class="ml-2">New Record</MudChip>
+                                            }
+                                        </MudText>
+                                    </MudStack>
+                                </MudListItem>
+                                <MudDivider />
+                            }
+                        </MudList>
+                    }
+                </MudPaper>
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudPaper Class="pa-4">
+                    <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-3">
+                        <MudText Typo="Typo.h6">Pending Species</MudText>
+                        <MudChip T="string" Color="Color.Info">@_reviewQueue.TotalPendingSpecies</MudChip>
+                    </MudStack>
+
+                    @if (_reviewQueue.PendingSpecies.Count == 0)
+                    {
+                        <MudText Color="Color.Secondary">No pending species to verify</MudText>
+                    }
+                    else
+                    {
+                        <MudList T="UserSpeciesDto" Dense="true">
+                            @foreach (var species in _reviewQueue.PendingSpecies)
+                            {
+                                <MudListItem OnClick="@(() => SelectUserSpecies(species))"
+                                             Class="@(_selectedUserSpecies?.Id == species.Id ? "mud-primary-lighten" : "")">
+                                    <MudStack>
+                                        <MudText Typo="Typo.subtitle1">@species.CommonName</MudText>
+                                        @if (!string.IsNullOrEmpty(species.ScientificName))
+                                        {
+                                            <MudText Typo="Typo.caption" Class="font-italic">@species.ScientificName</MudText>
+                                        }
+                                        <MudText Typo="Typo.caption">
+                                            Submitted by @species.CreatedByUserName on @species.CreatedAt.ToLocalTime().ToString("g")
+                                        </MudText>
+                                    </MudStack>
+                                </MudListItem>
+                                <MudDivider />
+                            }
+                        </MudList>
+                    }
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+
+        @* Review Panel *@
+        @if (_selectedSighting != null)
+        {
+            <MudPaper Class="pa-4 mt-4">
+                <MudText Typo="Typo.h6" Class="mb-3">Review Sighting</MudText>
+                <MudGrid>
+                    <MudItem xs="12" sm="6">
+                        <MudText Typo="Typo.subtitle2" Color="Color.Primary">Species</MudText>
+                        <MudText>@_selectedSighting.SpeciesName</MudText>
+                    </MudItem>
+                    <MudItem xs="12" sm="6">
+                        <MudText Typo="Typo.subtitle2" Color="Color.Primary">Location</MudText>
+                        <MudText>@(_selectedSighting.MunicipalityName ?? $"{_selectedSighting.Latitude:F4}, {_selectedSighting.Longitude:F4}")</MudText>
+                    </MudItem>
+                    <MudItem xs="12" sm="6">
+                        <MudText Typo="Typo.subtitle2" Color="Color.Primary">Confidence</MudText>
+                        <MudText>@_selectedSighting.Confidence</MudText>
+                    </MudItem>
+                    <MudItem xs="12" sm="6">
+                        <MudText Typo="Typo.subtitle2" Color="Color.Primary">Count</MudText>
+                        <MudText>@_selectedSighting.Count</MudText>
+                    </MudItem>
+                </MudGrid>
+
+                <MudDivider Class="my-3" />
+
+                <MudTextField @bind-Value="_reviewNotes" Label="Review Notes (optional)" Lines="3" Class="mb-3" />
+
+                <MudStack Row="true" Spacing="2">
+                    <MudButton Color="Color.Success" Variant="Variant.Filled" OnClick="@(() => ReviewSighting("Approved"))"
+                               Disabled="_isReviewing">
+                        @if (_isReviewing)
+                        {
+                            <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                        }
+                        Approve
+                    </MudButton>
+                    <MudButton Color="Color.Error" Variant="Variant.Filled" OnClick="@(() => ReviewSighting("Rejected"))"
+                               Disabled="_isReviewing">
+                        Reject
+                    </MudButton>
+                    <MudButton Color="Color.Default" Variant="Variant.Outlined" OnClick="ClearSelection">
+                        Cancel
+                    </MudButton>
+                </MudStack>
+            </MudPaper>
+        }
+
+        @if (_selectedUserSpecies != null)
+        {
+            <MudPaper Class="pa-4 mt-4">
+                <MudText Typo="Typo.h6" Class="mb-3">Verify Species</MudText>
+                <MudGrid>
+                    <MudItem xs="12" sm="6">
+                        <MudText Typo="Typo.subtitle2" Color="Color.Primary">Common Name</MudText>
+                        <MudText>@_selectedUserSpecies.CommonName</MudText>
+                    </MudItem>
+                    <MudItem xs="12" sm="6">
+                        <MudText Typo="Typo.subtitle2" Color="Color.Primary">Scientific Name</MudText>
+                        <MudText>@(_selectedUserSpecies.ScientificName ?? "Not provided")</MudText>
+                    </MudItem>
+                    @if (!string.IsNullOrEmpty(_selectedUserSpecies.Description))
+                    {
+                        <MudItem xs="12">
+                            <MudText Typo="Typo.subtitle2" Color="Color.Primary">Description</MudText>
+                            <MudText>@_selectedUserSpecies.Description</MudText>
+                        </MudItem>
+                    }
+                    @if (_selectedUserSpecies.HasPhoto)
+                    {
+                        <MudItem xs="12">
+                            <MudImage Src="@WildlifeClient.GetUserSpeciesPhotoUrl(_selectedUserSpecies.Id)"
+                                      Alt="Species photo" ObjectFit="ObjectFit.Contain" Width="100" Height="200" Class="rounded" />
+                        </MudItem>
+                    }
+                </MudGrid>
+
+                <MudDivider Class="my-3" />
+
+                <MudCheckBox @bind-Value="_isEndangered" Label="Mark as endangered/protected species" Color="Color.Warning" Class="mb-3" />
+                <MudTextField @bind-Value="_rejectionReason" Label="Rejection reason (required if rejecting)" Lines="2" Class="mb-3" />
+
+                <MudStack Row="true" Spacing="2">
+                    <MudButton Color="Color.Success" Variant="Variant.Filled" OnClick="@(() => VerifySpecies(true))"
+                               Disabled="_isReviewing">
+                        @if (_isReviewing)
+                        {
+                            <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                        }
+                        Approve as New Species
+                    </MudButton>
+                    <MudButton Color="Color.Error" Variant="Variant.Filled" OnClick="@(() => VerifySpecies(false))"
+                               Disabled="_isReviewing || string.IsNullOrWhiteSpace(_rejectionReason)">
+                        Reject
+                    </MudButton>
+                    <MudButton Color="Color.Default" Variant="Variant.Outlined" OnClick="ClearSelection">
+                        Cancel
+                    </MudButton>
+                </MudStack>
+            </MudPaper>
+        }
+    }
+</MudContainer>
+
+@code {
+    private ReviewQueueDto? _reviewQueue;
+    private SightingListDto? _selectedSighting;
+    private UserSpeciesDto? _selectedUserSpecies;
+    private string? _reviewNotes;
+    private string? _rejectionReason;
+    private bool _isEndangered;
+    private bool _isLoading = true;
+    private bool _isReviewing;
+    private string? _errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadReviewQueue();
+    }
+
+    private async Task LoadReviewQueue()
+    {
+        _isLoading = true;
+        _errorMessage = null;
+        StateHasChanged();
+
+        try
+        {
+            var result = await WildlifeClient.GetReviewQueueAsync();
+
+            result.Switch(
+                queue => _reviewQueue = queue,
+                unauthorizedError => _errorMessage = "You must be logged in to access the review queue",
+                forbiddenError => _errorMessage = "You do not have permission to access the review queue",
+                unexpectedError => _errorMessage = unexpectedError.Message);
+        }
+        finally
+        {
+            _isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private void SelectSighting(SightingListDto sighting)
+    {
+        _selectedSighting = sighting;
+        _selectedUserSpecies = null;
+        _reviewNotes = null;
+    }
+
+    private void SelectUserSpecies(UserSpeciesDto species)
+    {
+        _selectedUserSpecies = species;
+        _selectedSighting = null;
+        _rejectionReason = null;
+        _isEndangered = false;
+    }
+
+    private void ClearSelection()
+    {
+        _selectedSighting = null;
+        _selectedUserSpecies = null;
+        _reviewNotes = null;
+        _rejectionReason = null;
+        _isEndangered = false;
+    }
+
+    private async Task ReviewSighting(string status)
+    {
+        if (_selectedSighting == null) return;
+
+        _isReviewing = true;
+        StateHasChanged();
+
+        try
+        {
+            var request = new ReviewSightingRequest(status, _reviewNotes);
+            var result = await WildlifeClient.ReviewSightingAsync(_selectedSighting.Id, request);
+
+            result.Switch(
+                sighting =>
+                {
+                    ClearSelection();
+                    InvokeAsync(LoadReviewQueue);
+                },
+                validationError => _errorMessage = string.Join(", ", validationError.Errors.Values.SelectMany(v => v)),
+                notFoundError => _errorMessage = notFoundError.Message,
+                unauthorizedError => _errorMessage = "You must be logged in",
+                forbiddenError => _errorMessage = "You do not have permission",
+                unexpectedError => _errorMessage = unexpectedError.Message);
+        }
+        finally
+        {
+            _isReviewing = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task VerifySpecies(bool approve)
+    {
+        if (_selectedUserSpecies == null) return;
+
+        _isReviewing = true;
+        StateHasChanged();
+
+        try
+        {
+            var request = new VerifyUserSpeciesRequest(approve, _isEndangered, null, _rejectionReason);
+            var result = await WildlifeClient.VerifyUserSpeciesAsync(_selectedUserSpecies.Id, request);
+
+            result.Switch(
+                userSpecies =>
+                {
+                    ClearSelection();
+                    InvokeAsync(LoadReviewQueue);
+                },
+                validationError => _errorMessage = string.Join(", ", validationError.Errors.Values.SelectMany(v => v)),
+                notFoundError => _errorMessage = notFoundError.Message,
+                unauthorizedError => _errorMessage = "You must be logged in",
+                forbiddenError => _errorMessage = "You do not have permission",
+                invalidOperationError => _errorMessage = invalidOperationError.Message,
+                unexpectedError => _errorMessage = unexpectedError.Message);
+        }
+        finally
+        {
+            _isReviewing = false;
+            StateHasChanged();
+        }
+    }
+}

@@ -1,0 +1,121 @@
+@page "/sightings/my"
+@using FaunaFinder.WildlifeDiscovery.Application.Client
+@using FaunaFinder.WildlifeDiscovery.Contracts.Responses
+@using FaunaFinder.WildlifeDiscovery.Contracts.Results
+@using Microsoft.AspNetCore.Authorization
+@inject IWildlifeDiscoveryClient WildlifeClient
+@inject NavigationManager Navigation
+@attribute [Authorize]
+
+<PageTitle>My Sightings - FaunaFinder</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="py-4">
+    <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-4">
+        <MudText Typo="Typo.h4">My Sightings</MudText>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Add"
+                   Href="/sightings/report">Report New Sighting</MudButton>
+    </MudStack>
+
+    @if (_isLoading)
+    {
+        <MudProgressLinear Color="Color.Primary" Indeterminate="true" />
+    }
+    else if (!string.IsNullOrEmpty(_errorMessage))
+    {
+        <MudAlert Severity="Severity.Error">@_errorMessage</MudAlert>
+    }
+    else if (_sightings.Count == 0)
+    {
+        <MudPaper Class="pa-6 text-center">
+            <MudIcon Icon="@Icons.Material.Filled.NaturePeople" Size="Size.Large" Color="Color.Primary" Class="mb-3" />
+            <MudText Typo="Typo.h6">No sightings yet</MudText>
+            <MudText Typo="Typo.body1" Class="mb-4">Start reporting your wildlife observations!</MudText>
+            <MudButton Color="Color.Primary" Variant="Variant.Filled" Href="/sightings/report">
+                Report Your First Sighting
+            </MudButton>
+        </MudPaper>
+    }
+    else
+    {
+        <MudTable Items="_sightings" Hover="true" Breakpoint="Breakpoint.Sm" Dense="true">
+            <HeaderContent>
+                <MudTh>Species</MudTh>
+                <MudTh>Location</MudTh>
+                <MudTh>Observed</MudTh>
+                <MudTh>Mode</MudTh>
+                <MudTh>Status</MudTh>
+                <MudTh></MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="Species">@context.SpeciesName</MudTd>
+                <MudTd DataLabel="Location">@(context.MunicipalityName ?? $"{context.Latitude:F4}, {context.Longitude:F4}")</MudTd>
+                <MudTd DataLabel="Observed">@context.ObservedAt.ToLocalTime().ToString("g")</MudTd>
+                <MudTd DataLabel="Mode">
+                    <MudChip T="string" Size="Size.Small" Color="@(context.Mode == "Survey" ? Color.Info : Color.Default)">
+                        @context.Mode
+                    </MudChip>
+                </MudTd>
+                <MudTd DataLabel="Status">
+                    <MudChip T="string" Size="Size.Small" Color="@GetStatusColor(context.Status)">
+                        @context.Status
+                    </MudChip>
+                    @if (context.IsFlaggedForReview)
+                    {
+                        <MudIcon Icon="@Icons.Material.Filled.Flag" Color="Color.Warning" Size="Size.Small" Class="ml-1" />
+                    }
+                    @if (context.IsNewMunicipalityRecord)
+                    {
+                        <MudIcon Icon="@Icons.Material.Filled.NewReleases" Color="Color.Success" Size="Size.Small" Class="ml-1" />
+                    }
+                </MudTd>
+                <MudTd>
+                    <MudIconButton Icon="@Icons.Material.Filled.Visibility" Size="Size.Small"
+                                   OnClick="@(() => Navigation.NavigateTo($"/sightings/{context.Id}"))" />
+                </MudTd>
+            </RowTemplate>
+            <PagerContent>
+                <MudTablePager PageSizeOptions="new int[] { 10, 25, 50 }" />
+            </PagerContent>
+        </MudTable>
+    }
+</MudContainer>
+
+@code {
+    private List<SightingListDto> _sightings = [];
+    private bool _isLoading = true;
+    private string? _errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadSightings();
+    }
+
+    private async Task LoadSightings()
+    {
+        _isLoading = true;
+        _errorMessage = null;
+        StateHasChanged();
+
+        try
+        {
+            var result = await WildlifeClient.GetMySightingsAsync(pageSize: 100);
+
+            result.Switch(
+                sightings => _sightings = sightings.Items,
+                unauthorizedError => _errorMessage = "You must be logged in to view your sightings",
+                unexpectedError => _errorMessage = unexpectedError.Message);
+        }
+        finally
+        {
+            _isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private Color GetStatusColor(string status) => status switch
+    {
+        "Approved" => Color.Success,
+        "Rejected" => Color.Error,
+        _ => Color.Warning
+    };
+}

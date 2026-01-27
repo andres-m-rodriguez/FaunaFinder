@@ -7,6 +7,7 @@ using FaunaFinder.Database.Extensions;
 using FaunaFinder.Database.Models.Users;
 using FaunaFinder.DataAccess.Extensions;
 using FaunaFinder.Identity.Api;
+using FaunaFinder.WildlifeDiscovery.Api;
 using Microsoft.AspNetCore.Identity;
 using QuestPDF.Infrastructure;
 
@@ -84,6 +85,7 @@ api.MapSpeciesEndpoints();
 api.MapSpeciesImageEndpoints();
 api.MapExportEndpoints();
 api.MapIdentityEndpoints();
+api.MapWildlifeDiscoveryEndpoints();
 
 // Serve App.razor as the shell with WASM interactivity
 app.MapRazorComponents<App>()
