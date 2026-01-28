@@ -1,7 +1,7 @@
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using FaunaFinder.Contracts.Localization;
+using FaunaFinder.i18n.Contracts;
 using FaunaFinder.Database;
 using FaunaFinder.Database.Models.Conservation;
 using FaunaFinder.Database.Models.Municipalities;

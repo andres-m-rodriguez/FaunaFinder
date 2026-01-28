@@ -17,8 +17,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\FaunaFinder.Contracts\FaunaFinder.Contracts.csproj" />
-    <ProjectReference Include="..\FaunaFinder.Contracts.Localization\FaunaFinder.Contracts.Localization.csproj" />
-    <ProjectReference Include="..\FaunaFinder.Pagination.Contracts\FaunaFinder.Pagination.Contracts.csproj" />
+    <ProjectReference Include="..\Common\FaunaFinder.i18n.Contracts\FaunaFinder.i18n.Contracts.csproj" />
+    <ProjectReference Include="..\Common\FaunaFinder.Pagination.Contracts\FaunaFinder.Pagination.Contracts.csproj" />
     <ProjectReference Include="..\Features\Identity\FaunaFinder.Identity.Application.Client\FaunaFinder.Identity.Application.Client.csproj" />
     <ProjectReference Include="..\Features\WildlifeDiscovery\FaunaFinder.WildlifeDiscovery.Contracts\FaunaFinder.WildlifeDiscovery.Contracts.csproj" />
   </ItemGroup>

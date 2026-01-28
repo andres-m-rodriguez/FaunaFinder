@@ -2,7 +2,7 @@ using FaunaFinder.Contracts.Dtos.FwsActions;
 using FaunaFinder.Contracts.Dtos.FwsLinks;
 using FaunaFinder.Contracts.Dtos.NrcsPractices;
 using FaunaFinder.Contracts.Dtos.Species;
-using FaunaFinder.Contracts.Localization;
+using FaunaFinder.i18n.Contracts;
 using FaunaFinder.Contracts.Parameters;
 using FaunaFinder.Database;
 using FaunaFinder.DataAccess.Interfaces;

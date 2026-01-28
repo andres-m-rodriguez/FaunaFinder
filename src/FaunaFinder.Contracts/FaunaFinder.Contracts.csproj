@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\FaunaFinder.Contracts.Localization\FaunaFinder.Contracts.Localization.csproj" />
+    <ProjectReference Include="..\Common\FaunaFinder.i18n.Contracts\FaunaFinder.i18n.Contracts.csproj" />
   </ItemGroup>
 
 </Project>

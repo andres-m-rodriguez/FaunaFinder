@@ -1,5 +1,5 @@
 using FaunaFinder.Contracts.Dtos.FwsLinks;
-using FaunaFinder.Contracts.Localization;
+using FaunaFinder.i18n.Contracts;
 
 namespace FaunaFinder.Contracts.Dtos.Species;
 

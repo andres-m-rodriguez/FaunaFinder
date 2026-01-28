@@ -1,4 +1,4 @@
-using FaunaFinder.Contracts.Localization;
+using FaunaFinder.i18n.Contracts;
 using FaunaFinder.Database;
 using FaunaFinder.Database.Models.Sightings;
 using FaunaFinder.Database.Models.Users;

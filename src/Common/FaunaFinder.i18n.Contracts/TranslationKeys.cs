@@ -1,4 +1,4 @@
-namespace FaunaFinder.Contracts.Localization;
+namespace FaunaFinder.i18n.Contracts;
 
 /// <summary>
 /// Static class containing all translation keys for type-safe access.
