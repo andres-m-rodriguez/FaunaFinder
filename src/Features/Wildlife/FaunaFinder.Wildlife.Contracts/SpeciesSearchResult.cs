@@ -1,6 +1,6 @@
 using FaunaFinder.i18n.Contracts;
 
-namespace FaunaFinder.WildlifeDiscovery.Contracts;
+namespace FaunaFinder.Wildlife.Contracts;
 
 public record SpeciesSearchResult(int Id, List<LocaleValue> CommonName, string ScientificName)
 {

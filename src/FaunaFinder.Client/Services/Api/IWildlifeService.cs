@@ -1,8 +1,8 @@
-using FaunaFinder.WildlifeDiscovery.Contracts;
+using FaunaFinder.Wildlife.Contracts;
 
 namespace FaunaFinder.Client.Services.Api;
 
-public interface IWildlifeDiscoveryService
+public interface IWildlifeService
 {
     Task<IReadOnlyList<SpeciesSearchResult>> SearchSpeciesAsync(
         string query,

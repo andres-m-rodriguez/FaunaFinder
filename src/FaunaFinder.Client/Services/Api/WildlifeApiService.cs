@@ -1,13 +1,13 @@
 using System.Net.Http.Json;
-using FaunaFinder.WildlifeDiscovery.Contracts;
+using FaunaFinder.Wildlife.Contracts;
 
 namespace FaunaFinder.Client.Services.Api;
 
-public sealed class WildlifeDiscoveryApiService : IWildlifeDiscoveryService
+public sealed class WildlifeApiService : IWildlifeService
 {
     private readonly HttpClient _httpClient;
 
-    public WildlifeDiscoveryApiService(HttpClient httpClient)
+    public WildlifeApiService(HttpClient httpClient)
     {
         _httpClient = httpClient;
     }

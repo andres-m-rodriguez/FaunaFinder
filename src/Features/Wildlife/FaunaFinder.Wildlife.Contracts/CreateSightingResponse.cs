@@ -1,3 +1,3 @@
-namespace FaunaFinder.WildlifeDiscovery.Contracts;
+namespace FaunaFinder.Wildlife.Contracts;
 
 public record CreateSightingResponse(int? Id, string? Error, bool Success);

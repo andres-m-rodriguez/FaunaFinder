@@ -11,8 +11,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\FaunaFinder.Database\FaunaFinder.Database.csproj" />
-    <ProjectReference Include="..\FaunaFinder.WildlifeDiscovery.Contracts\FaunaFinder.WildlifeDiscovery.Contracts.csproj" />
+    <ProjectReference Include="..\FaunaFinder.Wildlife.DataAccess\FaunaFinder.Wildlife.DataAccess.csproj" />
+    <ProjectReference Include="..\FaunaFinder.Wildlife.Contracts\FaunaFinder.Wildlife.Contracts.csproj" />
   </ItemGroup>
 
 </Project>

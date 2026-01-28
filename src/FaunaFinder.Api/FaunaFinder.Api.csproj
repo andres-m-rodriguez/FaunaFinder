@@ -29,7 +29,7 @@
     <ProjectReference Include="..\Common\FaunaFinder.Pagination.Contracts\FaunaFinder.Pagination.Contracts.csproj" />
     <ProjectReference Include="..\FaunaFinder.ServiceDefaults\FaunaFinder.ServiceDefaults.csproj" />
     <ProjectReference Include="..\Features\Identity\FaunaFinder.Identity.Api\FaunaFinder.Identity.Api.csproj" />
-    <ProjectReference Include="..\Features\WildlifeDiscovery\FaunaFinder.WildlifeDiscovery.Api\FaunaFinder.WildlifeDiscovery.Api.csproj" />
+    <ProjectReference Include="..\Features\Wildlife\FaunaFinder.Wildlife.Api\FaunaFinder.Wildlife.Api.csproj" />
   </ItemGroup>
 
 </Project>
