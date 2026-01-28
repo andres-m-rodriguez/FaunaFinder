@@ -28,12 +28,12 @@
             <MudAutocomplete T="SpeciesSearchResult" Label="@L["Sighting_SearchSpecies"]"
                              @bind-Value="_selectedSpecies"
                              SearchFunc="SearchSpecies"
-                             ToStringFunc="@(s => s?.CommonName ?? "")"
+                             ToStringFunc="@(s => s?.GetCommonName() ?? "")"
                              ShowProgressIndicator="true"
                              Placeholder="@L["Sighting_SearchPlaceholder"]"
                              Validation="@(new Func<SpeciesSearchResult?, string?>(ValidateSpecies))">
                 <ItemTemplate Context="item">
-                    <MudText>@item.CommonName</MudText>
+                    <MudText>@item.GetCommonName()</MudText>
                     <MudText Typo="Typo.caption" Class="mud-text-secondary">@item.ScientificName</MudText>
                 </ItemTemplate>
             </MudAutocomplete>
@@ -217,7 +217,7 @@
     private string? ValidateSpecies(SpeciesSearchResult? species)
     {
         _model.SpeciesId = species?.Id;
-        _model.SpeciesName = species?.CommonName;
+        _model.SpeciesName = species?.GetCommonName();
         return species is null ? L["Sighting_SpeciesRequired"] : null;
     }
 

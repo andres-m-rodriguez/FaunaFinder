@@ -1,3 +1,5 @@
+using FaunaFinder.Contracts.Localization;
+
 namespace FaunaFinder.Client.Services.Api;
 
 public interface IWildlifeDiscoveryService
@@ -17,7 +19,13 @@ public interface IWildlifeDiscoveryService
         CancellationToken cancellationToken = default);
 }
 
-public record SpeciesSearchResult(int Id, string CommonName, string ScientificName);
+public record SpeciesSearchResult(int Id, List<LocaleValue> CommonName, string ScientificName)
+{
+    public string GetCommonName(string locale = "en") =>
+        CommonName.FirstOrDefault(x => x.Code == locale)?.Value
+        ?? CommonName.FirstOrDefault()?.Value
+        ?? ScientificName;
+}
 
 public record SightingsPage(
     List<SightingListItem> Items,
