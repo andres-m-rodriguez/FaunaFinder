@@ -12,17 +12,17 @@ public sealed class UserSpecies
 {
     public required int Id { get; set; }
     public required string CommonName { get; set; }
-    public string? ScientificName { get; set; }
-    public string? Description { get; set; }
-    public byte[]? PhotoData { get; set; }
-    public string? PhotoContentType { get; set; }
+    public required string? ScientificName { get; set; }
+    public required string? Description { get; set; }
+    public required byte[]? PhotoData { get; set; }
+    public required string? PhotoContentType { get; set; }
     public required bool IsVerified { get; set; }
     public required bool IsEndangered { get; set; }
     public required int CreatedByUserId { get; set; }
     public required DateTime CreatedAt { get; set; }
-    public DateTime? VerifiedAt { get; set; }
-    public int? VerifiedByUserId { get; set; }
-    public int? ApprovedSpeciesId { get; set; }
+    public required DateTime? VerifiedAt { get; set; }
+    public required int? VerifiedByUserId { get; set; }
+    public required int? ApprovedSpeciesId { get; set; }
 
     public User CreatedByUser { get; set; } = null!;
     public User? VerifiedByUser { get; set; }

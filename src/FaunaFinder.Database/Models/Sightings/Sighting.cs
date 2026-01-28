@@ -14,8 +14,8 @@ public sealed class Sighting
     public required int Id { get; set; }
 
     // Species reference - either verified species or user-submitted species
-    public int? SpeciesId { get; set; }
-    public int? UserSpeciesId { get; set; }
+    public required int? SpeciesId { get; set; }
+    public required int? UserSpeciesId { get; set; }
 
     // Sighting details
     public required SightingMode Mode { get; set; }
@@ -23,30 +23,30 @@ public sealed class Sighting
     public required CountRange Count { get; set; }
     public required Behavior Behaviors { get; set; }
     public required EvidenceType Evidence { get; set; }
-    public Weather? Weather { get; set; }
-    public string? Notes { get; set; }
+    public required Weather? Weather { get; set; }
+    public required string? Notes { get; set; }
 
     // Location data
     public required Point Location { get; set; }
-    public int? MunicipalityId { get; set; }
+    public required int? MunicipalityId { get; set; }
 
     // Timestamp
     public required DateTime ObservedAt { get; set; }
     public required DateTime CreatedAt { get; set; }
 
     // Media
-    public byte[]? PhotoData { get; set; }
-    public string? PhotoContentType { get; set; }
-    public byte[]? AudioData { get; set; }
-    public string? AudioContentType { get; set; }
+    public required byte[]? PhotoData { get; set; }
+    public required string? PhotoContentType { get; set; }
+    public required byte[]? AudioData { get; set; }
+    public required string? AudioContentType { get; set; }
 
     // Review status
     public required SightingStatus Status { get; set; }
     public required bool IsFlaggedForReview { get; set; }
     public required bool IsNewMunicipalityRecord { get; set; }
-    public string? ReviewNotes { get; set; }
-    public DateTime? ReviewedAt { get; set; }
-    public int? ReviewedByUserId { get; set; }
+    public required string? ReviewNotes { get; set; }
+    public required DateTime? ReviewedAt { get; set; }
+    public required int? ReviewedByUserId { get; set; }
 
     // User reference
     public required int ReportedByUserId { get; set; }
