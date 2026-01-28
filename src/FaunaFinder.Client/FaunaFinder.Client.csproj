@@ -20,7 +20,7 @@
     <ProjectReference Include="..\Common\FaunaFinder.i18n.Contracts\FaunaFinder.i18n.Contracts.csproj" />
     <ProjectReference Include="..\Common\FaunaFinder.Pagination.Contracts\FaunaFinder.Pagination.Contracts.csproj" />
     <ProjectReference Include="..\Features\Identity\FaunaFinder.Identity.Application.Client\FaunaFinder.Identity.Application.Client.csproj" />
-    <ProjectReference Include="..\Features\WildlifeDiscovery\FaunaFinder.WildlifeDiscovery.Contracts\FaunaFinder.WildlifeDiscovery.Contracts.csproj" />
+    <ProjectReference Include="..\Features\Wildlife\FaunaFinder.Wildlife.Application.Client\FaunaFinder.Wildlife.Application.Client.csproj" />
   </ItemGroup>
 
 </Project>

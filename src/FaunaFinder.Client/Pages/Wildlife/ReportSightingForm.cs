@@ -1,6 +1,6 @@
 using FluentValidation;
 
-namespace FaunaFinder.Client.Pages.WildlifeDiscovery;
+namespace FaunaFinder.Client.Pages.Wildlife;
 
 public class ReportSightingForm
 {

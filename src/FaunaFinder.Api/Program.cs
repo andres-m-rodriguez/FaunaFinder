@@ -7,7 +7,9 @@ using FaunaFinder.Database.Extensions;
 using FaunaFinder.Database.Models.Users;
 using FaunaFinder.DataAccess.Extensions;
 using FaunaFinder.Identity.Api;
-using FaunaFinder.WildlifeDiscovery.Api;
+using FaunaFinder.Wildlife.Api;
+using FaunaFinder.Wildlife.Application.Extensions;
+using FaunaFinder.Wildlife.Database.Extensions;
 using Microsoft.AspNetCore.Identity;
 using QuestPDF.Infrastructure;
 
@@ -25,6 +27,10 @@ QuestPDF.Settings.License = LicenseType.Community;
 
 builder.AddFaunaFinderDatabase();
 builder.Services.AddFaunaFinderDataAccess();
+
+// Add Wildlife feature
+builder.AddWildlifeDatabase("faunafinder");
+builder.Services.AddWildlifeApplication();
 
 // Configure Identity
 builder.Services.AddIdentity<User, IdentityRole<int>>(options =>
@@ -85,7 +91,7 @@ api.MapSpeciesEndpoints();
 api.MapSpeciesImageEndpoints();
 api.MapExportEndpoints();
 api.MapIdentityEndpoints();
-api.MapWildlifeDiscoveryEndpoints();
+app.MapWildlifeEndpoints();
 
 // Serve App.razor as the shell with WASM interactivity
 app.MapRazorComponents<App>()

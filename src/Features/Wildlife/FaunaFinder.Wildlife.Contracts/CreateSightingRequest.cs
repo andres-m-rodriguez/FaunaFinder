@@ -1,4 +1,4 @@
-namespace FaunaFinder.WildlifeDiscovery.Contracts;
+namespace FaunaFinder.Wildlife.Contracts;
 
 public record CreateSightingRequest(
     int SpeciesId,
