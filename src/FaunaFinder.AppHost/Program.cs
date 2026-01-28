@@ -1,6 +1,6 @@
 var builder = DistributedApplication.CreateBuilder(args);
 
-// PostgreSQL database
+// PostgreSQL database server
 // - Uses container locally for development
 // - Uses Azure PostgreSQL Flexible Server when deployed to Azure
 var postgres = builder.AddAzurePostgresFlexibleServer("postgres")
@@ -11,16 +11,28 @@ var postgres = builder.AddAzurePostgresFlexibleServer("postgres")
         container.WithPgAdmin();
     });
 
-var db = postgres.AddDatabase("faunafinder");
+// Feature-specific databases
+// Each feature module gets its own isolated database
+var identityDb = postgres.AddDatabase("faunafinder-identity");
+var wildlifeDb = postgres.AddDatabase("faunafinder-wildlife");
 
-// Database seeder (runs first)
+// Main database (for shared/legacy tables during transition)
+var mainDb = postgres.AddDatabase("faunafinder");
+
+// Database seeder (runs first, seeds all databases)
 var seeder = builder.AddProject<Projects.FaunaFinder_Seeder>("seeder")
-    .WithReference(db)
-    .WaitFor(db);
+    .WithReference(mainDb)
+    .WithReference(identityDb)
+    .WithReference(wildlifeDb)
+    .WaitFor(mainDb)
+    .WaitFor(identityDb)
+    .WaitFor(wildlifeDb);
 
 // API + WASM Client
 builder.AddProject<Projects.FaunaFinder_Api>("api")
-    .WithReference(db)
+    .WithReference(mainDb)
+    .WithReference(identityDb)
+    .WithReference(wildlifeDb)
     .WaitFor(seeder)
     .WithExternalHttpEndpoints();
 
