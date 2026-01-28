@@ -1,4 +1,4 @@
-using FaunaFinder.Contracts.Localization;
+using FaunaFinder.WildlifeDiscovery.Contracts;
 
 namespace FaunaFinder.Client.Services.Api;
 
@@ -14,52 +14,7 @@ public interface IWildlifeDiscoveryService
         int pageSize = 12,
         CancellationToken cancellationToken = default);
 
-    Task<CreateSightingResult> CreateSightingAsync(
+    Task<CreateSightingResponse> CreateSightingAsync(
         CreateSightingRequest request,
         CancellationToken cancellationToken = default);
 }
-
-public record SpeciesSearchResult(int Id, List<LocaleValue> CommonName, string ScientificName)
-{
-    public string GetCommonName(string locale = "en") =>
-        CommonName.FirstOrDefault(x => x.Code == locale)?.Value
-        ?? CommonName.FirstOrDefault()?.Value
-        ?? ScientificName;
-}
-
-public record SightingsPage(
-    List<SightingListItem> Items,
-    int TotalCount,
-    int Page,
-    int PageSize);
-
-public record SightingListItem(
-    int Id,
-    int SpeciesId,
-    string? SpeciesName,
-    string Mode,
-    string Confidence,
-    string Count,
-    string Status,
-    DateTime ObservedAt,
-    DateTime CreatedAt,
-    double Latitude,
-    double Longitude,
-    bool HasPhoto);
-
-public record CreateSightingRequest(
-    int SpeciesId,
-    double Latitude,
-    double Longitude,
-    DateTime ObservedAt,
-    string Mode,
-    string Confidence,
-    string Count,
-    int Behaviors,
-    int Evidence,
-    string? Weather,
-    string? Notes,
-    byte[]? PhotoData,
-    string? PhotoContentType);
-
-public record CreateSightingResult(int? Id, string? Error, bool Success);

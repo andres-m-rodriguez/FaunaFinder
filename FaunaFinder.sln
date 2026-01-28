@@ -41,6 +41,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WildlifeDiscovery", "Wildli
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FaunaFinder.WildlifeDiscovery.Api", "src\Features\WildlifeDiscovery\FaunaFinder.WildlifeDiscovery.Api\FaunaFinder.WildlifeDiscovery.Api.csproj", "{A1A884FD-BAA1-42B0-8520-EF9D25CBA1CE}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WildlifeDiscovery", "WildlifeDiscovery", "{F26EE05C-5EBD-B745-89A2-491B45AC0479}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FaunaFinder.WildlifeDiscovery.Contracts", "src\Features\WildlifeDiscovery\FaunaFinder.WildlifeDiscovery.Contracts\FaunaFinder.WildlifeDiscovery.Contracts.csproj", "{889F51EE-A733-49AF-B784-41D2F5C83F55}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -219,6 +223,18 @@ Global
 		{A1A884FD-BAA1-42B0-8520-EF9D25CBA1CE}.Release|x64.Build.0 = Release|Any CPU
 		{A1A884FD-BAA1-42B0-8520-EF9D25CBA1CE}.Release|x86.ActiveCfg = Release|Any CPU
 		{A1A884FD-BAA1-42B0-8520-EF9D25CBA1CE}.Release|x86.Build.0 = Release|Any CPU
+		{889F51EE-A733-49AF-B784-41D2F5C83F55}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{889F51EE-A733-49AF-B784-41D2F5C83F55}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{889F51EE-A733-49AF-B784-41D2F5C83F55}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{889F51EE-A733-49AF-B784-41D2F5C83F55}.Debug|x64.Build.0 = Debug|Any CPU
+		{889F51EE-A733-49AF-B784-41D2F5C83F55}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{889F51EE-A733-49AF-B784-41D2F5C83F55}.Debug|x86.Build.0 = Debug|Any CPU
+		{889F51EE-A733-49AF-B784-41D2F5C83F55}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{889F51EE-A733-49AF-B784-41D2F5C83F55}.Release|Any CPU.Build.0 = Release|Any CPU
+		{889F51EE-A733-49AF-B784-41D2F5C83F55}.Release|x64.ActiveCfg = Release|Any CPU
+		{889F51EE-A733-49AF-B784-41D2F5C83F55}.Release|x64.Build.0 = Release|Any CPU
+		{889F51EE-A733-49AF-B784-41D2F5C83F55}.Release|x86.ActiveCfg = Release|Any CPU
+		{889F51EE-A733-49AF-B784-41D2F5C83F55}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -234,5 +250,7 @@ Global
 		{7B21EBA9-527B-4FE5-9DF7-42D8D2E4E3E5} = {E2A5EC54-41E6-334C-DB30-5D71ABDE06FE}
 		{FDA8FDF1-D876-E855-A9A2-80088BB07443} = {9792E6E2-564B-9699-7DA2-9F7194AE82F6}
 		{A1A884FD-BAA1-42B0-8520-EF9D25CBA1CE} = {FDA8FDF1-D876-E855-A9A2-80088BB07443}
+		{F26EE05C-5EBD-B745-89A2-491B45AC0479} = {E81CAA0A-8D6A-E3B6-28B3-AB416E1657A7}
+		{889F51EE-A733-49AF-B784-41D2F5C83F55} = {F26EE05C-5EBD-B745-89A2-491B45AC0479}
 	EndGlobalSection
 EndGlobal

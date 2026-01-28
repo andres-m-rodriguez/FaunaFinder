@@ -1,4 +1,5 @@
 using System.Net.Http.Json;
+using FaunaFinder.WildlifeDiscovery.Contracts;
 
 namespace FaunaFinder.Client.Services.Api;
 
@@ -38,46 +39,21 @@ public sealed class WildlifeDiscoveryApiService : IWildlifeDiscoveryService
         return result ?? new SightingsPage([], 0, page, pageSize);
     }
 
-    public async Task<CreateSightingResult> CreateSightingAsync(
+    public async Task<CreateSightingResponse> CreateSightingAsync(
         CreateSightingRequest request,
         CancellationToken cancellationToken = default)
     {
-        using var content = new MultipartFormDataContent();
-
-        content.Add(new StringContent(request.SpeciesId.ToString()), "speciesId");
-        content.Add(new StringContent(request.Latitude.ToString()), "latitude");
-        content.Add(new StringContent(request.Longitude.ToString()), "longitude");
-        content.Add(new StringContent(request.ObservedAt.ToString("O")), "observedAt");
-        content.Add(new StringContent(request.Mode), "mode");
-        content.Add(new StringContent(request.Confidence), "confidence");
-        content.Add(new StringContent(request.Count), "count");
-        content.Add(new StringContent(request.Behaviors.ToString()), "behaviors");
-        content.Add(new StringContent(request.Evidence.ToString()), "evidence");
-
-        if (!string.IsNullOrWhiteSpace(request.Weather))
-            content.Add(new StringContent(request.Weather), "weather");
-
-        if (!string.IsNullOrWhiteSpace(request.Notes))
-            content.Add(new StringContent(request.Notes), "notes");
-
-        if (request.PhotoData is not null && request.PhotoContentType is not null)
-        {
-            var photoContent = new ByteArrayContent(request.PhotoData);
-            photoContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(request.PhotoContentType);
-            content.Add(photoContent, "photo", "photo.jpg");
-        }
-
-        var response = await _httpClient.PostAsync("api/wildlife/sightings", content, cancellationToken);
+        var response = await _httpClient.PostAsJsonAsync("api/wildlife/sightings", request, cancellationToken);
 
         if (response.IsSuccessStatusCode)
         {
-            var result = await response.Content.ReadFromJsonAsync<CreateSightingResponse>(cancellationToken: cancellationToken);
-            return new CreateSightingResult(result?.Id, null, true);
+            var result = await response.Content.ReadFromJsonAsync<IdResponse>(cancellationToken: cancellationToken);
+            return new CreateSightingResponse(result?.Id, null, true);
         }
 
         var error = await response.Content.ReadAsStringAsync(cancellationToken);
-        return new CreateSightingResult(null, error, false);
+        return new CreateSightingResponse(null, error, false);
     }
 
-    private record CreateSightingResponse(int Id);
+    private record IdResponse(int Id);
 }
