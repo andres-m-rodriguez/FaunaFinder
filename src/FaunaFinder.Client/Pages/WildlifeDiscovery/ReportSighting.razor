@@ -1,0 +1,356 @@
+@page "/sightings/report"
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Net.Http.Json
+@inject HttpClient Http
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+@inject IAppLocalizer L
+@attribute [Authorize]
+
+<PageTitle>@L["Sighting_ReportTitle"] - FaunaFinder</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Medium" Class="py-4">
+    <MudText Typo="Typo.h4" Class="mb-4">@L["Sighting_ReportTitle"]</MudText>
+
+    <MudPaper Class="pa-4">
+        <MudForm @ref="_form" @bind-IsValid="_formIsValid" Model="_model" Validation="_validator.ValidateValue">
+            @* Mode Selection *@
+            <MudText Typo="Typo.h6" Class="mb-2">@L["Sighting_Mode"]</MudText>
+            <MudRadioGroup @bind-Value="_model.Mode">
+                <MudRadio Value="@("Casual")" Color="Color.Primary">@L["Sighting_ModeCasual"]</MudRadio>
+                <MudRadio Value="@("Survey")" Color="Color.Primary">@L["Sighting_ModeSurvey"]</MudRadio>
+            </MudRadioGroup>
+
+            <MudDivider Class="my-4" />
+
+            @* Species Selection *@
+            <MudText Typo="Typo.h6" Class="mb-2">@L["Sighting_Species"]</MudText>
+            <MudAutocomplete T="SpeciesSearchResult" Label="@L["Sighting_SearchSpecies"]"
+                             @bind-Value="_selectedSpecies"
+                             SearchFunc="SearchSpecies"
+                             ToStringFunc="@(s => s?.CommonName ?? "")"
+                             ShowProgressIndicator="true"
+                             Placeholder="@L["Sighting_SearchPlaceholder"]"
+                             Validation="@(new Func<SpeciesSearchResult?, string?>(ValidateSpecies))">
+                <ItemTemplate Context="item">
+                    <MudText>@item.CommonName</MudText>
+                    <MudText Typo="Typo.caption" Class="mud-text-secondary">@item.ScientificName</MudText>
+                </ItemTemplate>
+            </MudAutocomplete>
+
+            <MudDivider Class="my-4" />
+
+            @* Observation Details *@
+            <MudText Typo="Typo.h6" Class="mb-2">@L["Sighting_ObservationDetails"]</MudText>
+
+            <MudSelect T="string" @bind-Value="_model.Confidence" Label="@L["Sighting_Confidence"]"
+                       For="@(() => _model.Confidence)">
+                <MudSelectItem Value="@("Certain")">@L["Sighting_ConfidenceCertain"]</MudSelectItem>
+                <MudSelectItem Value="@("FairlySure")">@L["Sighting_ConfidenceFairlySure"]</MudSelectItem>
+                <MudSelectItem Value="@("Unsure")">@L["Sighting_ConfidenceUnsure"]</MudSelectItem>
+            </MudSelect>
+
+            <MudSelect T="string" @bind-Value="_model.Count" Label="@L["Sighting_Count"]"
+                       For="@(() => _model.Count)" Class="mt-3">
+                <MudSelectItem Value="@("One")">1</MudSelectItem>
+                <MudSelectItem Value="@("TwoToFive")">2-5</MudSelectItem>
+                <MudSelectItem Value="@("SixToTwenty")">6-20</MudSelectItem>
+                <MudSelectItem Value="@("TwentyPlus")">20+</MudSelectItem>
+            </MudSelect>
+
+            <MudText Typo="Typo.subtitle1" Class="mt-4 mb-2">@L["Sighting_Behavior"]</MudText>
+            <div class="d-flex flex-wrap gap-2">
+                <MudCheckBox @bind-Value="_model.BehaviorFeeding" Label="@L["Sighting_BehaviorFeeding"]" Color="Color.Primary" />
+                <MudCheckBox @bind-Value="_model.BehaviorResting" Label="@L["Sighting_BehaviorResting"]" Color="Color.Primary" />
+                <MudCheckBox @bind-Value="_model.BehaviorMoving" Label="@L["Sighting_BehaviorMoving"]" Color="Color.Primary" />
+                <MudCheckBox @bind-Value="_model.BehaviorCalling" Label="@L["Sighting_BehaviorCalling"]" Color="Color.Primary" />
+            </div>
+
+            <MudText Typo="Typo.subtitle1" Class="mt-4 mb-2">@L["Sighting_Evidence"]</MudText>
+            <div class="d-flex flex-wrap gap-2">
+                <MudCheckBox @bind-Value="_model.EvidenceVisual" Label="@L["Sighting_EvidenceVisual"]" Color="Color.Primary" />
+                <MudCheckBox @bind-Value="_model.EvidenceHeard" Label="@L["Sighting_EvidenceHeard"]" Color="Color.Primary" />
+                <MudCheckBox @bind-Value="_model.EvidenceTracks" Label="@L["Sighting_EvidenceTracks"]" Color="Color.Primary" />
+                <MudCheckBox @bind-Value="_model.EvidencePhoto" Label="@L["Sighting_EvidencePhoto"]" Color="Color.Primary" />
+            </div>
+            @if (_showEvidenceError)
+            {
+                <MudText Color="Color.Error" Typo="Typo.caption" Class="mt-1">@L["Sighting_EvidenceRequired"]</MudText>
+            }
+
+            <MudSelect T="string" @bind-Value="_model.Weather" Label="@L["Sighting_Weather"]" Clearable="true" Class="mt-3">
+                <MudSelectItem Value="@("Clear")">@L["Sighting_WeatherClear"]</MudSelectItem>
+                <MudSelectItem Value="@("PartlyCloudy")">@L["Sighting_WeatherPartlyCloudy"]</MudSelectItem>
+                <MudSelectItem Value="@("Cloudy")">@L["Sighting_WeatherCloudy"]</MudSelectItem>
+                <MudSelectItem Value="@("Rainy")">@L["Sighting_WeatherRainy"]</MudSelectItem>
+                <MudSelectItem Value="@("Stormy")">@L["Sighting_WeatherStormy"]</MudSelectItem>
+                <MudSelectItem Value="@("Foggy")">@L["Sighting_WeatherFoggy"]</MudSelectItem>
+                <MudSelectItem Value="@("Windy")">@L["Sighting_WeatherWindy"]</MudSelectItem>
+            </MudSelect>
+
+            <MudTextField @bind-Value="_model.Notes" Label="@L["Sighting_Notes"]" Lines="3" Class="mt-3"
+                          For="@(() => _model.Notes)" Counter="2000" MaxLength="2000" />
+
+            <MudDivider Class="my-4" />
+
+            @* Location *@
+            <MudText Typo="Typo.h6" Class="mb-2">@L["Sighting_Location"]</MudText>
+            <MudGrid>
+                <MudItem xs="12" sm="6">
+                    <MudNumericField T="double" @bind-Value="_model.Latitude" Label="@L["Sighting_Latitude"]"
+                                     For="@(() => _model.Latitude)"
+                                     Min="-90.0" Max="90.0" Step="0.000001" Format="F6" />
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    <MudNumericField T="double" @bind-Value="_model.Longitude" Label="@L["Sighting_Longitude"]"
+                                     For="@(() => _model.Longitude)"
+                                     Min="-180.0" Max="180.0" Step="0.000001" Format="F6" />
+                </MudItem>
+            </MudGrid>
+            <MudButton Color="Color.Secondary" Variant="Variant.Outlined" OnClick="GetCurrentLocation"
+                       Class="mt-2" Disabled="_isGettingLocation">
+                @if (_isGettingLocation)
+                {
+                    <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                }
+                @L["Sighting_GetLocation"]
+            </MudButton>
+
+            <MudDivider Class="my-4" />
+
+            @* Timestamp *@
+            <MudText Typo="Typo.h6" Class="mb-2">@L["Sighting_ObservationTime"]</MudText>
+            <MudGrid>
+                <MudItem xs="12" sm="6">
+                    <MudDatePicker @bind-Date="_model.ObservedDate" Label="@L["Sighting_Date"]"
+                                   For="@(() => _model.ObservedDate)" MaxDate="DateTime.Today" />
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    <MudTimePicker @bind-Time="_model.ObservedTime" Label="@L["Sighting_Time"]"
+                                   For="@(() => _model.ObservedTime)" />
+                </MudItem>
+            </MudGrid>
+            @if (_showFutureDateError)
+            {
+                <MudText Color="Color.Error" Typo="Typo.caption" Class="mt-1">@L["Sighting_FutureDateError"]</MudText>
+            }
+
+            <MudDivider Class="my-4" />
+
+            @* Media Upload *@
+            <MudText Typo="Typo.h6" Class="mb-2">@L["Sighting_Photo"]</MudText>
+            <MudFileUpload T="IBrowserFile" Accept=".jpg,.jpeg,.png,.gif,.webp" MaximumFileCount="1"
+                           FilesChanged="OnPhotoChanged">
+                <ActivatorContent>
+                    <MudButton Variant="Variant.Outlined" Color="Color.Primary"
+                               StartIcon="@Icons.Material.Filled.PhotoCamera">
+                        @L["Sighting_UploadPhoto"]
+                    </MudButton>
+                </ActivatorContent>
+            </MudFileUpload>
+            @if (_photo is not null)
+            {
+                <MudChip T="string" Color="Color.Primary" OnClose="RemovePhoto" Class="mt-2">
+                    @_photo.Name (@FormatFileSize(_photo.Size))
+                </MudChip>
+            }
+
+            <MudDivider Class="my-4" />
+
+            @* Submit Button *@
+            @if (!string.IsNullOrEmpty(_errorMessage))
+            {
+                <MudAlert Severity="Severity.Error" Class="mb-3" ShowCloseIcon="true"
+                          CloseIconClicked="() => _errorMessage = null">
+                    @_errorMessage
+                </MudAlert>
+            }
+
+            <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="SubmitSighting"
+                       Disabled="_isSubmitting || !_formIsValid"
+                       FullWidth="true" Size="Size.Large">
+                @if (_isSubmitting)
+                {
+                    <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                }
+                @L["Sighting_Submit"]
+            </MudButton>
+        </MudForm>
+    </MudPaper>
+</MudContainer>
+
+@code {
+    private MudForm _form = null!;
+    private bool _formIsValid;
+    private readonly ReportSightingForm _model = new();
+    private readonly ReportSightingFormValidator _validator = new();
+
+    private SpeciesSearchResult? _selectedSpecies;
+    private IBrowserFile? _photo;
+
+    private bool _isSubmitting;
+    private bool _isGettingLocation;
+    private string? _errorMessage;
+    private bool _showEvidenceError;
+    private bool _showFutureDateError;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetCurrentLocation();
+    }
+
+    private async Task<IEnumerable<SpeciesSearchResult>> SearchSpecies(string value, CancellationToken token)
+    {
+        if (string.IsNullOrWhiteSpace(value) || value.Length < 2)
+            return [];
+
+        try
+        {
+            var response = await Http.GetFromJsonAsync<List<SpeciesSearchResult>>(
+                $"api/wildlife/species/search?query={Uri.EscapeDataString(value)}&limit=10", token);
+            return response ?? [];
+        }
+        catch
+        {
+            return [];
+        }
+    }
+
+    private string? ValidateSpecies(SpeciesSearchResult? species)
+    {
+        _model.SpeciesId = species?.Id;
+        _model.SpeciesName = species?.CommonName;
+        return species is null ? L["Sighting_SpeciesRequired"] : null;
+    }
+
+    private async Task GetCurrentLocation()
+    {
+        _isGettingLocation = true;
+        StateHasChanged();
+
+        try
+        {
+            var result = await JS.InvokeAsync<GeolocationResult?>("getGeolocation");
+            if (result is not null)
+            {
+                _model.Latitude = result.Latitude;
+                _model.Longitude = result.Longitude;
+            }
+            else
+            {
+                // Default to Puerto Rico center
+                _model.Latitude = 18.2208;
+                _model.Longitude = -66.5901;
+            }
+        }
+        catch
+        {
+            // Default to Puerto Rico center
+            _model.Latitude = 18.2208;
+            _model.Longitude = -66.5901;
+        }
+        finally
+        {
+            _isGettingLocation = false;
+            StateHasChanged();
+        }
+    }
+
+    private void OnPhotoChanged(IBrowserFile? file)
+    {
+        _photo = file;
+    }
+
+    private void RemovePhoto()
+    {
+        _photo = null;
+    }
+
+    private static string FormatFileSize(long bytes)
+    {
+        if (bytes < 1024)
+            return $"{bytes} B";
+        if (bytes < 1024 * 1024)
+            return $"{bytes / 1024.0:F1} KB";
+        return $"{bytes / (1024.0 * 1024.0):F1} MB";
+    }
+
+    private bool ValidateForm()
+    {
+        _showEvidenceError = _model.GetEvidence() == 0;
+        _showFutureDateError = _model.ObservedDate.HasValue && _model.ObservedTime.HasValue &&
+            (_model.ObservedDate.Value.Date + _model.ObservedTime.Value) > DateTime.Now.AddMinutes(5);
+
+        return !_showEvidenceError && !_showFutureDateError;
+    }
+
+    private async Task SubmitSighting()
+    {
+        await _form.Validate();
+
+        if (!_form.IsValid || !ValidateForm())
+            return;
+
+        _isSubmitting = true;
+        _errorMessage = null;
+        StateHasChanged();
+
+        try
+        {
+            using var content = new MultipartFormDataContent();
+
+            content.Add(new StringContent(_model.SpeciesId?.ToString() ?? ""), "speciesId");
+            content.Add(new StringContent(_model.Latitude.ToString()), "latitude");
+            content.Add(new StringContent(_model.Longitude.ToString()), "longitude");
+            content.Add(new StringContent(_model.GetObservedAt().ToString("O")), "observedAt");
+            content.Add(new StringContent(_model.Mode), "mode");
+            content.Add(new StringContent(_model.Confidence), "confidence");
+            content.Add(new StringContent(_model.Count), "count");
+            content.Add(new StringContent(_model.GetBehaviors().ToString()), "behaviors");
+            content.Add(new StringContent(_model.GetEvidence().ToString()), "evidence");
+
+            if (!string.IsNullOrWhiteSpace(_model.Weather))
+                content.Add(new StringContent(_model.Weather), "weather");
+
+            if (!string.IsNullOrWhiteSpace(_model.Notes))
+                content.Add(new StringContent(_model.Notes), "notes");
+
+            if (_photo is not null)
+            {
+                var stream = _photo.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024);
+                content.Add(new StreamContent(stream), "photo", _photo.Name);
+            }
+
+            var response = await Http.PostAsync("api/wildlife/sightings", content);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<CreateSightingResponse>();
+                Navigation.NavigateTo($"/sightings/{result?.Id}");
+            }
+            else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            {
+                _errorMessage = L["Sighting_Unauthorized"];
+            }
+            else
+            {
+                var error = await response.Content.ReadAsStringAsync();
+                _errorMessage = string.IsNullOrWhiteSpace(error) ? L["Sighting_UnexpectedError"] : error;
+            }
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = ex.Message;
+        }
+        finally
+        {
+            _isSubmitting = false;
+            StateHasChanged();
+        }
+    }
+
+    private record SpeciesSearchResult(int Id, string CommonName, string ScientificName);
+    private record CreateSightingResponse(int Id);
+    private record GeolocationResult(double Latitude, double Longitude);
+}
