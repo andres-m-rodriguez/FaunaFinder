@@ -11,7 +11,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\FaunaFinder.Identity.Application\FaunaFinder.Identity.Application.csproj" />
+    <ProjectReference Include="..\FaunaFinder.Identity.DataAccess\FaunaFinder.Identity.DataAccess.csproj" />
+    <ProjectReference Include="..\FaunaFinder.Identity.Contracts\FaunaFinder.Identity.Contracts.csproj" />
   </ItemGroup>
 
 </Project>

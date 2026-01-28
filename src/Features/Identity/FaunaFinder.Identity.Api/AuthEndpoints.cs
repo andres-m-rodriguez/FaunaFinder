@@ -1,9 +1,8 @@
-using FaunaFinder.Database.Models.Users;
+using FaunaFinder.Identity.Application.Services;
+using FaunaFinder.Identity.Contracts.Errors;
 using FaunaFinder.Identity.Contracts.Requests;
-using FaunaFinder.Identity.Contracts.Responses;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Routing;
 
 namespace FaunaFinder.Identity.Api;
@@ -25,98 +24,55 @@ public static class AuthEndpoints
 
     private static async Task<IResult> Register(
         RegisterRequest request,
-        UserManager<User> userManager,
-        SignInManager<User> signInManager)
+        IAuthService authService,
+        CancellationToken cancellationToken)
     {
-        var existingUser = await userManager.FindByEmailAsync(request.Email);
-        if (existingUser is not null)
-        {
-            return Results.Conflict();
-        }
+        var result = await authService.RegisterAsync(request, cancellationToken);
 
-        var isFirstUser = !userManager.Users.Any();
-
-        var user = new User
-        {
-            UserName = request.Email,
-            Email = request.Email,
-            DisplayName = request.DisplayName,
-            Status = isFirstUser ? UserStatus.Approved : UserStatus.Pending,
-            Role = isFirstUser ? UserRole.Admin : UserRole.Viewer,
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow
-        };
-
-        var result = await userManager.CreateAsync(user, request.Password);
-        if (!result.Succeeded)
-        {
-            return Results.BadRequest(string.Join(", ", result.Errors.Select(e => e.Description)));
-        }
-
-        await signInManager.SignInAsync(user, isPersistent: true);
-
-        return Results.Ok(ToUserInfo(user));
+        return result.Match<IResult>(
+            userInfo => Results.Ok(userInfo),
+            emailExists => Results.Conflict(emailExists),
+            registrationFailed => Results.BadRequest(registrationFailed),
+            validation => Results.BadRequest(validation),
+            unexpected => Results.Problem(unexpected.Message, statusCode: StatusCodes.Status500InternalServerError)
+        );
     }
 
     private static async Task<IResult> Login(
         LoginRequest request,
-        SignInManager<User> signInManager,
-        UserManager<User> userManager)
+        IAuthService authService,
+        CancellationToken cancellationToken)
     {
-        var user = await userManager.FindByEmailAsync(request.Email);
-        if (user is null)
-        {
-            return Results.Unauthorized();
-        }
+        var result = await authService.LoginAsync(request, cancellationToken);
 
-        var result = await signInManager.PasswordSignInAsync(
-            user,
-            request.Password,
-            isPersistent: request.RememberMe,
-            lockoutOnFailure: true);
-
-        if (result.IsLockedOut)
-        {
-            return Results.Problem(statusCode: StatusCodes.Status423Locked);
-        }
-
-        if (!result.Succeeded)
-        {
-            return Results.Unauthorized();
-        }
-
-        return Results.Ok(ToUserInfo(user));
+        return result.Match<IResult>(
+            userInfo => Results.Ok(userInfo),
+            invalidCredentials => Results.Unauthorized(),
+            accountLocked => Results.Problem(statusCode: StatusCodes.Status423Locked),
+            notApproved => Results.Problem(notApproved.Message, statusCode: StatusCodes.Status403Forbidden),
+            validation => Results.BadRequest(validation),
+            unexpected => Results.Problem(unexpected.Message, statusCode: StatusCodes.Status500InternalServerError)
+        );
     }
 
-    private static async Task<IResult> Logout(SignInManager<User> signInManager)
+    private static async Task<IResult> Logout(
+        IAuthService authService,
+        CancellationToken cancellationToken)
     {
-        await signInManager.SignOutAsync();
+        await authService.LogoutAsync(cancellationToken);
         return Results.Ok();
     }
 
     private static async Task<IResult> GetCurrentUser(
-        HttpContext context,
-        UserManager<User> userManager)
+        IAuthService authService,
+        CancellationToken cancellationToken)
     {
-        if (context.User.Identity?.IsAuthenticated != true)
-        {
-            return Results.Unauthorized();
-        }
+        var result = await authService.GetCurrentUserAsync(cancellationToken);
 
-        var user = await userManager.GetUserAsync(context.User);
-        if (user is null)
-        {
-            return Results.Unauthorized();
-        }
-
-        return Results.Ok(ToUserInfo(user));
+        return result.Match<IResult>(
+            userInfo => Results.Ok(userInfo),
+            unauthorized => Results.Unauthorized(),
+            unexpected => Results.Problem(unexpected.Message, statusCode: StatusCodes.Status500InternalServerError)
+        );
     }
-
-    private static UserInfo ToUserInfo(User user) => new(
-        user.Id,
-        user.Email!,
-        user.DisplayName,
-        user.Status.ToString(),
-        user.Role.ToString()
-    );
 }
