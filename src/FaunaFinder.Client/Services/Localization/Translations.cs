@@ -9,6 +9,7 @@ public static class Translations
         ["Nav_Species"] = "Species",
         ["Nav_Pueblos"] = "Municipalities",
         ["Nav_About"] = "About",
+        ["Nav_Sightings"] = "Sightings",
 
         // Common
         ["AppTitle"] = "FaunaFinder",
@@ -231,6 +232,18 @@ public static class Translations
         ["Sighting_Submit"] = "Submit Sighting Report",
         ["Sighting_Unauthorized"] = "You must be logged in to submit a sighting",
         ["Sighting_UnexpectedError"] = "An unexpected error occurred. Please try again.",
+
+        // My Sightings
+        ["Sightings_MyTitle"] = "My Sightings",
+        ["Sightings_Report"] = "Report",
+        ["Sightings_NoSightings"] = "No sightings yet",
+        ["Sightings_NoSightingsDescription"] = "You haven't reported any wildlife sightings yet.",
+        ["Sightings_ReportFirst"] = "Report Your First Sighting",
+        ["Sightings_UnknownSpecies"] = "Unknown Species",
+        ["Sightings_Unauthorized"] = "You must be logged in to view your sightings",
+        ["Sightings_StatusApproved"] = "Approved",
+        ["Sightings_StatusRejected"] = "Rejected",
+        ["Sightings_StatusPending"] = "Pending",
     };
 
     public static IReadOnlyDictionary<string, string> Spanish { get; } = new Dictionary<string, string>
@@ -240,6 +253,7 @@ public static class Translations
         ["Nav_Species"] = "Especies",
         ["Nav_Pueblos"] = "Pueblos",
         ["Nav_About"] = "Acerca de",
+        ["Nav_Sightings"] = "Avistamientos",
 
         // Common
         ["AppTitle"] = "FaunaFinder",
@@ -462,5 +476,17 @@ public static class Translations
         ["Sighting_Submit"] = "Enviar Reporte de Avistamiento",
         ["Sighting_Unauthorized"] = "Debes iniciar sesión para enviar un avistamiento",
         ["Sighting_UnexpectedError"] = "Ocurrió un error inesperado. Por favor, inténtelo de nuevo.",
+
+        // My Sightings
+        ["Sightings_MyTitle"] = "Mis Avistamientos",
+        ["Sightings_Report"] = "Reportar",
+        ["Sightings_NoSightings"] = "No hay avistamientos",
+        ["Sightings_NoSightingsDescription"] = "Aún no has reportado ningún avistamiento de fauna.",
+        ["Sightings_ReportFirst"] = "Reportar Tu Primer Avistamiento",
+        ["Sightings_UnknownSpecies"] = "Especie Desconocida",
+        ["Sightings_Unauthorized"] = "Debes iniciar sesión para ver tus avistamientos",
+        ["Sightings_StatusApproved"] = "Aprobado",
+        ["Sightings_StatusRejected"] = "Rechazado",
+        ["Sightings_StatusPending"] = "Pendiente",
     };
 }
