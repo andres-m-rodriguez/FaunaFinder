@@ -1,5 +1,6 @@
 using FaunaFinder.Database.Models.Conservation;
 using FaunaFinder.Database.Models.Municipalities;
+using FaunaFinder.Database.Models.Sightings;
 using FaunaFinder.Database.Models.Species;
 using FaunaFinder.Database.Models.Users;
 using Microsoft.AspNetCore.Identity;
@@ -20,6 +21,10 @@ public sealed class FaunaFinderContext(DbContextOptions<FaunaFinderContext> opti
     public DbSet<FwsLink> FwsLinks => Set<FwsLink>();
     public DbSet<NrcsPractice> NrcsPractices => Set<NrcsPractice>();
 
+    // Wildlife Discovery
+    public DbSet<Sighting> Sightings => Set<Sighting>();
+    public DbSet<UserSpecies> UserSpecies => Set<UserSpecies>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -33,6 +38,10 @@ public sealed class FaunaFinderContext(DbContextOptions<FaunaFinderContext> opti
         modelBuilder.ApplyConfiguration(new FwsLink.EntityConfiguration());
         modelBuilder.ApplyConfiguration(new NrcsPractice.EntityConfiguration());
         modelBuilder.ApplyConfiguration(new User.EntityConfiguration());
+
+        // Wildlife Discovery configurations
+        modelBuilder.ApplyConfiguration(new Sighting.EntityConfiguration());
+        modelBuilder.ApplyConfiguration(new UserSpecies.EntityConfiguration());
 
         // Configure Identity table names to use snake_case
         modelBuilder.Entity<User>().ToTable("users");
