@@ -24,7 +24,7 @@ public sealed class UserSpecies
     public required int? VerifiedByUserId { get; set; }
     public required int? ApprovedSpeciesId { get; set; }
 
-    public User CreatedByUser { get; set; } = null!;
+    public User? CreatedByUser { get; set; }
     public User? VerifiedByUser { get; set; }
     public Species.Species? ApprovedSpecies { get; set; }
     public ICollection<Sighting> Sightings { get; set; } = [];

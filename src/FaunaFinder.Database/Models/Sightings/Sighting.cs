@@ -55,7 +55,7 @@ public sealed class Sighting
     public Species.Species? Species { get; set; }
     public UserSpecies? UserSpecies { get; set; }
     public Municipality? Municipality { get; set; }
-    public User ReportedByUser { get; set; } = null!;
+    public User? ReportedByUser { get; set; }
     public User? ReviewedByUser { get; set; }
 
     public sealed class EntityConfiguration : IEntityTypeConfiguration<Sighting>
