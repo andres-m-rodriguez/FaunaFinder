@@ -1,0 +1,168 @@
+@page "/sightings"
+@using Microsoft.AspNetCore.Authorization
+@using FaunaFinder.Client.Services.Api
+@using FaunaFinder.WildlifeDiscovery.Contracts
+@inject IWildlifeDiscoveryService WildlifeService
+@inject NavigationManager Navigation
+@inject IAppLocalizer L
+@attribute [Authorize]
+
+<PageTitle>@L["Sightings_MyTitle"] - FaunaFinder</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="py-4">
+    <div class="d-flex justify-space-between align-center mb-4">
+        <MudText Typo="Typo.h4">@L["Sightings_MyTitle"]</MudText>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/sightings/report"
+                   StartIcon="@Icons.Material.Filled.Add">
+            @L["Sightings_Report"]
+        </MudButton>
+    </div>
+
+    @if (_isLoading)
+    {
+        <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+    }
+    else if (_error is not null)
+    {
+        <MudAlert Severity="Severity.Error" Class="mb-4">@_error</MudAlert>
+    }
+    else if (_sightings is null || _sightings.Count == 0)
+    {
+        <MudPaper Class="pa-6 text-center">
+            <MudIcon Icon="@Icons.Material.Filled.Search" Size="Size.Large" Color="Color.Secondary" Class="mb-4" />
+            <MudText Typo="Typo.h6" Color="Color.Secondary">@L["Sightings_NoSightings"]</MudText>
+            <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-4">@L["Sightings_NoSightingsDescription"]</MudText>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/sightings/report"
+                       StartIcon="@Icons.Material.Filled.Add">
+                @L["Sightings_ReportFirst"]
+            </MudButton>
+        </MudPaper>
+    }
+    else
+    {
+        <MudGrid>
+            @foreach (SightingListItem sighting in _sightings)
+            {
+                <MudItem xs="12" sm="6" md="4">
+                    <MudCard Elevation="2" Class="cursor-pointer" @onclick="() => ViewSighting(sighting.Id)">
+                        @if (sighting.HasPhoto)
+                        {
+                            <MudCardMedia Image="@($"api/wildlife/sightings/{sighting.Id}/photo")" Height="160" />
+                        }
+                        else
+                        {
+                            <div class="d-flex justify-center align-center" style="height: 160px; background-color: var(--mud-palette-background-grey);">
+                                <MudIcon Icon="@Icons.Material.Filled.HideImage" Size="Size.Large" Color="Color.Secondary" />
+                            </div>
+                        }
+                        <MudCardContent>
+                            <MudText Typo="Typo.h6">@(sighting.SpeciesName ?? L["Sightings_UnknownSpecies"])</MudText>
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">
+                                @sighting.ObservedAt.ToLocalTime().ToString("MMM dd, yyyy")
+                            </MudText>
+                            <div class="mt-2">
+                                <MudChip T="string" Size="Size.Small" Color="@GetStatusColor(sighting.Status)" Variant="Variant.Filled">
+                                    @GetStatusText(sighting.Status)
+                                </MudChip>
+                            </div>
+                        </MudCardContent>
+                    </MudCard>
+                </MudItem>
+            }
+        </MudGrid>
+
+        @if (_totalCount > _sightings.Count)
+        {
+            <div class="d-flex justify-center mt-4">
+                <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="LoadMore" Disabled="_isLoadingMore">
+                    @if (_isLoadingMore)
+                    {
+                        <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                    }
+                    @L["LoadMore"]
+                </MudButton>
+            </div>
+        }
+    }
+</MudContainer>
+
+@code {
+    private List<SightingListItem>? _sightings;
+    private int _totalCount;
+    private int _page = 1;
+    private const int PageSize = 12;
+    private bool _isLoading = true;
+    private bool _isLoadingMore;
+    private string? _error;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadSightings();
+    }
+
+    private async Task LoadSightings()
+    {
+        _isLoading = true;
+        _error = null;
+
+        try
+        {
+            var response = await WildlifeService.GetMySightingsAsync(_page, PageSize);
+            _sightings = response.Items;
+            _totalCount = response.TotalCount;
+        }
+        catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+        {
+            _error = L["Sightings_Unauthorized"];
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private async Task LoadMore()
+    {
+        _isLoadingMore = true;
+        _page++;
+
+        try
+        {
+            var response = await WildlifeService.GetMySightingsAsync(_page, PageSize);
+            _sightings?.AddRange(response.Items);
+        }
+        catch
+        {
+            _page--;
+        }
+        finally
+        {
+            _isLoadingMore = false;
+        }
+    }
+
+    private void ViewSighting(int id)
+    {
+        Navigation.NavigateTo($"/sightings/{id}");
+    }
+
+    private Color GetStatusColor(string status) => status switch
+    {
+        "Approved" => Color.Success,
+        "Rejected" => Color.Error,
+        "Pending" => Color.Warning,
+        _ => Color.Default
+    };
+
+    private string GetStatusText(string status) => status switch
+    {
+        "Approved" => L["Sightings_StatusApproved"],
+        "Rejected" => L["Sightings_StatusRejected"],
+        "Pending" => L["Sightings_StatusPending"],
+        _ => status
+    };
+}

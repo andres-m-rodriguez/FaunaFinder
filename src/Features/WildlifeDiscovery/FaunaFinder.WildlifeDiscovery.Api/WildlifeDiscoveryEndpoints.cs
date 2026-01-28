@@ -2,6 +2,7 @@ using FaunaFinder.Contracts.Localization;
 using FaunaFinder.Database;
 using FaunaFinder.Database.Models.Sightings;
 using FaunaFinder.Database.Models.Users;
+using FaunaFinder.WildlifeDiscovery.Contracts;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -28,7 +29,6 @@ public static class WildlifeDiscoveryEndpoints
         // Authenticated endpoints
         group.MapPost("/sightings", CreateSighting)
             .RequireAuthorization()
-            .DisableAntiforgery()
             .WithName("CreateSighting");
 
         group.MapGet("/sightings", GetSightings)
@@ -92,18 +92,7 @@ public static class WildlifeDiscoveryEndpoints
         HttpContext context,
         UserManager<User> userManager,
         FaunaFinderContext db,
-        IFormFile? photo,
-        int speciesId,
-        double latitude,
-        double longitude,
-        DateTime observedAt,
-        string mode,
-        string confidence,
-        string count,
-        int behaviors,
-        int evidence,
-        string? weather,
-        string? notes,
+        CreateSightingRequest request,
         CancellationToken ct)
     {
         var user = await userManager.GetUserAsync(context.User);
@@ -113,74 +102,57 @@ public static class WildlifeDiscoveryEndpoints
         }
 
         // Validate species exists
-        var speciesExists = await db.Species.AnyAsync(s => s.Id == speciesId, ct);
+        var speciesExists = await db.Species.AnyAsync(s => s.Id == request.SpeciesId, ct);
         if (!speciesExists)
         {
             return Results.BadRequest("Invalid species ID");
         }
 
         // Parse enums
-        if (!Enum.TryParse<SightingMode>(mode, true, out var sightingMode))
+        if (!Enum.TryParse<SightingMode>(request.Mode, true, out var sightingMode))
         {
             return Results.BadRequest("Invalid mode");
         }
 
-        if (!Enum.TryParse<ConfidenceLevel>(confidence, true, out var confidenceLevel))
+        if (!Enum.TryParse<ConfidenceLevel>(request.Confidence, true, out var confidenceLevel))
         {
             return Results.BadRequest("Invalid confidence level");
         }
 
-        if (!Enum.TryParse<CountRange>(count, true, out var countRange))
+        if (!Enum.TryParse<CountRange>(request.Count, true, out var countRange))
         {
             return Results.BadRequest("Invalid count range");
         }
 
         Weather? weatherEnum = null;
-        if (!string.IsNullOrWhiteSpace(weather))
+        if (!string.IsNullOrWhiteSpace(request.Weather))
         {
-            if (!Enum.TryParse<Weather>(weather, true, out var parsedWeather))
+            if (!Enum.TryParse<Weather>(request.Weather, true, out var parsedWeather))
             {
                 return Results.BadRequest("Invalid weather");
             }
             weatherEnum = parsedWeather;
         }
 
-        // Process photo if provided
-        byte[]? photoData = null;
-        string? photoContentType = null;
-        if (photo is not null && photo.Length > 0)
-        {
-            var allowedContentTypes = new[] { "image/jpeg", "image/png", "image/gif", "image/webp" };
-            if (!allowedContentTypes.Contains(photo.ContentType.ToLower()))
-            {
-                return Results.BadRequest("Invalid image type. Allowed types: JPEG, PNG, GIF, WebP");
-            }
-
-            using var memoryStream = new MemoryStream();
-            await photo.CopyToAsync(memoryStream, ct);
-            photoData = memoryStream.ToArray();
-            photoContentType = photo.ContentType;
-        }
-
-        // Create the sighting
+        // Create the sighting (photo upload will be added later)
         var sighting = new Sighting
         {
             Id = 0,
-            SpeciesId = speciesId,
+            SpeciesId = request.SpeciesId,
             UserSpeciesId = null,
             Mode = sightingMode,
             Confidence = confidenceLevel,
             Count = countRange,
-            Behaviors = (Behavior)behaviors,
-            Evidence = (EvidenceType)evidence,
+            Behaviors = (Behavior)request.Behaviors,
+            Evidence = (EvidenceType)request.Evidence,
             Weather = weatherEnum,
-            Notes = notes,
-            Location = new Point(longitude, latitude) { SRID = 4326 },
+            Notes = request.Notes,
+            Location = new Point(request.Longitude, request.Latitude) { SRID = 4326 },
             MunicipalityId = null,
-            ObservedAt = observedAt,
+            ObservedAt = DateTime.SpecifyKind(request.ObservedAt, DateTimeKind.Utc),
             CreatedAt = DateTime.UtcNow,
-            PhotoData = photoData,
-            PhotoContentType = photoContentType,
+            PhotoData = null,
+            PhotoContentType = null,
             AudioData = null,
             AudioContentType = null,
             Status = SightingStatus.Pending,
@@ -226,7 +198,7 @@ public static class WildlifeDiscoveryEndpoints
             {
                 s.Id,
                 s.SpeciesId,
-                SpeciesName = s.Species != null ? s.Species.CommonName : null,
+                SpeciesName = s.Species != null ? (s.Species.CommonName.FirstOrDefault(c => c.Code == "en") ?? s.Species.CommonName.FirstOrDefault())!.Value : null,
                 s.Mode,
                 s.Confidence,
                 s.Count,
@@ -394,7 +366,7 @@ public static class WildlifeDiscoveryEndpoints
             {
                 s.Id,
                 s.SpeciesId,
-                SpeciesName = s.Species != null ? s.Species.CommonName : null,
+                SpeciesName = s.Species != null ? (s.Species.CommonName.FirstOrDefault(c => c.Code == "en") ?? s.Species.CommonName.FirstOrDefault())!.Value : null,
                 s.Mode,
                 s.Confidence,
                 s.Count,
@@ -445,29 +417,22 @@ public static class WildlifeDiscoveryEndpoints
             .OrderByDescending(s => s.CreatedAt)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
-            .Select(s => new
-            {
+            .Select(s => new SightingListItem(
                 s.Id,
-                s.SpeciesId,
-                SpeciesName = s.Species != null ? s.Species.CommonName : null,
-                s.Mode,
-                s.Confidence,
-                s.Count,
-                s.Status,
+                s.SpeciesId ?? 0,
+                s.Species != null ? (s.Species.CommonName.FirstOrDefault(c => c.Code == "en") ?? s.Species.CommonName.FirstOrDefault())!.Value : null,
+                s.Mode.ToString(),
+                s.Confidence.ToString(),
+                s.Count.ToString(),
+                s.Status.ToString(),
                 s.ObservedAt,
                 s.CreatedAt,
-                Latitude = s.Location.Y,
-                Longitude = s.Location.X,
-                HasPhoto = s.PhotoData != null
-            })
+                s.Location.Y,
+                s.Location.X,
+                s.PhotoData != null
+            ))
             .ToListAsync(ct);
 
-        return Results.Ok(new
-        {
-            Items = sightings,
-            TotalCount = totalCount,
-            Page = page,
-            PageSize = pageSize
-        });
+        return Results.Ok(new SightingsPage(sightings, totalCount, page, pageSize));
     }
 }

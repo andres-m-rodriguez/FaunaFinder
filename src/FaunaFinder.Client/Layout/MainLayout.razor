@@ -22,6 +22,11 @@
             <MudButton Href="/species" Color="Color.Inherit" Variant="Variant.Text">@L["Nav_Species"]</MudButton>
             <MudButton Href="/pueblos" Color="Color.Inherit" Variant="Variant.Text">@L["Nav_Pueblos"]</MudButton>
             <MudButton Href="/about" Color="Color.Inherit" Variant="Variant.Text">@L["Nav_About"]</MudButton>
+            <AuthorizeView>
+                <Authorized>
+                    <MudButton Href="/sightings" Color="Color.Inherit" Variant="Variant.Text">@L["Nav_Sightings"]</MudButton>
+                </Authorized>
+            </AuthorizeView>
             <div class="ml-2 d-flex align-center">
                 <DarkModeToggle />
                 <LanguageToggle />
@@ -44,6 +49,11 @@
             <MudNavLink Href="/species" Icon="@Icons.Material.Filled.Pets" OnClick="CloseDrawer">@L["Nav_Species"]</MudNavLink>
             <MudNavLink Href="/pueblos" Icon="@Icons.Material.Filled.LocationCity" OnClick="CloseDrawer">@L["Nav_Pueblos"]</MudNavLink>
             <MudNavLink Href="/about" Icon="@Icons.Material.Filled.Info" OnClick="CloseDrawer">@L["Nav_About"]</MudNavLink>
+            <AuthorizeView>
+                <Authorized>
+                    <MudNavLink Href="/sightings" Icon="@Icons.Material.Filled.PhotoLibrary" OnClick="CloseDrawer">@L["Nav_Sightings"]</MudNavLink>
+                </Authorized>
+            </AuthorizeView>
         </MudNavMenu>
     </MudDrawer>
 
