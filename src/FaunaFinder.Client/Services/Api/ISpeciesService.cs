@@ -31,4 +31,8 @@ public interface ISpeciesService
     Task<CursorPage<SpeciesForSearchDto>> GetSpeciesCursorPageAsync(
         CursorPageRequest request,
         CancellationToken cancellationToken = default);
+
+    Task<IReadOnlyList<SpeciesLocationsDto>> GetSpeciesLocationsBatchAsync(
+        IEnumerable<int> speciesIds,
+        CancellationToken cancellationToken = default);
 }

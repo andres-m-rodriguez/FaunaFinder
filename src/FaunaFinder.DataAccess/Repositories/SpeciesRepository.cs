@@ -300,4 +300,32 @@ public sealed class SpeciesRepository(
 
         return new CursorPage<SpeciesForSearchDto>(items, nextCursor, hasMore);
     }
+
+    public async Task<IReadOnlyList<SpeciesLocationsDto>> GetSpeciesLocationsBatchAsync(
+        IEnumerable<int> speciesIds,
+        CancellationToken cancellationToken = default)
+    {
+        await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
+
+        var ids = speciesIds.ToList();
+
+        return await context.Species
+            .AsNoTracking()
+            .Where(s => ids.Contains(s.Id))
+            .Select(s => new SpeciesLocationsDto(
+                s.Id,
+                s.CommonName.ToList(),
+                s.ScientificName,
+                s.Locations
+                    .Select(l => new SpeciesLocationDto(
+                        l.Id,
+                        l.Latitude,
+                        l.Longitude,
+                        l.RadiusMeters,
+                        l.Description
+                    ))
+                    .ToList()
+            ))
+            .ToListAsync(cancellationToken);
+    }
 }
