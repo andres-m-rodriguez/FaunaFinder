@@ -1,4 +1,4 @@
-using FaunaFinder.Contracts.Localization;
+using FaunaFinder.i18n.Contracts;
 using FaunaFinder.Database.Models.Conservation;
 using FaunaFinder.Database.Models.Municipalities;
 using Microsoft.EntityFrameworkCore;

@@ -1,4 +1,4 @@
-namespace FaunaFinder.Contracts.Localization;
+namespace FaunaFinder.i18n.Contracts;
 
 /// <summary>
 /// Contract for a translation entry.

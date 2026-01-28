@@ -1,4 +1,4 @@
-using FaunaFinder.Contracts.Localization;
+using FaunaFinder.i18n.Contracts;
 
 namespace FaunaFinder.Api.Services.Localization;
 
