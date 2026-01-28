@@ -28,6 +28,11 @@ builder.Services.AddHttpClient<IExportService, ExportApiService>(client =>
     client.BaseAddress = baseAddress;
 });
 
+builder.Services.AddHttpClient<IWildlifeDiscoveryService, WildlifeDiscoveryApiService>(client =>
+{
+    client.BaseAddress = baseAddress;
+});
+
 // Identity client
 builder.Services.AddIdentityClient(baseAddress);
 

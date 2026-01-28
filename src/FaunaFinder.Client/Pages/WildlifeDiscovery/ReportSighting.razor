@@ -1,8 +1,7 @@
 @page "/sightings/report"
 @using Microsoft.AspNetCore.Authorization
-@using Microsoft.AspNetCore.Components.Authorization
-@using System.Net.Http.Json
-@inject HttpClient Http
+@using FaunaFinder.Client.Services.Api
+@inject IWildlifeDiscoveryService WildlifeService
 @inject NavigationManager Navigation
 @inject IJSRuntime JS
 @inject IAppLocalizer L
@@ -207,9 +206,7 @@
 
         try
         {
-            var response = await Http.GetFromJsonAsync<List<SpeciesSearchResult>>(
-                $"api/wildlife/species/search?query={Uri.EscapeDataString(value)}&limit=10", token);
-            return response ?? [];
+            return await WildlifeService.SearchSpeciesAsync(value, 10, token);
         }
         catch
         {
@@ -298,45 +295,44 @@
 
         try
         {
-            using var content = new MultipartFormDataContent();
-
-            content.Add(new StringContent(_model.SpeciesId?.ToString() ?? ""), "speciesId");
-            content.Add(new StringContent(_model.Latitude.ToString()), "latitude");
-            content.Add(new StringContent(_model.Longitude.ToString()), "longitude");
-            content.Add(new StringContent(_model.GetObservedAt().ToString("O")), "observedAt");
-            content.Add(new StringContent(_model.Mode), "mode");
-            content.Add(new StringContent(_model.Confidence), "confidence");
-            content.Add(new StringContent(_model.Count), "count");
-            content.Add(new StringContent(_model.GetBehaviors().ToString()), "behaviors");
-            content.Add(new StringContent(_model.GetEvidence().ToString()), "evidence");
-
-            if (!string.IsNullOrWhiteSpace(_model.Weather))
-                content.Add(new StringContent(_model.Weather), "weather");
-
-            if (!string.IsNullOrWhiteSpace(_model.Notes))
-                content.Add(new StringContent(_model.Notes), "notes");
+            byte[]? photoData = null;
+            string? photoContentType = null;
 
             if (_photo is not null)
             {
-                var stream = _photo.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024);
-                content.Add(new StreamContent(stream), "photo", _photo.Name);
+                using var stream = _photo.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024);
+                using var ms = new MemoryStream();
+                await stream.CopyToAsync(ms);
+                photoData = ms.ToArray();
+                photoContentType = _photo.ContentType;
             }
 
-            var response = await Http.PostAsync("api/wildlife/sightings", content);
+            var request = new CreateSightingRequest(
+                _model.SpeciesId!.Value,
+                _model.Latitude,
+                _model.Longitude,
+                _model.GetObservedAt(),
+                _model.Mode,
+                _model.Confidence,
+                _model.Count,
+                _model.GetBehaviors(),
+                _model.GetEvidence(),
+                _model.Weather,
+                _model.Notes,
+                photoData,
+                photoContentType);
 
-            if (response.IsSuccessStatusCode)
+            var result = await WildlifeService.CreateSightingAsync(request);
+
+            if (result.Success && result.Id.HasValue)
             {
-                var result = await response.Content.ReadFromJsonAsync<CreateSightingResponse>();
-                Navigation.NavigateTo($"/sightings/{result?.Id}");
-            }
-            else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-            {
-                _errorMessage = L["Sighting_Unauthorized"];
+                Navigation.NavigateTo($"/sightings/{result.Id}");
             }
             else
             {
-                var error = await response.Content.ReadAsStringAsync();
-                _errorMessage = string.IsNullOrWhiteSpace(error) ? L["Sighting_UnexpectedError"] : error;
+                _errorMessage = string.IsNullOrWhiteSpace(result.Error)
+                    ? L["Sighting_UnexpectedError"]
+                    : result.Error;
             }
         }
         catch (Exception ex)
@@ -350,7 +346,5 @@
         }
     }
 
-    private record SpeciesSearchResult(int Id, string CommonName, string ScientificName);
-    private record CreateSightingResponse(int Id);
     private record GeolocationResult(double Latitude, double Longitude);
 }

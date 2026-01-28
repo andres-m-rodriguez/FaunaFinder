@@ -1,7 +1,7 @@
 @page "/sightings"
 @using Microsoft.AspNetCore.Authorization
-@using System.Net.Http.Json
-@inject HttpClient Http
+@using FaunaFinder.Client.Services.Api
+@inject IWildlifeDiscoveryService WildlifeService
 @inject NavigationManager Navigation
 @inject IAppLocalizer L
 @attribute [Authorize]
@@ -40,7 +40,7 @@
     else
     {
         <MudGrid>
-            @foreach (var sighting in _sightings)
+            @foreach (SightingListItem sighting in _sightings)
             {
                 <MudItem xs="12" sm="6" md="4">
                     <MudCard Elevation="2" Class="cursor-pointer" @onclick="() => ViewSighting(sighting.Id)">
@@ -86,7 +86,7 @@
 </MudContainer>
 
 @code {
-    private List<SightingDto>? _sightings;
+    private List<SightingListItem>? _sightings;
     private int _totalCount;
     private int _page = 1;
     private const int PageSize = 12;
@@ -106,14 +106,9 @@
 
         try
         {
-            var response = await Http.GetFromJsonAsync<SightingsResponse>(
-                $"api/wildlife/my-sightings?page={_page}&pageSize={PageSize}");
-
-            if (response is not null)
-            {
-                _sightings = response.Items;
-                _totalCount = response.TotalCount;
-            }
+            var response = await WildlifeService.GetMySightingsAsync(_page, PageSize);
+            _sightings = response.Items;
+            _totalCount = response.TotalCount;
         }
         catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Unauthorized)
         {
@@ -136,13 +131,8 @@
 
         try
         {
-            var response = await Http.GetFromJsonAsync<SightingsResponse>(
-                $"api/wildlife/my-sightings?page={_page}&pageSize={PageSize}");
-
-            if (response is not null && _sightings is not null)
-            {
-                _sightings.AddRange(response.Items);
-            }
+            var response = await WildlifeService.GetMySightingsAsync(_page, PageSize);
+            _sightings?.AddRange(response.Items);
         }
         catch
         {
@@ -174,8 +164,4 @@
         "Pending" => L["Sightings_StatusPending"],
         _ => status
     };
-
-    private record SightingsResponse(List<SightingDto> Items, int TotalCount, int Page, int PageSize);
-    private record SightingDto(int Id, int SpeciesId, string? SpeciesName, string Mode, string Confidence,
-        string Count, string Status, DateTime ObservedAt, DateTime CreatedAt, double Latitude, double Longitude, bool HasPhoto);
 }
