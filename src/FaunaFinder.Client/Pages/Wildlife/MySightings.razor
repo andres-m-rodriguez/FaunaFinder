@@ -1,7 +1,7 @@
 @page "/sightings"
 @using Microsoft.AspNetCore.Authorization
 @using FaunaFinder.Wildlife.Contracts
-@inject IWildlifeService WildlifeService
+@inject IWildlifeHttpClient WildlifeHttpClient
 @inject NavigationManager Navigation
 @inject IAppLocalizer L
 @attribute [Authorize]
@@ -106,7 +106,7 @@
 
         try
         {
-            var response = await WildlifeService.GetMySightingsAsync(_page, PageSize);
+            var response = await WildlifeHttpClient.GetMySightingsAsync(_page, PageSize);
             _sightings = response.Items;
             _totalCount = response.TotalCount;
         }
@@ -131,7 +131,7 @@
 
         try
         {
-            var response = await WildlifeService.GetMySightingsAsync(_page, PageSize);
+            var response = await WildlifeHttpClient.GetMySightingsAsync(_page, PageSize);
             _sightings?.AddRange(response.Items);
         }
         catch

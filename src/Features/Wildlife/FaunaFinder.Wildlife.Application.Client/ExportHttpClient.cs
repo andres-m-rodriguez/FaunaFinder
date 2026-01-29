@@ -1,10 +1,10 @@
 namespace FaunaFinder.Wildlife.Application.Client;
 
-public class ExportApiService : IExportService
+public class ExportHttpClient : IExportHttpClient
 {
     private readonly HttpClient _httpClient;
 
-    public ExportApiService(HttpClient httpClient)
+    public ExportHttpClient(HttpClient httpClient)
     {
         _httpClient = httpClient;
     }

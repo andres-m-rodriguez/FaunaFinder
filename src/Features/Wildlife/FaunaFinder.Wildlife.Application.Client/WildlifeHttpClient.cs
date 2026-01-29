@@ -3,11 +3,11 @@ using FaunaFinder.Wildlife.Contracts;
 
 namespace FaunaFinder.Wildlife.Application.Client;
 
-public sealed class WildlifeApiService : IWildlifeService
+public sealed class WildlifeHttpClient : IWildlifeHttpClient
 {
     private readonly HttpClient _httpClient;
 
-    public WildlifeApiService(HttpClient httpClient)
+    public WildlifeHttpClient(HttpClient httpClient)
     {
         _httpClient = httpClient;
     }

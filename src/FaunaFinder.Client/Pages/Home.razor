@@ -1,9 +1,9 @@
 @page "/"
 @using BlazingSingularity.Commands
 @using FaunaFinder.Client.Pages.MapComponents
-@inject IMunicipalityService MunicipalityService
-@inject ISpeciesService SpeciesService
-@inject IExportService ExportService
+@inject IMunicipalityHttpClient MunicipalityHttpClient
+@inject ISpeciesHttpClient SpeciesHttpClient
+@inject IExportHttpClient ExportHttpClient
 @inject ApiConfiguration ApiConfig
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JS
@@ -610,7 +610,7 @@
         try
         {
             var filteredIds = FilteredSpecies.Select(s => s.Id);
-            var pdfBytes = await ExportService.ExportMunicipalityPdfAsync(selectedMunicipality.Id, filteredIds);
+            var pdfBytes = await ExportHttpClient.ExportMunicipalityPdfAsync(selectedMunicipality.Id, filteredIds);
             var fileName = $"{clickedMunicipalityName?.Replace(" ", "_")}_Species_Report.pdf";
             await DownloadFile(pdfBytes, fileName, "application/pdf");
         }
@@ -631,7 +631,7 @@
         try
         {
             var filteredIds = FilteredSpecies.Select(s => s.Id);
-            var csvBytes = await ExportService.ExportMunicipalityCsvAsync(selectedMunicipality.Id, filteredIds);
+            var csvBytes = await ExportHttpClient.ExportMunicipalityCsvAsync(selectedMunicipality.Id, filteredIds);
             var fileName = $"{clickedMunicipalityName?.Replace(" ", "_")}_Species_Report.csv";
             await DownloadFile(csvBytes, fileName, "text/csv");
         }
@@ -662,7 +662,7 @@
     {
         if (firstRender)
         {
-            municipalities = await MunicipalityService.GetAllMunicipalitiesAsync();
+            municipalities = await MunicipalityHttpClient.GetAllMunicipalitiesAsync();
             await JS.InvokeVoidAsync("leafletInterop.initMap", DotNetObjectReference.Create(this), ApiConfig.BaseAddress);
 
             // Check if we need to show species locations
@@ -680,7 +680,7 @@
 
     private async Task LoadSpeciesLocations(int speciesId)
     {
-        viewingSpeciesLocations = await SpeciesService.GetSpeciesDetailAsync(speciesId);
+        viewingSpeciesLocations = await SpeciesHttpClient.GetSpeciesDetailAsync(speciesId);
         currentLocationIndex = 0;
         if (viewingSpeciesLocations?.Locations.Count > 0)
         {
@@ -797,7 +797,7 @@
     {
         if (selectedMunicipality != null)
         {
-            species = await SpeciesService.GetSpeciesByMunicipalityAsync(selectedMunicipality.Id);
+            species = await SpeciesHttpClient.GetSpeciesByMunicipalityAsync(selectedMunicipality.Id);
         }
     }
 
@@ -876,7 +876,7 @@
             await JS.InvokeVoidAsync("leafletInterop.showSearchRadius", radiusMeters);
 
             // Query nearby species
-            nearbySpecies = await SpeciesService.GetSpeciesNearbyAsync(
+            nearbySpecies = await SpeciesHttpClient.GetSpeciesNearbyAsync(
                 userLatitude.Value,
                 userLongitude.Value,
                 radiusMeters);

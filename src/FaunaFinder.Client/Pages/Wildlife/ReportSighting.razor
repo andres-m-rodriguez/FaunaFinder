@@ -1,7 +1,7 @@
 @page "/sightings/report"
 @using Microsoft.AspNetCore.Authorization
 @using FaunaFinder.Wildlife.Contracts
-@inject IWildlifeService WildlifeService
+@inject IWildlifeHttpClient WildlifeHttpClient
 @inject NavigationManager Navigation
 @inject IJSRuntime JS
 @inject IAppLocalizer L
@@ -185,7 +185,7 @@
 
         try
         {
-            return await WildlifeService.SearchSpeciesAsync(value, 10, token);
+            return await WildlifeHttpClient.SearchSpeciesAsync(value, 10, token);
         }
         catch
         {
@@ -270,7 +270,7 @@
                 null,
                 null);
 
-            var result = await WildlifeService.CreateSightingAsync(request);
+            var result = await WildlifeHttpClient.CreateSightingAsync(request);
 
             if (result.Success && result.Id.HasValue)
             {

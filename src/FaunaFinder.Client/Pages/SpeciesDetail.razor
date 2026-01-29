@@ -1,6 +1,6 @@
 @page "/species/{Id:int}"
 @using BlazingSingularity.Commands
-@inject ISpeciesService SpeciesService
+@inject ISpeciesHttpClient SpeciesHttpClient
 @inject NavigationManager NavigationManager
 @inject IAppLocalizer L
 
@@ -321,7 +321,7 @@
     [RelayCommand]
     private async Task LoadData()
     {
-        species = await SpeciesService.GetSpeciesDetailAsync(Id);
+        species = await SpeciesHttpClient.GetSpeciesDetailAsync(Id);
     }
 
     private void OnNrcsPracticeChanged(string? value)

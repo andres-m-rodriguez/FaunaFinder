@@ -5,68 +5,55 @@ using FaunaFinder.Pagination.Contracts;
 
 namespace FaunaFinder.Wildlife.Application.Client;
 
-public sealed class SpeciesApiService : ISpeciesService
+public sealed class MunicipalityHttpClient : IMunicipalityHttpClient
 {
     private readonly HttpClient _httpClient;
 
-    public SpeciesApiService(HttpClient httpClient)
+    public MunicipalityHttpClient(HttpClient httpClient)
     {
         _httpClient = httpClient;
     }
 
-    public async Task<IReadOnlyList<SpeciesForListDto>> GetSpeciesByMunicipalityAsync(
+    public async Task<IReadOnlyList<MunicipalityForListDto>> GetAllMunicipalitiesAsync(
+        CancellationToken cancellationToken = default)
+    {
+        var result = await _httpClient.GetFromJsonAsync<IReadOnlyList<MunicipalityForListDto>>(
+            "api/municipalities",
+            cancellationToken);
+        return result ?? [];
+    }
+
+    public async Task<MunicipalityForDetailDto?> GetMunicipalityDetailAsync(
         int municipalityId,
         CancellationToken cancellationToken = default)
     {
-        var result = await _httpClient.GetFromJsonAsync<IReadOnlyList<SpeciesForListDto>>(
-            $"api/species/by-municipality/{municipalityId}",
+        return await _httpClient.GetFromJsonAsync<MunicipalityForDetailDto>(
+            $"api/municipalities/{municipalityId}",
+            cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<MunicipalityCardDto>> GetMunicipalitiesWithSpeciesCountAsync(
+        MunicipalityParameters parameters,
+        CancellationToken cancellationToken = default)
+    {
+        var queryString = BuildMunicipalityQueryString(parameters);
+        var result = await _httpClient.GetFromJsonAsync<IReadOnlyList<MunicipalityCardDto>>(
+            $"api/municipalities/cards{queryString}",
             cancellationToken);
         return result ?? [];
     }
 
-    public async Task<SpeciesForDetailDto?> GetSpeciesDetailAsync(
-        int speciesId,
-        CancellationToken cancellationToken = default)
-    {
-        return await _httpClient.GetFromJsonAsync<SpeciesForDetailDto>(
-            $"api/species/{speciesId}",
-            cancellationToken);
-    }
-
-    public async Task<IReadOnlyList<SpeciesForSearchDto>> GetSpeciesAsync(
-        SpeciesParameters parameters,
-        CancellationToken cancellationToken = default)
-    {
-        var queryString = BuildSpeciesQueryString(parameters);
-        var result = await _httpClient.GetFromJsonAsync<IReadOnlyList<SpeciesForSearchDto>>(
-            $"api/species{queryString}",
-            cancellationToken);
-        return result ?? [];
-    }
-
-    public async Task<int> GetTotalSpeciesCountAsync(
+    public async Task<int> GetTotalMunicipalitiesCountAsync(
         string? search = null,
         CancellationToken cancellationToken = default)
     {
         var queryString = string.IsNullOrEmpty(search) ? "" : $"?search={Uri.EscapeDataString(search)}";
         return await _httpClient.GetFromJsonAsync<int>(
-            $"api/species/count{queryString}",
+            $"api/municipalities/count{queryString}",
             cancellationToken);
     }
 
-    public async Task<IReadOnlyList<SpeciesNearbyDto>> GetSpeciesNearbyAsync(
-        double latitude,
-        double longitude,
-        double radiusMeters,
-        CancellationToken cancellationToken = default)
-    {
-        var result = await _httpClient.GetFromJsonAsync<IReadOnlyList<SpeciesNearbyDto>>(
-            $"api/species/nearby?latitude={latitude}&longitude={longitude}&radiusMeters={radiusMeters}",
-            cancellationToken);
-        return result ?? [];
-    }
-
-    private static string BuildSpeciesQueryString(SpeciesParameters parameters)
+    private static string BuildMunicipalityQueryString(MunicipalityParameters parameters)
     {
         var queryParams = new List<string>
         {
@@ -79,23 +66,18 @@ public sealed class SpeciesApiService : ISpeciesService
             queryParams.Add($"search={Uri.EscapeDataString(parameters.Search)}");
         }
 
-        if (parameters.MunicipalityId.HasValue)
-        {
-            queryParams.Add($"municipalityId={parameters.MunicipalityId.Value}");
-        }
-
         return "?" + string.Join("&", queryParams);
     }
 
-    public async Task<CursorPage<SpeciesForSearchDto>> GetSpeciesCursorPageAsync(
+    public async Task<CursorPage<MunicipalityCardDto>> GetMunicipalitiesCursorPageAsync(
         CursorPageRequest request,
         CancellationToken cancellationToken = default)
     {
         var queryString = BuildCursorQueryString(request);
-        var result = await _httpClient.GetFromJsonAsync<CursorPage<SpeciesForSearchDto>>(
-            $"api/species/cursor{queryString}",
+        var result = await _httpClient.GetFromJsonAsync<CursorPage<MunicipalityCardDto>>(
+            $"api/municipalities/cursor{queryString}",
             cancellationToken);
-        return result ?? new CursorPage<SpeciesForSearchDto>([], null, false);
+        return result ?? new CursorPage<MunicipalityCardDto>([], null, false);
     }
 
     private static string BuildCursorQueryString(CursorPageRequest request)
