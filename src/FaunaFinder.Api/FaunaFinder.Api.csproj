@@ -23,16 +23,15 @@
 
   <ItemGroup>
     <ProjectReference Include="..\FaunaFinder.Client\FaunaFinder.Client.csproj" />
-    <ProjectReference Include="..\FaunaFinder.Database\FaunaFinder.Database.csproj" />
-    <ProjectReference Include="..\FaunaFinder.DataAccess\FaunaFinder.DataAccess.csproj" />
-    <ProjectReference Include="..\FaunaFinder.Contracts\FaunaFinder.Contracts.csproj" />
     <ProjectReference Include="..\Common\FaunaFinder.Pagination.Contracts\FaunaFinder.Pagination.Contracts.csproj" />
     <ProjectReference Include="..\FaunaFinder.ServiceDefaults\FaunaFinder.ServiceDefaults.csproj" />
     <ProjectReference Include="..\Features\Identity\FaunaFinder.Identity.Api\FaunaFinder.Identity.Api.csproj" />
     <ProjectReference Include="..\Features\Identity\FaunaFinder.Identity.Application\FaunaFinder.Identity.Application.csproj" />
     <ProjectReference Include="..\Features\Identity\FaunaFinder.Identity.Database\FaunaFinder.Identity.Database.csproj" />
     <ProjectReference Include="..\Features\Wildlife\FaunaFinder.Wildlife.Api\FaunaFinder.Wildlife.Api.csproj" />
+    <ProjectReference Include="..\Features\Wildlife\FaunaFinder.Wildlife.Contracts\FaunaFinder.Wildlife.Contracts.csproj" />
     <ProjectReference Include="..\Features\Wildlife\FaunaFinder.Wildlife.Database\FaunaFinder.Wildlife.Database.csproj" />
+    <ProjectReference Include="..\Features\Wildlife\FaunaFinder.Wildlife.DataAccess\FaunaFinder.Wildlife.DataAccess.csproj" />
   </ItemGroup>
 
 </Project>

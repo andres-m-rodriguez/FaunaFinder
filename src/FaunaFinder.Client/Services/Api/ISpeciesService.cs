@@ -1,5 +1,5 @@
-using FaunaFinder.Contracts.Dtos.Species;
-using FaunaFinder.Contracts.Parameters;
+using FaunaFinder.Wildlife.Contracts.Dtos;
+using FaunaFinder.Wildlife.Contracts.Parameters;
 using FaunaFinder.Pagination.Contracts;
 
 namespace FaunaFinder.Client.Services.Api;

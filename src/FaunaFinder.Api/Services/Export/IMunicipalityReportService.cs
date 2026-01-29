@@ -1,4 +1,4 @@
-using FaunaFinder.Contracts.Dtos.Species;
+using FaunaFinder.Wildlife.Contracts.Dtos;
 
 namespace FaunaFinder.Api.Services.Export;
 

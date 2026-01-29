@@ -8,8 +8,10 @@ public static class WildlifeDataAccessConfigurator
 {
     public static IServiceCollection AddWildlifeDataAccess(this IServiceCollection services)
     {
-        services.AddScoped<ISightingRepository, SightingRepository>();
+        services.AddScoped<IMunicipalityRepository, MunicipalityRepository>();
         services.AddScoped<ISpeciesRepository, SpeciesRepository>();
+        services.AddScoped<ISpeciesImageRepository, SpeciesImageRepository>();
+        services.AddScoped<ISightingRepository, SightingRepository>();
 
         return services;
     }

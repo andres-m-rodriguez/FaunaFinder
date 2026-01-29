@@ -2,14 +2,13 @@ using FaunaFinder.Api.Components;
 using FaunaFinder.Api.Endpoints;
 using FaunaFinder.Api.Services.Export;
 using FaunaFinder.Api.Services.Localization;
-using FaunaFinder.Database.Extensions;
-using FaunaFinder.DataAccess.Extensions;
 using FaunaFinder.Identity.Api;
 using FaunaFinder.Identity.Application.Extensions;
 using FaunaFinder.Identity.Database.Extensions;
 using FaunaFinder.Wildlife.Api;
 using FaunaFinder.Wildlife.Application.Extensions;
 using FaunaFinder.Wildlife.Database.Extensions;
+using FaunaFinder.Wildlife.DataAccess.Extensions;
 using QuestPDF.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -24,10 +23,6 @@ builder.Services.AddScoped<IMunicipalityReportService, MunicipalityReportService
 
 QuestPDF.Settings.License = LicenseType.Community;
 
-// Main database (legacy, for shared tables during transition)
-builder.AddFaunaFinderDatabase();
-builder.Services.AddFaunaFinderDataAccess();
-
 // Identity feature
 builder.AddIdentityDatabase();
 builder.Services.AddIdentityApplication();
@@ -35,6 +30,7 @@ builder.Services.AddIdentityApplication();
 // Wildlife feature
 builder.AddWildlifeDatabase();
 builder.Services.AddWildlifeApplication();
+builder.Services.AddWildlifeDataAccess();
 
 builder.Services.AddAuthorization();
 

@@ -2,10 +2,8 @@ using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using FaunaFinder.i18n.Contracts;
-using FaunaFinder.Database;
-using FaunaFinder.Database.Models.Conservation;
-using FaunaFinder.Database.Models.Municipalities;
-using FaunaFinder.Database.Models.Species;
+using FaunaFinder.Wildlife.Database;
+using FaunaFinder.Wildlife.Database.Models;
 using Microsoft.EntityFrameworkCore;
 using NetTopologySuite.Features;
 using NetTopologySuite.IO.Converters;
@@ -19,7 +17,7 @@ public static class DatabaseSeeder
         PropertyNameCaseInsensitive = true
     };
 
-    public static async Task SeedAsync(FaunaFinderContext context, CancellationToken cancellationToken = default)
+    public static async Task SeedAsync(WildlifeDbContext context, CancellationToken cancellationToken = default)
     {
         // Seed municipalities first (from GeoJSON - all 78 with boundaries)
         await SeedMunicipalitiesAsync(context, cancellationToken);
@@ -37,7 +35,7 @@ public static class DatabaseSeeder
         await SeedFwsLinksAsync(context, cancellationToken);
     }
 
-    private static async Task SeedMunicipalitiesAsync(FaunaFinderContext context, CancellationToken cancellationToken)
+    private static async Task SeedMunicipalitiesAsync(WildlifeDbContext context, CancellationToken cancellationToken)
     {
         var assembly = Assembly.GetExecutingAssembly();
         const string resourceName = "FaunaFinder.Seeder.Data.pr-municipios.geojson";
@@ -106,7 +104,7 @@ public static class DatabaseSeeder
         await context.SaveChangesAsync(cancellationToken);
     }
 
-    private static async Task SeedNrcsPracticesAsync(FaunaFinderContext context, CancellationToken cancellationToken)
+    private static async Task SeedNrcsPracticesAsync(WildlifeDbContext context, CancellationToken cancellationToken)
     {
         var practices = await LoadJsonResourceAsync<List<NrcsPracticeDto>>("nrcs_practices.json", cancellationToken);
         if (practices is null) return;
@@ -130,7 +128,7 @@ public static class DatabaseSeeder
         await context.SaveChangesAsync(cancellationToken);
     }
 
-    private static async Task SeedFwsActionsAsync(FaunaFinderContext context, CancellationToken cancellationToken)
+    private static async Task SeedFwsActionsAsync(WildlifeDbContext context, CancellationToken cancellationToken)
     {
         var actions = await LoadJsonResourceAsync<List<FwsActionDto>>("fws_actions.json", cancellationToken);
         if (actions is null) return;
@@ -154,7 +152,7 @@ public static class DatabaseSeeder
         await context.SaveChangesAsync(cancellationToken);
     }
 
-    private static async Task SeedSpeciesAsync(FaunaFinderContext context, CancellationToken cancellationToken)
+    private static async Task SeedSpeciesAsync(WildlifeDbContext context, CancellationToken cancellationToken)
     {
         var speciesList = await LoadJsonResourceAsync<List<SpeciesDto>>("species.json", cancellationToken);
         if (speciesList is null) return;
@@ -252,7 +250,7 @@ public static class DatabaseSeeder
         }
     }
 
-    private static async Task SeedFwsLinksAsync(FaunaFinderContext context, CancellationToken cancellationToken)
+    private static async Task SeedFwsLinksAsync(WildlifeDbContext context, CancellationToken cancellationToken)
     {
         var links = await LoadJsonResourceAsync<List<FwsLinkDto>>("fws_links.json", cancellationToken);
         if (links is null) return;

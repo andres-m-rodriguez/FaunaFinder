@@ -1,6 +1,6 @@
-using FaunaFinder.Contracts.Parameters;
-using FaunaFinder.DataAccess.Interfaces;
 using FaunaFinder.Pagination.Contracts;
+using FaunaFinder.Wildlife.Contracts.Parameters;
+using FaunaFinder.Wildlife.DataAccess.Interfaces;
 
 namespace FaunaFinder.Api.Endpoints;
 

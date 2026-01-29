@@ -1,7 +1,7 @@
 using System.Globalization;
 using System.Text;
 using FaunaFinder.Api.Services.Localization;
-using FaunaFinder.Contracts.Dtos.Species;
+using FaunaFinder.Wildlife.Contracts.Dtos;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;

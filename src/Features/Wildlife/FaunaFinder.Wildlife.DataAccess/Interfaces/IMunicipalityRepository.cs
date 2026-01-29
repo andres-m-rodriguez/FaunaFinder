@@ -1,10 +1,10 @@
+using FaunaFinder.Pagination.Contracts;
 using FaunaFinder.Wildlife.Contracts.Dtos;
 using FaunaFinder.Wildlife.Contracts.Parameters;
-using FaunaFinder.Pagination.Contracts;
 
-namespace FaunaFinder.Client.Services.Api;
+namespace FaunaFinder.Wildlife.DataAccess.Interfaces;
 
-public interface IMunicipalityService
+public interface IMunicipalityRepository
 {
     Task<IReadOnlyList<MunicipalityForListDto>> GetAllMunicipalitiesAsync(
         CancellationToken cancellationToken = default);

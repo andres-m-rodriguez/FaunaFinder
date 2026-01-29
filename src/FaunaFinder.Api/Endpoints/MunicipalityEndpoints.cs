@@ -1,8 +1,8 @@
 using System.Text.Json;
-using FaunaFinder.Contracts.Parameters;
-using FaunaFinder.Database;
-using FaunaFinder.DataAccess.Interfaces;
 using FaunaFinder.Pagination.Contracts;
+using FaunaFinder.Wildlife.Contracts.Parameters;
+using FaunaFinder.Wildlife.Database;
+using FaunaFinder.Wildlife.DataAccess.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using NetTopologySuite.IO.Converters;
 
@@ -45,7 +45,7 @@ public static class MunicipalityEndpoints
             return Results.Ok(count);
         }).WithName("GetMunicipalitiesCount");
 
-        group.MapGet("/geojson", async (IDbContextFactory<FaunaFinderContext> dbFactory) =>
+        group.MapGet("/geojson", async (IDbContextFactory<WildlifeDbContext> dbFactory) =>
         {
             await using var db = await dbFactory.CreateDbContextAsync();
 

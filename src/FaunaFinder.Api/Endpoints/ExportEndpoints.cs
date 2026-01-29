@@ -1,5 +1,5 @@
 using FaunaFinder.Api.Services.Export;
-using FaunaFinder.DataAccess.Interfaces;
+using FaunaFinder.Wildlife.DataAccess.Interfaces;
 
 namespace FaunaFinder.Api.Endpoints;
 
