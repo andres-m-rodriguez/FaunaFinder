@@ -382,7 +382,7 @@
         // Small delay to ensure DOM is ready after render
         await Task.Delay(100);
 
-        await JS.InvokeVoidAsync("initSightingMap",
+        await JS.InvokeVoidAsync("leafletInterop.initSightingMap",
             "sighting-map",
             _sighting.Latitude,
             _sighting.Longitude);
