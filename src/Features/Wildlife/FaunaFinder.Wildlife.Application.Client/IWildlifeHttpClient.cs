@@ -39,4 +39,10 @@ public interface IWildlifeHttpClient
         byte[] photoData,
         string contentType,
         CancellationToken cancellationToken = default);
+
+    Task<bool> ReviewSightingAsync(
+        int sightingId,
+        string status,
+        string? reviewNotes,
+        CancellationToken cancellationToken = default);
 }

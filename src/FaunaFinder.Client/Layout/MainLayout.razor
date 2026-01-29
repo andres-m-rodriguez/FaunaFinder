@@ -27,6 +27,11 @@
                     <MudButton Href="/sightings" Color="Color.Inherit" Variant="Variant.Text">@L["Nav_Sightings"]</MudButton>
                 </Authorized>
             </AuthorizeView>
+            <AuthorizeView Roles="Admin,Teacher">
+                <Authorized>
+                    <MudButton Href="/dashboard" Color="Color.Inherit" Variant="Variant.Text">@L["Nav_Dashboard"]</MudButton>
+                </Authorized>
+            </AuthorizeView>
             <div class="ml-2 d-flex align-center">
                 <DarkModeToggle />
                 <LanguageToggle />
@@ -52,6 +57,11 @@
             <AuthorizeView>
                 <Authorized>
                     <MudNavLink Href="/sightings" Icon="@Icons.Material.Filled.PhotoLibrary" OnClick="CloseDrawer">@L["Nav_Sightings"]</MudNavLink>
+                </Authorized>
+            </AuthorizeView>
+            <AuthorizeView Roles="Admin,Teacher">
+                <Authorized>
+                    <MudNavLink Href="/dashboard" Icon="@Icons.Material.Filled.Dashboard" OnClick="CloseDrawer">@L["Nav_Dashboard"]</MudNavLink>
                 </Authorized>
             </AuthorizeView>
         </MudNavMenu>
