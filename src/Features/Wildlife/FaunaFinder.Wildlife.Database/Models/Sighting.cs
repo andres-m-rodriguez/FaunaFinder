@@ -49,9 +49,10 @@ public sealed class Sighting
     // User reference - cross-feature references by ID only
     public required int ReportedByUserId { get; set; }
 
-    // Navigation properties within Wildlife feature only
+    // Navigation properties within Wildlife feature
     public Species? Species { get; set; }
     public UserSpecies? UserSpecies { get; set; }
+    public Municipality? Municipality { get; set; }
 
     public sealed class EntityConfiguration : IEntityTypeConfiguration<Sighting>
     {
@@ -117,7 +118,12 @@ public sealed class Sighting
                 .HasForeignKey(static e => e.UserSpeciesId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Note: Municipality and User references are by ID only - no navigation properties to other features
+            builder.HasOne(static e => e.Municipality)
+                .WithMany()
+                .HasForeignKey(static e => e.MunicipalityId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            // Note: User references are by ID only - no navigation properties to Identity feature
 
             // Indexes
             builder.HasIndex(static e => e.Location)

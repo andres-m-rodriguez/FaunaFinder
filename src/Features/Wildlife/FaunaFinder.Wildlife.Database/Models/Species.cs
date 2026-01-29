@@ -12,6 +12,8 @@ public sealed class Species
     public required byte[]? ProfileImageData { get; set; }
     public required string? ProfileImageContentType { get; set; }
 
+    public ICollection<FwsLink> FwsLinks { get; set; } = [];
+    public ICollection<MunicipalitySpecies> MunicipalitySpecies { get; set; } = [];
     public ICollection<SpeciesLocation> Locations { get; set; } = [];
 
     public sealed class EntityConfiguration : IEntityTypeConfiguration<Species>

@@ -29,7 +29,7 @@ var seeder = builder.AddProject<Projects.FaunaFinder_Seeder>("seeder")
     .WaitFor(wildlifeDb);
 
 // API + WASM Client
-builder.AddProject<Projects.FaunaFinder_Api>("api")
+builder.AddProject<Projects.FaunaFinder_Server>("server")
     .WithReference(mainDb)
     .WithReference(identityDb)
     .WithReference(wildlifeDb)

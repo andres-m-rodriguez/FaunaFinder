@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\Common\FaunaFinder.Pagination.Contracts\FaunaFinder.Pagination.Contracts.csproj" />
     <ProjectReference Include="..\FaunaFinder.Wildlife.Database\FaunaFinder.Wildlife.Database.csproj" />
     <ProjectReference Include="..\FaunaFinder.Wildlife.Contracts\FaunaFinder.Wildlife.Contracts.csproj" />
   </ItemGroup>

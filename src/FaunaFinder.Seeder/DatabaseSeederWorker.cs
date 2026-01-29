@@ -1,4 +1,3 @@
-using FaunaFinder.Database;
 using FaunaFinder.Identity.Database;
 using FaunaFinder.Wildlife.Database;
 using Microsoft.EntityFrameworkCore;
@@ -18,9 +17,8 @@ public sealed class DatabaseSeederWorker(
             await using var scope = serviceProvider.CreateAsyncScope();
 
             // Apply migrations and seed all databases
-            await MigrateAndSeedMainDatabaseAsync(scope.ServiceProvider, stoppingToken);
             await MigrateFeatureDatabaseAsync<IdentityDbContext>(scope.ServiceProvider, "Identity", stoppingToken);
-            await MigrateFeatureDatabaseAsync<WildlifeDbContext>(scope.ServiceProvider, "Wildlife", stoppingToken);
+            await MigrateAndSeedWildlifeDatabaseAsync(scope.ServiceProvider, stoppingToken);
 
             logger.LogInformation("All database migrations and seeding completed successfully.");
         }
@@ -35,15 +33,16 @@ public sealed class DatabaseSeederWorker(
         }
     }
 
-    private async Task MigrateAndSeedMainDatabaseAsync(IServiceProvider services, CancellationToken stoppingToken)
+    private async Task MigrateAndSeedWildlifeDatabaseAsync(IServiceProvider services, CancellationToken stoppingToken)
     {
-        var context = services.GetRequiredService<FaunaFinderContext>();
+        var context = services.GetRequiredService<WildlifeDbContext>();
 
-        logger.LogInformation("Applying main database migrations...");
+        logger.LogInformation("Applying Wildlife database migrations...");
         await context.Database.MigrateAsync(stoppingToken);
 
-        logger.LogInformation("Seeding main database...");
+        logger.LogInformation("Seeding Wildlife database...");
         await DatabaseSeeder.SeedAsync(context, stoppingToken);
+        logger.LogInformation("Wildlife database seeding completed.");
     }
 
     private async Task MigrateFeatureDatabaseAsync<TContext>(
