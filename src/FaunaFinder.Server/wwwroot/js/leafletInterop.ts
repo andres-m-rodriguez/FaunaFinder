@@ -177,6 +177,7 @@ interface LeafletInterop {
     clearSpeciesLocationCircles(): void;
     getSpeciesColors(): SpeciesColorEntry[];
     resetSpeciesColors(): void;
+    initSightingMap(containerId: string, latitude: number, longitude: number): void;
 }
 
 // ============================================================================
@@ -797,6 +798,64 @@ window.leafletInterop = {
 
     resetSpeciesColors(): void {
         this.speciesColorMap.clear();
+    },
+
+    initSightingMap(containerId: string, latitude: number, longitude: number): void {
+        const container = document.getElementById(containerId);
+        if (!container) {
+            console.error('Map container not found:', containerId);
+            return;
+        }
+
+        // Check if map already exists on this container
+        if ((container as any)._leaflet_id) {
+            return;
+        }
+
+        const savedDarkMode = localStorage.getItem('faunafinder-darkmode');
+        const isDarkMode = savedDarkMode !== null
+            ? savedDarkMode === 'true'
+            : window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+        const tileUrl = isDarkMode
+            ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
+            : 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+
+        const attribution = isDarkMode
+            ? '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
+            : '&copy; OpenStreetMap';
+
+        const map = L.map(containerId, {
+            center: [latitude, longitude],
+            zoom: 14,
+            scrollWheelZoom: true,
+            dragging: true,
+            zoomControl: true
+        });
+
+        L.tileLayer(tileUrl, {
+            attribution: attribution,
+            maxZoom: 18
+        }).addTo(map);
+
+        // Add a marker at the sighting location
+        const markerIcon = L.divIcon({
+            className: 'sighting-location-marker',
+            html: '<div style="background-color: #ef4444; width: 16px; height: 16px; border-radius: 50%; border: 3px solid #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>',
+            iconSize: [22, 22],
+            iconAnchor: [11, 11]
+        });
+
+        L.marker([latitude, longitude], { icon: markerIcon }).addTo(map);
+
+        // Add a subtle circle around the marker
+        L.circle([latitude, longitude], {
+            radius: 50,
+            fillColor: '#ef4444',
+            color: '#dc2626',
+            weight: 2,
+            fillOpacity: 0.2
+        }).addTo(map);
     }
 };
 
@@ -828,70 +887,3 @@ function downloadFile(base64: string, fileName: string, contentType: string): vo
 }
 
 window.downloadFile = downloadFile;
-
-// ============================================================================
-// Sighting Detail Map Function
-// ============================================================================
-
-/**
- * Initialize a simple map for sighting detail view with a marker at the given location
- */
-function initSightingMap(containerId: string, latitude: number, longitude: number): void {
-    const container = document.getElementById(containerId);
-    if (!container) {
-        console.error('Map container not found:', containerId);
-        return;
-    }
-
-    // Check if map already exists on this container
-    if ((container as any)._leaflet_id) {
-        return;
-    }
-
-    const savedDarkMode = localStorage.getItem('faunafinder-darkmode');
-    const isDarkMode = savedDarkMode !== null
-        ? savedDarkMode === 'true'
-        : window.matchMedia('(prefers-color-scheme: dark)').matches;
-
-    const tileUrl = isDarkMode
-        ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
-        : 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
-
-    const attribution = isDarkMode
-        ? '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
-        : '&copy; OpenStreetMap';
-
-    const map = L.map(containerId, {
-        center: [latitude, longitude],
-        zoom: 14,
-        scrollWheelZoom: false,
-        dragging: true,
-        zoomControl: true
-    });
-
-    L.tileLayer(tileUrl, {
-        attribution: attribution,
-        maxZoom: 18
-    }).addTo(map);
-
-    // Add a marker at the sighting location
-    const markerIcon = L.divIcon({
-        className: 'sighting-location-marker',
-        html: '<div style="background-color: #ef4444; width: 16px; height: 16px; border-radius: 50%; border: 3px solid #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>',
-        iconSize: [22, 22],
-        iconAnchor: [11, 11]
-    });
-
-    L.marker([latitude, longitude], { icon: markerIcon }).addTo(map);
-
-    // Add a subtle circle around the marker
-    L.circle([latitude, longitude], {
-        radius: 50,
-        fillColor: '#ef4444',
-        color: '#dc2626',
-        weight: 2,
-        fillOpacity: 0.2
-    }).addTo(map);
-}
-
-window.initSightingMap = initSightingMap;
