@@ -6,34 +6,15 @@ using FaunaFinder.Client.Services.Auth;
 using FaunaFinder.Client.Services.DarkMode;
 using FaunaFinder.Client.Services.Localization;
 using FaunaFinder.Identity.Application.Client;
+using FaunaFinder.Wildlife.Application.Client;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
 // Same origin - use host's base address for API calls
 var baseAddress = new Uri(builder.HostEnvironment.BaseAddress);
 
-// Register typed HttpClient services
-builder.Services.AddHttpClient<IMunicipalityService, MunicipalityApiService>(client =>
-{
-    client.BaseAddress = baseAddress;
-});
-
-builder.Services.AddHttpClient<ISpeciesService, SpeciesApiService>(client =>
-{
-    client.BaseAddress = baseAddress;
-});
-
-builder.Services.AddHttpClient<IExportService, ExportApiService>(client =>
-{
-    client.BaseAddress = baseAddress;
-});
-
-builder.Services.AddHttpClient<IWildlifeService, WildlifeApiService>(client =>
-{
-    client.BaseAddress = baseAddress;
-});
-
-// Identity client
+// Register Wildlife and Identity clients
+builder.Services.AddWildlifeClient(baseAddress);
 builder.Services.AddIdentityClient(baseAddress);
 
 // Store base address for JS interop

@@ -1,6 +1,4 @@
-using System.Net.Http.Json;
-
-namespace FaunaFinder.Client.Services.Api;
+namespace FaunaFinder.Wildlife.Application.Client;
 
 public class ExportApiService : IExportService
 {

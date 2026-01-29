@@ -2,7 +2,7 @@ using FaunaFinder.Wildlife.Contracts.Dtos;
 using FaunaFinder.Wildlife.Contracts.Parameters;
 using FaunaFinder.Pagination.Contracts;
 
-namespace FaunaFinder.Client.Services.Api;
+namespace FaunaFinder.Wildlife.Application.Client;
 
 public interface ISpeciesService
 {
