@@ -261,7 +261,10 @@ public sealed class SightingRepository(IDbContextFactory<WildlifeDbContext> cont
 
         await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
 
-        var sighting = await context.Sightings.FindAsync([sightingId], cancellationToken);
+        var sighting = await context.Sightings
+            .AsTracking()
+            .FirstOrDefaultAsync(s => s.Id == sightingId, cancellationToken);
+
         if (sighting is null)
         {
             return (false, "Sighting not found");
