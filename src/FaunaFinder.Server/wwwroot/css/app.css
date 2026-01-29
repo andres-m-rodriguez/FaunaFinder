@@ -179,6 +179,10 @@ code {
     z-index: 1 !important;
 }
 
+#sighting-map.leaflet-container {
+    height: 300px !important;
+}
+
 .leaflet-popup-content-wrapper {
     border-radius: 8px;
     padding: 0;

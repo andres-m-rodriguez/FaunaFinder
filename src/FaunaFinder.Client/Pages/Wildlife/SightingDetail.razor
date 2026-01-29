@@ -264,6 +264,7 @@
     private bool _isUploadingPhoto;
     private int _photoVersion;
     private int? _currentUserId;
+    private bool _mapInitialized;
 
     private static readonly string[] AllowedContentTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
     private const long MaxFileSizeBytes = 5 * 1024 * 1024; // 5MB
@@ -284,13 +285,6 @@
         }
     }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender && _sighting is not null)
-        {
-            await InitializeMap();
-        }
-    }
 
     private async Task LoadSighting()
     {
@@ -317,6 +311,15 @@
         finally
         {
             _isLoading = false;
+            StateHasChanged();
+
+            // Initialize map after render completes
+            if (_sighting is not null && !_mapInitialized)
+            {
+                _mapInitialized = true;
+                await Task.Delay(50);
+                await InitializeMap();
+            }
         }
     }
 
@@ -376,7 +379,10 @@
     {
         if (_sighting is null) return;
 
-        await JS.InvokeVoidAsync("initSightingMap",
+        // Small delay to ensure DOM is ready after render
+        await Task.Delay(100);
+
+        await JS.InvokeVoidAsync("leafletInterop.initSightingMap",
             "sighting-map",
             _sighting.Latitude,
             _sighting.Longitude);
