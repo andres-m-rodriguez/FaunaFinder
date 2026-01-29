@@ -856,6 +856,11 @@ window.leafletInterop = {
             weight: 2,
             fillOpacity: 0.2
         }).addTo(map);
+
+        // Invalidate size after a short delay to ensure tiles load properly
+        setTimeout(() => {
+            map.invalidateSize();
+        }, 100);
     }
 };
 
