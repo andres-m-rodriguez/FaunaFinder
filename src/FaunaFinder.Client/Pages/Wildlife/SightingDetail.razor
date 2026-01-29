@@ -70,7 +70,7 @@
                     <MudText Typo="Typo.h6" Class="mb-3">@L["SightingDetail_Photo"]</MudText>
                     @if (_sighting.HasPhoto)
                     {
-                        <MudImage Src="@($"api/wildlife/sightings/{_sighting.Id}/photo?v={_photoVersion}")"
+                        <MudImage Src="@($"/api/wildlife/sightings/{_sighting.Id}/photo?v={_photoVersion}")"
                                   Alt="@L["SightingDetail_PhotoAlt"]"
                                   ObjectFit="ObjectFit.Cover"
                                   Class="rounded-lg"
