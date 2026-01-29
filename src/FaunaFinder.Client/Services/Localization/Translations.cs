@@ -263,6 +263,15 @@ public static class Translations
         ["SightingDetail_FlaggedForReview"] = "This sighting has been flagged for expert review.",
         ["SightingDetail_NewMunicipalityRecord"] = "This is a new species record for this municipality!",
         ["SightingDetail_PendingReviewMessage"] = "Your sighting is awaiting review by a teacher or administrator.",
+
+        // Sighting Detail Photo Upload
+        ["SightingDetail_AddPhoto"] = "Add Photo",
+        ["SightingDetail_ChangePhoto"] = "Change Photo",
+        ["SightingDetail_UploadingPhoto"] = "Uploading...",
+        ["SightingDetail_PhotoUploaded"] = "Photo uploaded successfully",
+        ["SightingDetail_PhotoUploadError"] = "Failed to upload photo. Please try again.",
+        ["SightingDetail_InvalidFileType"] = "Invalid file type. Only JPEG, PNG, GIF, and WebP images are allowed.",
+        ["SightingDetail_FileTooLarge"] = "File is too large. Maximum size is 5MB.",
     };
 
     public static IReadOnlyDictionary<string, string> Spanish { get; } = new Dictionary<string, string>
@@ -526,5 +535,14 @@ public static class Translations
         ["SightingDetail_FlaggedForReview"] = "Este avistamiento ha sido marcado para revisión de expertos.",
         ["SightingDetail_NewMunicipalityRecord"] = "¡Este es un nuevo registro de especie para este municipio!",
         ["SightingDetail_PendingReviewMessage"] = "Tu avistamiento está esperando revisión por un maestro o administrador.",
+
+        // Sighting Detail Photo Upload
+        ["SightingDetail_AddPhoto"] = "Agregar Foto",
+        ["SightingDetail_ChangePhoto"] = "Cambiar Foto",
+        ["SightingDetail_UploadingPhoto"] = "Subiendo...",
+        ["SightingDetail_PhotoUploaded"] = "Foto subida exitosamente",
+        ["SightingDetail_PhotoUploadError"] = "Error al subir la foto. Por favor, inténtelo de nuevo.",
+        ["SightingDetail_InvalidFileType"] = "Tipo de archivo no válido. Solo se permiten imágenes JPEG, PNG, GIF y WebP.",
+        ["SightingDetail_FileTooLarge"] = "El archivo es demasiado grande. El tamaño máximo es 5MB.",
     };
 }

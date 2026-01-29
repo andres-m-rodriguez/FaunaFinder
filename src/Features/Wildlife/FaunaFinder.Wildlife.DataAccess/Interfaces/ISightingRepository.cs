@@ -15,4 +15,5 @@ public interface ISightingRepository
     Task<SightingPhotoResult?> GetSightingPhotoAsync(int sightingId, CancellationToken cancellationToken = default);
     Task<CreateSightingResponse> CreateSightingAsync(CreateSightingRequest request, int userId, CancellationToken cancellationToken = default);
     Task<(bool Success, string? Error)> ReviewSightingAsync(int sightingId, ReviewSightingRequest request, int reviewerUserId, CancellationToken cancellationToken = default);
+    Task<(bool Success, string? Error)> UpdateSightingPhotoAsync(int sightingId, int userId, byte[] photoData, string contentType, CancellationToken cancellationToken = default);
 }
