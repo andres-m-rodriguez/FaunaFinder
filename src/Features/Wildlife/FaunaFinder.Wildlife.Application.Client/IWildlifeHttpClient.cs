@@ -1,4 +1,5 @@
 using FaunaFinder.Wildlife.Contracts;
+using FaunaFinder.Wildlife.Contracts.Dtos;
 
 namespace FaunaFinder.Wildlife.Application.Client;
 
@@ -27,5 +28,9 @@ public interface IWildlifeHttpClient
 
     Task<CreateSightingResponse> CreateSightingAsync(
         CreateSightingRequest request,
+        CancellationToken cancellationToken = default);
+
+    Task<SightingDetailDto?> GetSightingDetailAsync(
+        int id,
         CancellationToken cancellationToken = default);
 }
