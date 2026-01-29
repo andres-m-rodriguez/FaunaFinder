@@ -9,7 +9,7 @@ public static class IdentityDatabaseConfigurator
 {
     public static IHostApplicationBuilder AddIdentityDatabase(
         this IHostApplicationBuilder builder,
-        string connectionName = "identity")
+        string connectionName = "faunafinder-identity")
     {
         var connectionString = builder.Configuration.GetConnectionString(connectionName)
             ?? throw new ArgumentException($"Connection string '{connectionName}' not found");

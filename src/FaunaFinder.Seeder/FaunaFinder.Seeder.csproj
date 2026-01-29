@@ -10,6 +10,8 @@
     <ProjectReference Include="..\Common\FaunaFinder.i18n.Contracts\FaunaFinder.i18n.Contracts.csproj" />
     <ProjectReference Include="..\FaunaFinder.Database\FaunaFinder.Database.csproj" />
     <ProjectReference Include="..\FaunaFinder.ServiceDefaults\FaunaFinder.ServiceDefaults.csproj" />
+    <ProjectReference Include="..\Features\Identity\FaunaFinder.Identity.Database\FaunaFinder.Identity.Database.csproj" />
+    <ProjectReference Include="..\Features\Wildlife\FaunaFinder.Wildlife.Database\FaunaFinder.Wildlife.Database.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -9,7 +9,7 @@ public static class WildlifeDatabaseConfigurator
 {
     public static IHostApplicationBuilder AddWildlifeDatabase(
         this IHostApplicationBuilder builder,
-        string connectionName = "wildlife")
+        string connectionName = "faunafinder-wildlife")
     {
         var connectionString = builder.Configuration.GetConnectionString(connectionName)
             ?? throw new ArgumentException($"Connection string '{connectionName}' not found");
