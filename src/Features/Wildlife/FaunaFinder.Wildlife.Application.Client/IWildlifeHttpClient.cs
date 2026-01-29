@@ -2,7 +2,7 @@ using FaunaFinder.Wildlife.Contracts;
 
 namespace FaunaFinder.Wildlife.Application.Client;
 
-public interface IWildlifeService
+public interface IWildlifeHttpClient
 {
     Task<IReadOnlyList<SpeciesSearchResult>> SearchSpeciesAsync(
         string query,

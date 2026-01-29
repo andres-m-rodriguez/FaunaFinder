@@ -1,6 +1,6 @@
 @page "/pueblos"
 @implements IDisposable
-@inject IMunicipalityService MunicipalityService
+@inject IMunicipalityHttpClient MunicipalityHttpClient
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JS
 @inject IAppLocalizer L
@@ -120,7 +120,7 @@
         StateHasChanged();
 
         var request = new CursorPageRequest(nextCursor, PageSize, string.IsNullOrWhiteSpace(searchTerm) ? null : searchTerm);
-        var page = await MunicipalityService.GetMunicipalitiesCursorPageAsync(request);
+        var page = await MunicipalityHttpClient.GetMunicipalitiesCursorPageAsync(request);
 
         municipalities.AddRange(page.Items);
         nextCursor = page.NextCursor;

@@ -4,7 +4,7 @@ using FaunaFinder.Pagination.Contracts;
 
 namespace FaunaFinder.Wildlife.Application.Client;
 
-public interface IMunicipalityService
+public interface IMunicipalityHttpClient
 {
     Task<IReadOnlyList<MunicipalityForListDto>> GetAllMunicipalitiesAsync(
         CancellationToken cancellationToken = default);

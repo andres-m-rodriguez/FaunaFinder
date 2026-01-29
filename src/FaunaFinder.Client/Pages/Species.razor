@@ -1,6 +1,6 @@
 @page "/species"
 @implements IDisposable
-@inject ISpeciesService SpeciesService
+@inject ISpeciesHttpClient SpeciesHttpClient
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JS
 @inject IAppLocalizer L
@@ -124,7 +124,7 @@
         StateHasChanged();
 
         var request = new CursorPageRequest(nextCursor, PageSize, string.IsNullOrWhiteSpace(searchTerm) ? null : searchTerm);
-        var page = await SpeciesService.GetSpeciesCursorPageAsync(request);
+        var page = await SpeciesHttpClient.GetSpeciesCursorPageAsync(request);
 
         species.AddRange(page.Items);
         nextCursor = page.NextCursor;

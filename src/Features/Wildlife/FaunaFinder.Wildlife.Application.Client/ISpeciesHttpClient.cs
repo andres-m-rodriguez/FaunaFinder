@@ -4,7 +4,7 @@ using FaunaFinder.Pagination.Contracts;
 
 namespace FaunaFinder.Wildlife.Application.Client;
 
-public interface ISpeciesService
+public interface ISpeciesHttpClient
 {
     Task<IReadOnlyList<SpeciesForListDto>> GetSpeciesByMunicipalityAsync(
         int municipalityId,

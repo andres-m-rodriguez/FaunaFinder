@@ -1,7 +1,7 @@
 @page "/pueblos/{Id:int}"
 @using BlazingSingularity.Commands
-@inject IMunicipalityService MunicipalityService
-@inject ISpeciesService SpeciesService
+@inject IMunicipalityHttpClient MunicipalityHttpClient
+@inject ISpeciesHttpClient SpeciesHttpClient
 @inject NavigationManager NavigationManager
 @inject IAppLocalizer L
 
@@ -178,7 +178,7 @@
     private async Task LoadMunicipalityAsync()
     {
         isLoadingMunicipality = true;
-        municipality = await MunicipalityService.GetMunicipalityDetailAsync(Id);
+        municipality = await MunicipalityHttpClient.GetMunicipalityDetailAsync(Id);
         isLoadingMunicipality = false;
         StateHasChanged();
     }
@@ -186,7 +186,7 @@
     private async Task LoadSpeciesAsync()
     {
         isLoadingSpecies = true;
-        species = await SpeciesService.GetSpeciesByMunicipalityAsync(Id);
+        species = await SpeciesHttpClient.GetSpeciesByMunicipalityAsync(Id);
         isLoadingSpecies = false;
         StateHasChanged();
     }

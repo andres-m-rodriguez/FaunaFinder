@@ -1,6 +1,6 @@
 namespace FaunaFinder.Wildlife.Application.Client;
 
-public interface IExportService
+public interface IExportHttpClient
 {
     Task<byte[]> ExportMunicipalityPdfAsync(
         int municipalityId,

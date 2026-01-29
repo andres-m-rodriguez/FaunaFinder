@@ -6,22 +6,22 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddWildlifeClient(this IServiceCollection services, Action<HttpClient>? configureClient = null)
     {
-        services.AddHttpClient<IMunicipalityService, MunicipalityApiService>(client =>
+        services.AddHttpClient<IMunicipalityHttpClient, MunicipalityHttpClient>(client =>
         {
             configureClient?.Invoke(client);
         });
 
-        services.AddHttpClient<ISpeciesService, SpeciesApiService>(client =>
+        services.AddHttpClient<ISpeciesHttpClient, SpeciesHttpClient>(client =>
         {
             configureClient?.Invoke(client);
         });
 
-        services.AddHttpClient<IExportService, ExportApiService>(client =>
+        services.AddHttpClient<IExportHttpClient, ExportHttpClient>(client =>
         {
             configureClient?.Invoke(client);
         });
 
-        services.AddHttpClient<IWildlifeService, WildlifeApiService>(client =>
+        services.AddHttpClient<IWildlifeHttpClient, WildlifeHttpClient>(client =>
         {
             configureClient?.Invoke(client);
         });
