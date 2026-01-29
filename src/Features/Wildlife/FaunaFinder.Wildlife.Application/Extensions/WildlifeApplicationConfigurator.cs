@@ -1,4 +1,5 @@
-using FaunaFinder.Wildlife.Application.Services;
+using FluentValidation;
+using FaunaFinder.Wildlife.Contracts.Validators;
 using FaunaFinder.Wildlife.DataAccess.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -11,8 +12,8 @@ public static class WildlifeApplicationConfigurator
         // Add data access layer
         services.AddWildlifeDataAccess();
 
-        // Add application services
-        services.AddScoped<IWildlifeService, WildlifeService>();
+        // Register validators from Contracts assembly
+        services.AddValidatorsFromAssemblyContaining<CreateSightingRequestValidator>();
 
         return services;
     }

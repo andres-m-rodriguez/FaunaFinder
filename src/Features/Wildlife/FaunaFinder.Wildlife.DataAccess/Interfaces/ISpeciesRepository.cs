@@ -7,7 +7,7 @@ namespace FaunaFinder.Wildlife.DataAccess.Interfaces;
 
 public interface ISpeciesRepository
 {
-    Task<IReadOnlyList<SpeciesSearchResult>> SearchSpeciesAsync(string? query, int limit, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<SpeciesSearchResult>> SearchSpeciesAsync(SpeciesSearchParameters parameters, CancellationToken cancellationToken = default);
     Task<bool> ExistsAsync(int speciesId, CancellationToken cancellationToken = default);
 
     Task<IReadOnlyList<SpeciesForListDto>> GetSpeciesByMunicipalityAsync(

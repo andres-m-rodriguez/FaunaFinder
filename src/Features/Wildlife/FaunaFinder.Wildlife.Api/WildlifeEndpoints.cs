@@ -1,10 +1,11 @@
-using FaunaFinder.Wildlife.Application.Services;
+using FluentValidation;
 using FaunaFinder.Wildlife.Contracts;
-using FaunaFinder.Wildlife.Database;
+using FaunaFinder.Wildlife.Contracts.Parameters;
+using FaunaFinder.Wildlife.Contracts.Requests;
+using FaunaFinder.Wildlife.DataAccess.Interfaces;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 
 namespace FaunaFinder.Wildlife.Api;
@@ -55,16 +56,26 @@ public static class WildlifeEndpoints
     private static async Task<IResult> SearchSpecies(
         string? query,
         int limit,
-        IWildlifeService wildlifeService,
+        ISpeciesRepository speciesRepository,
+        IValidator<SpeciesSearchParameters> validator,
         CancellationToken ct)
     {
-        var species = await wildlifeService.SearchSpeciesAsync(query, limit, ct);
+        var parameters = new SpeciesSearchParameters(query, limit);
+        var validation = await validator.ValidateAsync(parameters, ct);
+        if (!validation.IsValid)
+        {
+            return Results.ValidationProblem(validation.ToDictionary());
+        }
+
+        var species = await speciesRepository.SearchSpeciesAsync(parameters, ct);
         return Results.Ok(species);
     }
 
     private static async Task<IResult> CreateSighting(
         HttpContext context,
-        IWildlifeService wildlifeService,
+        ISightingRepository sightingRepository,
+        ISpeciesRepository speciesRepository,
+        IValidator<CreateSightingRequest> validator,
         CreateSightingRequest request,
         CancellationToken ct)
     {
@@ -74,7 +85,19 @@ public static class WildlifeEndpoints
             return Results.Unauthorized();
         }
 
-        var response = await wildlifeService.CreateSightingAsync(request, userId, ct);
+        var validation = await validator.ValidateAsync(request, ct);
+        if (!validation.IsValid)
+        {
+            return Results.ValidationProblem(validation.ToDictionary());
+        }
+
+        // Verify species exists
+        if (!await speciesRepository.ExistsAsync(request.SpeciesId, ct))
+        {
+            return Results.BadRequest("Invalid species ID");
+        }
+
+        var response = await sightingRepository.CreateSightingAsync(request, userId, ct);
 
         if (!response.Success)
         {
@@ -85,87 +108,60 @@ public static class WildlifeEndpoints
     }
 
     private static async Task<IResult> GetSightings(
-        int pageSize,
         int page,
+        int pageSize,
         string? status,
-        IWildlifeService wildlifeService,
+        ISightingRepository sightingRepository,
+        IValidator<SightingsParameters> validator,
         CancellationToken ct)
     {
-        var result = await wildlifeService.GetSightingsAsync(page, pageSize, status, ct);
+        var parameters = new SightingsParameters(page, pageSize, status);
+        var validation = await validator.ValidateAsync(parameters, ct);
+        if (!validation.IsValid)
+        {
+            return Results.ValidationProblem(validation.ToDictionary());
+        }
+
+        var result = await sightingRepository.GetSightingsAsync(parameters, ct);
         return Results.Ok(result);
     }
 
     private static async Task<IResult> GetSightingDetail(
         int id,
-        IDbContextFactory<WildlifeDbContext> contextFactory,
+        ISightingRepository sightingRepository,
         CancellationToken ct)
     {
-        await using var context = await contextFactory.CreateDbContextAsync(ct);
-
-        var sighting = await context.Sightings
-            .Include(s => s.Species)
-            .FirstOrDefaultAsync(s => s.Id == id, ct);
+        var sighting = await sightingRepository.GetSightingDetailAsync(id, ct);
 
         if (sighting is null)
         {
             return Results.NotFound();
         }
 
-        return Results.Ok(new
-        {
-            sighting.Id,
-            sighting.SpeciesId,
-            SpeciesName = sighting.Species?.CommonName,
-            SpeciesScientificName = sighting.Species?.ScientificName,
-            sighting.Mode,
-            sighting.Confidence,
-            sighting.Count,
-            sighting.Behaviors,
-            sighting.Evidence,
-            sighting.Weather,
-            sighting.Notes,
-            Latitude = sighting.Location.Y,
-            Longitude = sighting.Location.X,
-            sighting.MunicipalityId,
-            sighting.ObservedAt,
-            sighting.CreatedAt,
-            HasPhoto = sighting.PhotoData != null,
-            sighting.Status,
-            sighting.IsFlaggedForReview,
-            sighting.IsNewMunicipalityRecord,
-            sighting.ReviewNotes,
-            sighting.ReviewedAt,
-            sighting.ReviewedByUserId,
-            sighting.ReportedByUserId
-        });
+        return Results.Ok(sighting);
     }
 
     private static async Task<IResult> GetSightingPhoto(
         int id,
-        IDbContextFactory<WildlifeDbContext> contextFactory,
+        ISightingRepository sightingRepository,
         CancellationToken ct)
     {
-        await using var context = await contextFactory.CreateDbContextAsync(ct);
+        var result = await sightingRepository.GetSightingPhotoAsync(id, ct);
 
-        var sighting = await context.Sightings
-            .Where(s => s.Id == id)
-            .Select(s => new { s.PhotoData, s.PhotoContentType })
-            .FirstOrDefaultAsync(ct);
-
-        if (sighting?.PhotoData is null || sighting.PhotoContentType is null)
+        if (result is null)
         {
             return Results.NotFound();
         }
 
-        return Results.File(sighting.PhotoData, sighting.PhotoContentType);
+        return Results.File(result.PhotoData, result.ContentType);
     }
 
     private static async Task<IResult> ReviewSighting(
         int id,
         HttpContext context,
-        IWildlifeService wildlifeService,
-        string status,
-        string? reviewNotes,
+        ISightingRepository sightingRepository,
+        IValidator<ReviewSightingRequest> validator,
+        ReviewSightingRequest request,
         CancellationToken ct)
     {
         var userIdClaim = context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -174,36 +170,47 @@ public static class WildlifeEndpoints
             return Results.Unauthorized();
         }
 
-        // Note: Role checking should be done via authorization policy or in the service layer
-        // For now, we trust the authorization middleware
+        var validation = await validator.ValidateAsync(request, ct);
+        if (!validation.IsValid)
+        {
+            return Results.ValidationProblem(validation.ToDictionary());
+        }
 
-        var (success, error) = await wildlifeService.ReviewSightingAsync(id, userId, status, reviewNotes, ct);
+        var (success, error) = await sightingRepository.ReviewSightingAsync(id, request, userId, ct);
 
         if (!success)
         {
             return error == "Sighting not found" ? Results.NotFound() : Results.BadRequest(error);
         }
 
-        return Results.Ok(new { Id = id, Status = status });
+        return Results.Ok(new { Id = id, request.Status });
     }
 
     private static async Task<IResult> GetReviewQueue(
         HttpContext context,
-        IWildlifeService wildlifeService,
-        int pageSize,
+        ISightingRepository sightingRepository,
+        IValidator<ReviewQueueParameters> validator,
         int page,
+        int pageSize,
         CancellationToken ct)
     {
-        // Note: Role checking should be done via authorization policy
-        var result = await wildlifeService.GetReviewQueueAsync(page, pageSize, ct);
+        var parameters = new ReviewQueueParameters(page, pageSize);
+        var validation = await validator.ValidateAsync(parameters, ct);
+        if (!validation.IsValid)
+        {
+            return Results.ValidationProblem(validation.ToDictionary());
+        }
+
+        var result = await sightingRepository.GetReviewQueueAsync(parameters, ct);
         return Results.Ok(result);
     }
 
     private static async Task<IResult> GetMySightings(
         HttpContext context,
-        IWildlifeService wildlifeService,
-        int pageSize,
+        ISightingRepository sightingRepository,
+        IValidator<UserSightingsParameters> validator,
         int page,
+        int pageSize,
         CancellationToken ct)
     {
         var userIdClaim = context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -212,7 +219,14 @@ public static class WildlifeEndpoints
             return Results.Unauthorized();
         }
 
-        var result = await wildlifeService.GetMySightingsAsync(userId, page, pageSize, ct);
+        var parameters = new UserSightingsParameters(userId, page, pageSize);
+        var validation = await validator.ValidateAsync(parameters, ct);
+        if (!validation.IsValid)
+        {
+            return Results.ValidationProblem(validation.ToDictionary());
+        }
+
+        var result = await sightingRepository.GetSightingsByUserAsync(parameters, ct);
         return Results.Ok(result);
     }
 }
