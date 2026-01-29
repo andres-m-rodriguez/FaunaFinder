@@ -285,14 +285,6 @@
         }
     }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (!_mapInitialized && _sighting is not null && !_isLoading)
-        {
-            _mapInitialized = true;
-            await InitializeMap();
-        }
-    }
 
     private async Task LoadSighting()
     {
@@ -319,6 +311,15 @@
         finally
         {
             _isLoading = false;
+            StateHasChanged();
+
+            // Initialize map after render completes
+            if (_sighting is not null && !_mapInitialized)
+            {
+                _mapInitialized = true;
+                await Task.Delay(50);
+                await InitializeMap();
+            }
         }
     }
 
