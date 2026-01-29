@@ -1,6 +1,6 @@
 using FaunaFinder.Wildlife.Contracts;
 
-namespace FaunaFinder.Client.Services.Api;
+namespace FaunaFinder.Wildlife.Application.Client;
 
 public interface IWildlifeService
 {
@@ -12,6 +12,17 @@ public interface IWildlifeService
     Task<SightingsPage> GetMySightingsAsync(
         int page = 1,
         int pageSize = 12,
+        CancellationToken cancellationToken = default);
+
+    Task<SightingsPage> GetSightingsAsync(
+        int page,
+        int pageSize,
+        string? status = null,
+        CancellationToken cancellationToken = default);
+
+    Task<SightingsPage> GetReviewQueueAsync(
+        int page,
+        int pageSize,
         CancellationToken cancellationToken = default);
 
     Task<CreateSightingResponse> CreateSightingAsync(
