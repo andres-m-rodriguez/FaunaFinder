@@ -1,0 +1,359 @@
+@page "/my-sightings/{Id:int}"
+@using Microsoft.AspNetCore.Authorization
+@using FaunaFinder.Wildlife.Contracts.Dtos
+@inject IWildlifeHttpClient WildlifeHttpClient
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+@inject IAppLocalizer L
+@attribute [Authorize]
+
+<PageTitle>@L["SightingDetail_Title"] - FaunaFinder</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="py-4">
+    @* Back Navigation *@
+    <MudButton Variant="Variant.Text"
+               Color="Color.Primary"
+               StartIcon="@Icons.Material.Filled.ArrowBack"
+               OnClick="NavigateBack"
+               Class="mb-4">
+        @L["Back"]
+    </MudButton>
+
+    @if (_isLoading)
+    {
+        <MudPaper Elevation="2" Class="pa-4 mb-4">
+            <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="40px" Class="mb-3 rounded" />
+            <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="24px" Width="60%" Class="mb-3 rounded" />
+            <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="200px" Class="mb-3 rounded" />
+            <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="100px" Class="rounded" />
+        </MudPaper>
+    }
+    else if (_error is not null)
+    {
+        <MudAlert Severity="Severity.Error" Class="mb-4">@_error</MudAlert>
+    }
+    else if (_sighting is null)
+    {
+        <MudAlert Severity="Severity.Warning" Class="mb-4">@L["SightingDetail_NotFound"]</MudAlert>
+    }
+    else
+    {
+        @* Species Header *@
+        <MudPaper Elevation="2" Class="pa-4 mb-4">
+            <div class="d-flex justify-space-between align-start flex-wrap gap-2">
+                <div>
+                    <MudText Typo="Typo.h4" Color="Color.Primary" GutterBottom="true">
+                        @(_sighting.SpeciesName ?? L["Sightings_UnknownSpecies"])
+                    </MudText>
+                    @if (!string.IsNullOrEmpty(_sighting.SpeciesScientificName))
+                    {
+                        <MudText Typo="Typo.h6" Color="Color.Secondary" Class="font-italic">
+                            @_sighting.SpeciesScientificName
+                        </MudText>
+                    }
+                </div>
+                <MudChip T="string" Size="Size.Medium" Color="@GetStatusColor(_sighting.Status)" Variant="Variant.Filled">
+                    @GetStatusText(_sighting.Status)
+                </MudChip>
+            </div>
+        </MudPaper>
+
+        <MudGrid Spacing="4">
+            @* Left Column - Photo and Map *@
+            <MudItem xs="12" md="6">
+                @* Photo *@
+                <MudPaper Elevation="2" Class="pa-4 mb-4">
+                    <MudText Typo="Typo.h6" Class="mb-3">@L["SightingDetail_Photo"]</MudText>
+                    @if (_sighting.HasPhoto)
+                    {
+                        <MudImage Src="@($"api/wildlife/sightings/{_sighting.Id}/photo")"
+                                  Alt="@L["SightingDetail_PhotoAlt"]"
+                                  ObjectFit="ObjectFit.Cover"
+                                  Class="rounded-lg"
+                                  Style="width: 100%; max-height: 400px;" />
+                    }
+                    else
+                    {
+                        <div class="d-flex justify-center align-center rounded-lg"
+                             style="height: 200px; background-color: var(--mud-palette-background-grey);">
+                            <MudStack AlignItems="AlignItems.Center">
+                                <MudIcon Icon="@Icons.Material.Filled.HideImage" Size="Size.Large" Color="Color.Secondary" />
+                                <MudText Color="Color.Secondary">@L["SightingDetail_NoPhoto"]</MudText>
+                            </MudStack>
+                        </div>
+                    }
+                </MudPaper>
+
+                @* Location Map *@
+                <MudPaper Elevation="2" Class="pa-4">
+                    <MudText Typo="Typo.h6" Class="mb-3">@L["SightingDetail_Location"]</MudText>
+                    <div id="sighting-map" class="rounded-lg" style="height: 300px; width: 100%;"></div>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-2">
+                        @_sighting.Latitude.ToString("F6"), @_sighting.Longitude.ToString("F6")
+                    </MudText>
+                </MudPaper>
+            </MudItem>
+
+            @* Right Column - Details *@
+            <MudItem xs="12" md="6">
+                @* Observation Details *@
+                <MudPaper Elevation="2" Class="pa-4 mb-4">
+                    <MudText Typo="Typo.h6" Class="mb-3">@L["SightingDetail_ObservationDetails"]</MudText>
+
+                    <MudGrid Spacing="2">
+                        <MudItem xs="6">
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">@L["SightingDetail_ObservedAt"]</MudText>
+                            <MudText Typo="Typo.body1">@_sighting.ObservedAt.ToLocalTime().ToString("g")</MudText>
+                        </MudItem>
+                        <MudItem xs="6">
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">@L["SightingDetail_ReportedAt"]</MudText>
+                            <MudText Typo="Typo.body1">@_sighting.CreatedAt.ToLocalTime().ToString("g")</MudText>
+                        </MudItem>
+                        <MudItem xs="6">
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">@L["Sighting_Mode"]</MudText>
+                            <MudText Typo="Typo.body1">@GetModeText(_sighting.Mode)</MudText>
+                        </MudItem>
+                        <MudItem xs="6">
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">@L["Sighting_Confidence"]</MudText>
+                            <MudText Typo="Typo.body1">@GetConfidenceText(_sighting.Confidence)</MudText>
+                        </MudItem>
+                        <MudItem xs="6">
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">@L["Sighting_Count"]</MudText>
+                            <MudText Typo="Typo.body1">@GetCountText(_sighting.Count)</MudText>
+                        </MudItem>
+                        @if (!string.IsNullOrEmpty(_sighting.Weather))
+                        {
+                            <MudItem xs="6">
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">@L["SightingDetail_Weather"]</MudText>
+                                <MudText Typo="Typo.body1">@GetWeatherText(_sighting.Weather)</MudText>
+                            </MudItem>
+                        }
+                    </MudGrid>
+
+                    @* Behaviors *@
+                    @if (_sighting.Behaviors > 0)
+                    {
+                        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-3 mb-1">@L["Sighting_Behavior"]</MudText>
+                        <div class="d-flex flex-wrap gap-1">
+                            @foreach (var behavior in GetBehaviors(_sighting.Behaviors))
+                            {
+                                <MudChip T="string" Size="Size.Small" Color="Color.Primary" Variant="Variant.Outlined">@behavior</MudChip>
+                            }
+                        </div>
+                    }
+
+                    @* Evidence *@
+                    @if (_sighting.Evidence > 0)
+                    {
+                        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-3 mb-1">@L["Sighting_Evidence"]</MudText>
+                        <div class="d-flex flex-wrap gap-1">
+                            @foreach (var evidence in GetEvidence(_sighting.Evidence))
+                            {
+                                <MudChip T="string" Size="Size.Small" Color="Color.Secondary" Variant="Variant.Outlined">@evidence</MudChip>
+                            }
+                        </div>
+                    }
+                </MudPaper>
+
+                @* Notes *@
+                @if (!string.IsNullOrEmpty(_sighting.Notes))
+                {
+                    <MudPaper Elevation="2" Class="pa-4 mb-4">
+                        <MudText Typo="Typo.h6" Class="mb-2">@L["SightingDetail_Notes"]</MudText>
+                        <MudText Typo="Typo.body1" Style="white-space: pre-wrap;">@_sighting.Notes</MudText>
+                    </MudPaper>
+                }
+
+                @* Review Information *@
+                <MudPaper Elevation="2" Class="pa-4">
+                    <MudText Typo="Typo.h6" Class="mb-3">@L["SightingDetail_ReviewStatus"]</MudText>
+
+                    <div class="d-flex align-center gap-2 mb-3">
+                        <MudIcon Icon="@GetStatusIcon(_sighting.Status)" Color="@GetStatusColor(_sighting.Status)" />
+                        <MudText Typo="Typo.body1" Color="@GetStatusColor(_sighting.Status)">
+                            @GetStatusText(_sighting.Status)
+                        </MudText>
+                    </div>
+
+                    @if (_sighting.IsFlaggedForReview)
+                    {
+                        <MudAlert Severity="Severity.Info" Variant="Variant.Text" Dense="true" Class="mb-2">
+                            @L["SightingDetail_FlaggedForReview"]
+                        </MudAlert>
+                    }
+
+                    @if (_sighting.IsNewMunicipalityRecord)
+                    {
+                        <MudAlert Severity="Severity.Success" Variant="Variant.Text" Dense="true" Class="mb-2">
+                            @L["SightingDetail_NewMunicipalityRecord"]
+                        </MudAlert>
+                    }
+
+                    @if (_sighting.ReviewedAt.HasValue)
+                    {
+                        <MudDivider Class="my-3" />
+                        <MudGrid Spacing="2">
+                            <MudItem xs="12">
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">@L["SightingDetail_ReviewedAt"]</MudText>
+                                <MudText Typo="Typo.body1">@_sighting.ReviewedAt.Value.ToLocalTime().ToString("g")</MudText>
+                            </MudItem>
+                            @if (!string.IsNullOrEmpty(_sighting.ReviewNotes))
+                            {
+                                <MudItem xs="12">
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">@L["SightingDetail_ReviewNotes"]</MudText>
+                                    <MudText Typo="Typo.body1" Style="white-space: pre-wrap;">@_sighting.ReviewNotes</MudText>
+                                </MudItem>
+                            }
+                        </MudGrid>
+                    }
+                    else if (_sighting.Status == "Pending")
+                    {
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">
+                            @L["SightingDetail_PendingReviewMessage"]
+                        </MudText>
+                    }
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+    }
+</MudContainer>
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private SightingDetailDto? _sighting;
+    private bool _isLoading = true;
+    private string? _error;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadSighting();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && _sighting is not null)
+        {
+            await InitializeMap();
+        }
+    }
+
+    private async Task LoadSighting()
+    {
+        _isLoading = true;
+        _error = null;
+
+        try
+        {
+            _sighting = await WildlifeHttpClient.GetSightingDetailAsync(Id);
+        }
+        catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+        {
+            _error = L["Sightings_Unauthorized"];
+        }
+        catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+        {
+            _sighting = null;
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private async Task InitializeMap()
+    {
+        if (_sighting is null) return;
+
+        await JS.InvokeVoidAsync("initSightingMap",
+            "sighting-map",
+            _sighting.Latitude,
+            _sighting.Longitude);
+    }
+
+    private void NavigateBack()
+    {
+        Navigation.NavigateTo("/sightings");
+    }
+
+    private Color GetStatusColor(string status) => status switch
+    {
+        "Approved" => Color.Success,
+        "Rejected" => Color.Error,
+        "Pending" => Color.Warning,
+        _ => Color.Default
+    };
+
+    private string GetStatusIcon(string status) => status switch
+    {
+        "Approved" => Icons.Material.Filled.CheckCircle,
+        "Rejected" => Icons.Material.Filled.Cancel,
+        "Pending" => Icons.Material.Filled.Schedule,
+        _ => Icons.Material.Filled.HelpOutline
+    };
+
+    private string GetStatusText(string status) => status switch
+    {
+        "Approved" => L["Sightings_StatusApproved"],
+        "Rejected" => L["Sightings_StatusRejected"],
+        "Pending" => L["Sightings_StatusPending"],
+        _ => status
+    };
+
+    private string GetModeText(string mode) => mode switch
+    {
+        "Casual" => L["Sighting_ModeCasual"],
+        "Survey" => L["Sighting_ModeSurvey"],
+        _ => mode
+    };
+
+    private string GetConfidenceText(string confidence) => confidence switch
+    {
+        "Certain" => L["Sighting_ConfidenceCertain"],
+        "FairlySure" => L["Sighting_ConfidenceFairlySure"],
+        "Unsure" => L["Sighting_ConfidenceUnsure"],
+        _ => confidence
+    };
+
+    private string GetCountText(string count) => count switch
+    {
+        "One" => "1",
+        "TwoToFive" => "2-5",
+        "SixToTwenty" => "6-20",
+        "TwentyPlus" => "20+",
+        _ => count
+    };
+
+    private string GetWeatherText(string weather) => weather switch
+    {
+        "Clear" => L["Sighting_WeatherClear"],
+        "PartlyCloudy" => L["Sighting_WeatherPartlyCloudy"],
+        "Cloudy" => L["Sighting_WeatherCloudy"],
+        "Rainy" => L["Sighting_WeatherRainy"],
+        "Stormy" => L["Sighting_WeatherStormy"],
+        "Foggy" => L["Sighting_WeatherFoggy"],
+        "Windy" => L["Sighting_WeatherWindy"],
+        _ => weather
+    };
+
+    private IEnumerable<string> GetBehaviors(int behaviors)
+    {
+        if ((behaviors & 1) != 0) yield return L["Sighting_BehaviorFeeding"];
+        if ((behaviors & 2) != 0) yield return L["Sighting_BehaviorResting"];
+        if ((behaviors & 4) != 0) yield return L["Sighting_BehaviorMoving"];
+        if ((behaviors & 8) != 0) yield return L["Sighting_BehaviorCalling"];
+    }
+
+    private IEnumerable<string> GetEvidence(int evidence)
+    {
+        if ((evidence & 1) != 0) yield return L["Sighting_EvidenceVisual"];
+        if ((evidence & 2) != 0) yield return L["Sighting_EvidenceHeard"];
+        if ((evidence & 4) != 0) yield return L["Sighting_EvidenceTracks"];
+        if ((evidence & 8) != 0) yield return L["Sighting_EvidencePhoto"];
+    }
+}

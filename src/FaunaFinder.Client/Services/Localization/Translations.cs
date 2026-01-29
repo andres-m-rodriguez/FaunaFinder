@@ -244,6 +244,25 @@ public static class Translations
         ["Sightings_StatusApproved"] = "Approved",
         ["Sightings_StatusRejected"] = "Rejected",
         ["Sightings_StatusPending"] = "Pending",
+
+        // Sighting Detail
+        ["SightingDetail_Title"] = "Sighting Details",
+        ["SightingDetail_NotFound"] = "Sighting not found.",
+        ["SightingDetail_Photo"] = "Photo",
+        ["SightingDetail_PhotoAlt"] = "Sighting photo",
+        ["SightingDetail_NoPhoto"] = "No photo available",
+        ["SightingDetail_Location"] = "Location",
+        ["SightingDetail_ObservationDetails"] = "Observation Details",
+        ["SightingDetail_ObservedAt"] = "Observed",
+        ["SightingDetail_ReportedAt"] = "Reported",
+        ["SightingDetail_Weather"] = "Weather",
+        ["SightingDetail_Notes"] = "Notes",
+        ["SightingDetail_ReviewStatus"] = "Review Status",
+        ["SightingDetail_ReviewedAt"] = "Reviewed",
+        ["SightingDetail_ReviewNotes"] = "Review Notes",
+        ["SightingDetail_FlaggedForReview"] = "This sighting has been flagged for expert review.",
+        ["SightingDetail_NewMunicipalityRecord"] = "This is a new species record for this municipality!",
+        ["SightingDetail_PendingReviewMessage"] = "Your sighting is awaiting review by a teacher or administrator.",
     };
 
     public static IReadOnlyDictionary<string, string> Spanish { get; } = new Dictionary<string, string>
@@ -488,5 +507,24 @@ public static class Translations
         ["Sightings_StatusApproved"] = "Aprobado",
         ["Sightings_StatusRejected"] = "Rechazado",
         ["Sightings_StatusPending"] = "Pendiente",
+
+        // Sighting Detail
+        ["SightingDetail_Title"] = "Detalles del Avistamiento",
+        ["SightingDetail_NotFound"] = "Avistamiento no encontrado.",
+        ["SightingDetail_Photo"] = "Foto",
+        ["SightingDetail_PhotoAlt"] = "Foto del avistamiento",
+        ["SightingDetail_NoPhoto"] = "No hay foto disponible",
+        ["SightingDetail_Location"] = "Ubicación",
+        ["SightingDetail_ObservationDetails"] = "Detalles de la Observación",
+        ["SightingDetail_ObservedAt"] = "Observado",
+        ["SightingDetail_ReportedAt"] = "Reportado",
+        ["SightingDetail_Weather"] = "Clima",
+        ["SightingDetail_Notes"] = "Notas",
+        ["SightingDetail_ReviewStatus"] = "Estado de Revisión",
+        ["SightingDetail_ReviewedAt"] = "Revisado",
+        ["SightingDetail_ReviewNotes"] = "Notas de Revisión",
+        ["SightingDetail_FlaggedForReview"] = "Este avistamiento ha sido marcado para revisión de expertos.",
+        ["SightingDetail_NewMunicipalityRecord"] = "¡Este es un nuevo registro de especie para este municipio!",
+        ["SightingDetail_PendingReviewMessage"] = "Tu avistamiento está esperando revisión por un maestro o administrador.",
     };
 }
