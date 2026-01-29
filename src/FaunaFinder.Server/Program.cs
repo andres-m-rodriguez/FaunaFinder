@@ -1,7 +1,7 @@
-using FaunaFinder.Api.Components;
-using FaunaFinder.Api.Endpoints;
-using FaunaFinder.Api.Services.Export;
-using FaunaFinder.Api.Services.Localization;
+using FaunaFinder.Server.Components;
+using FaunaFinder.Server.Endpoints;
+using FaunaFinder.Server.Services.Export;
+using FaunaFinder.Server.Services.Localization;
 using FaunaFinder.Identity.Api;
 using FaunaFinder.Identity.Application.Extensions;
 using FaunaFinder.Identity.Database.Extensions;

@@ -1,6 +1,6 @@
 using FaunaFinder.Wildlife.Contracts.Dtos;
 
-namespace FaunaFinder.Api.Services.Export;
+namespace FaunaFinder.Server.Services.Export;
 
 public interface IMunicipalityReportService
 {

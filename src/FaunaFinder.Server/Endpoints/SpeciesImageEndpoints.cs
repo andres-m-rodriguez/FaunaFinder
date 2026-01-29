@@ -1,6 +1,6 @@
 using FaunaFinder.Wildlife.DataAccess.Interfaces;
 
-namespace FaunaFinder.Api.Endpoints;
+namespace FaunaFinder.Server.Endpoints;
 
 public static class SpeciesImageEndpoints
 {

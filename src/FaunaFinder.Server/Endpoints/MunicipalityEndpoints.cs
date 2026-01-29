@@ -6,7 +6,7 @@ using FaunaFinder.Wildlife.DataAccess.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using NetTopologySuite.IO.Converters;
 
-namespace FaunaFinder.Api.Endpoints;
+namespace FaunaFinder.Server.Endpoints;
 
 public static class MunicipalityEndpoints
 {

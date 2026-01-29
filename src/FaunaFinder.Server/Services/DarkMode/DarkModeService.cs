@@ -1,4 +1,4 @@
-namespace FaunaFinder.Api.Services.DarkMode;
+namespace FaunaFinder.Server.Services.DarkMode;
 
 public sealed class DarkModeService : IDarkModeService
 {

@@ -1,12 +1,12 @@
 using System.Globalization;
 using System.Text;
-using FaunaFinder.Api.Services.Localization;
+using FaunaFinder.Server.Services.Localization;
 using FaunaFinder.Wildlife.Contracts.Dtos;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
 
-namespace FaunaFinder.Api.Services.Export;
+namespace FaunaFinder.Server.Services.Export;
 
 public class MunicipalityReportService(IAppLocalizer localizer) : IMunicipalityReportService
 {

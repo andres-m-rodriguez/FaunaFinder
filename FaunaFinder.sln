@@ -43,7 +43,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FaunaFinder.Wildlife.Databa
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FaunaFinder.Wildlife.DataAccess", "src\Features\Wildlife\FaunaFinder.Wildlife.DataAccess\FaunaFinder.Wildlife.DataAccess.csproj", "{083F6A1E-9037-6B59-659B-6907636FDC2A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FaunaFinder.Api", "src\FaunaFinder.Api\FaunaFinder.Api.csproj", "{A1B2C3D4-1111-2222-3333-444455558888}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FaunaFinder.Server", "src\FaunaFinder.Server\FaunaFinder.Server.csproj", "{A1B2C3D4-1111-2222-3333-444455558888}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FaunaFinder.Client", "src\FaunaFinder.Client\FaunaFinder.Client.csproj", "{252CC04A-A94A-461B-A9EE-3EC8852B933F}"
 EndProject

@@ -1,6 +1,6 @@
 using FaunaFinder.i18n.Contracts;
 
-namespace FaunaFinder.Api.Services.Localization;
+namespace FaunaFinder.Server.Services.Localization;
 
 public interface IAppLocalizer
 {
