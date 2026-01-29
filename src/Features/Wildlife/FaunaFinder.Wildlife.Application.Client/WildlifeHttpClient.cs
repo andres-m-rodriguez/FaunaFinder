@@ -86,5 +86,31 @@ public sealed class WildlifeHttpClient : IWildlifeHttpClient
         return await _httpClient.GetFromJsonAsync<SightingDetailDto>(url, cancellationToken);
     }
 
+    public async Task<bool> UploadSightingPhotoAsync(
+        int sightingId,
+        byte[] photoData,
+        string contentType,
+        CancellationToken cancellationToken = default)
+    {
+        using var content = new MultipartFormDataContent();
+        using var fileContent = new ByteArrayContent(photoData);
+        fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(contentType);
+        content.Add(fileContent, "photo", "photo" + GetFileExtension(contentType));
+
+        var url = $"/api/wildlife/sightings/{sightingId}/photo";
+        var response = await _httpClient.PatchAsync(url, content, cancellationToken);
+
+        return response.IsSuccessStatusCode;
+    }
+
+    private static string GetFileExtension(string contentType) => contentType.ToLowerInvariant() switch
+    {
+        "image/jpeg" => ".jpg",
+        "image/png" => ".png",
+        "image/gif" => ".gif",
+        "image/webp" => ".webp",
+        _ => ".jpg"
+    };
+
     private record IdResponse(int Id);
 }

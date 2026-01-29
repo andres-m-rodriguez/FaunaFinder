@@ -37,6 +37,11 @@ public static class WildlifeEndpoints
             .RequireAuthorization()
             .WithName("GetSightingDetail");
 
+        group.MapPatch("/sightings/{id:int}/photo", UpdateSightingPhoto)
+            .RequireAuthorization()
+            .DisableAntiforgery()
+            .WithName("UpdateSightingPhoto");
+
         group.MapGet("/my-sightings", GetMySightings)
             .RequireAuthorization()
             .WithName("GetMySightings");
@@ -139,6 +144,58 @@ public static class WildlifeEndpoints
         }
 
         return Results.Ok(sighting);
+    }
+
+    private static async Task<IResult> UpdateSightingPhoto(
+        int id,
+        HttpContext context,
+        ISightingRepository sightingRepository,
+        CancellationToken ct)
+    {
+        var userIdClaim = context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
+        {
+            return Results.Unauthorized();
+        }
+
+        if (!context.Request.HasFormContentType)
+        {
+            return Results.BadRequest("Request must be multipart/form-data");
+        }
+
+        var form = await context.Request.ReadFormAsync(ct);
+        var file = form.Files.GetFile("photo");
+
+        if (file is null || file.Length == 0)
+        {
+            return Results.BadRequest("Photo file is required");
+        }
+
+        // Validate content type
+        var allowedTypes = new[] { "image/jpeg", "image/png", "image/gif", "image/webp" };
+        if (!allowedTypes.Contains(file.ContentType.ToLowerInvariant()))
+        {
+            return Results.BadRequest("Invalid file type. Only JPEG, PNG, GIF, and WebP images are allowed.");
+        }
+
+        // Read file content
+        using var memoryStream = new MemoryStream();
+        await file.CopyToAsync(memoryStream, ct);
+        var photoData = memoryStream.ToArray();
+
+        var (success, error) = await sightingRepository.UpdateSightingPhotoAsync(id, userId, photoData, file.ContentType, ct);
+
+        if (!success)
+        {
+            return error switch
+            {
+                "Sighting not found" => Results.NotFound(),
+                "Not authorized" => Results.Forbid(),
+                _ => Results.BadRequest(error)
+            };
+        }
+
+        return Results.Ok(new { Id = id, Message = "Photo updated successfully" });
     }
 
     private static async Task<IResult> GetSightingPhoto(

@@ -276,4 +276,30 @@ public sealed class SightingRepository(IDbContextFactory<WildlifeDbContext> cont
 
         return (true, null);
     }
+
+    public async Task<(bool Success, string? Error)> UpdateSightingPhotoAsync(int sightingId, int userId, byte[] photoData, string contentType, CancellationToken cancellationToken = default)
+    {
+        await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
+
+        var sighting = await context.Sightings
+            .AsTracking()
+            .FirstOrDefaultAsync(s => s.Id == sightingId, cancellationToken);
+
+        if (sighting is null)
+        {
+            return (false, "Sighting not found");
+        }
+
+        if (sighting.ReportedByUserId != userId)
+        {
+            return (false, "Not authorized");
+        }
+
+        sighting.PhotoData = photoData;
+        sighting.PhotoContentType = contentType;
+
+        await context.SaveChangesAsync(cancellationToken);
+
+        return (true, null);
+    }
 }

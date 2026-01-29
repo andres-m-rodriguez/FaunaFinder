@@ -33,4 +33,10 @@ public interface IWildlifeHttpClient
     Task<SightingDetailDto?> GetSightingDetailAsync(
         int id,
         CancellationToken cancellationToken = default);
+
+    Task<bool> UploadSightingPhotoAsync(
+        int sightingId,
+        byte[] photoData,
+        string contentType,
+        CancellationToken cancellationToken = default);
 }
