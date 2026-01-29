@@ -10,15 +10,15 @@ namespace FaunaFinder.Wildlife.DataAccess.Repositories;
 
 public sealed class SpeciesRepository(IDbContextFactory<WildlifeDbContext> contextFactory) : ISpeciesRepository
 {
-    public async Task<IReadOnlyList<SpeciesSearchResult>> SearchSpeciesAsync(string? query, int limit, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<SpeciesSearchResult>> SearchSpeciesAsync(SpeciesSearchParameters parameters, CancellationToken cancellationToken = default)
     {
         await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
 
         var speciesQuery = context.Species.AsQueryable();
 
-        if (!string.IsNullOrWhiteSpace(query))
+        if (!string.IsNullOrWhiteSpace(parameters.Query))
         {
-            var search = query.ToLowerInvariant();
+            var search = parameters.Query.ToLowerInvariant();
             speciesQuery = speciesQuery.Where(s =>
                 s.CommonName.Any(cn => cn.Value.ToLower().Contains(search)) ||
                 s.ScientificName.ToLower().Contains(search));
@@ -26,7 +26,7 @@ public sealed class SpeciesRepository(IDbContextFactory<WildlifeDbContext> conte
 
         var species = await speciesQuery
             .OrderBy(s => s.ScientificName)
-            .Take(limit)
+            .Take(parameters.Limit)
             .Select(s => new SpeciesSearchResult(
                 s.Id,
                 s.CommonName.ToList(),
