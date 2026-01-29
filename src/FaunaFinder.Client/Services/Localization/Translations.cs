@@ -10,6 +10,7 @@ public static class Translations
         ["Nav_Pueblos"] = "Municipalities",
         ["Nav_About"] = "About",
         ["Nav_Sightings"] = "Sightings",
+        ["Nav_Dashboard"] = "Dashboard",
 
         // Common
         ["AppTitle"] = "FaunaFinder",
@@ -273,6 +274,10 @@ public static class Translations
         ["SightingDetail_InvalidFileType"] = "Invalid file type. Only JPEG, PNG, GIF, and WebP images are allowed.",
         ["SightingDetail_FileTooLarge"] = "File is too large. Maximum size is 5MB.",
 
+        // Dashboard
+        ["Dashboard_Title"] = "Dashboard",
+        ["Dashboard_ReviewTab"] = "Review",
+
         // Review Queue
         ["ReviewQueue_Title"] = "Review Queue",
         ["ReviewQueue_Empty"] = "No pending sightings to review",
@@ -301,6 +306,7 @@ public static class Translations
         ["Nav_Pueblos"] = "Pueblos",
         ["Nav_About"] = "Acerca de",
         ["Nav_Sightings"] = "Avistamientos",
+        ["Nav_Dashboard"] = "Panel",
 
         // Common
         ["AppTitle"] = "FaunaFinder",
@@ -563,6 +569,10 @@ public static class Translations
         ["SightingDetail_PhotoUploadError"] = "Error al subir la foto. Por favor, inténtelo de nuevo.",
         ["SightingDetail_InvalidFileType"] = "Tipo de archivo no válido. Solo se permiten imágenes JPEG, PNG, GIF y WebP.",
         ["SightingDetail_FileTooLarge"] = "El archivo es demasiado grande. El tamaño máximo es 5MB.",
+
+        // Dashboard
+        ["Dashboard_Title"] = "Panel",
+        ["Dashboard_ReviewTab"] = "Revisar",
 
         // Review Queue
         ["ReviewQueue_Title"] = "Cola de Revisión",

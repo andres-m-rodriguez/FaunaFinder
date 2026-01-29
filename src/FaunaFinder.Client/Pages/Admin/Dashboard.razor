@@ -1,122 +1,115 @@
-@page "/review-queue"
+@page "/dashboard"
 @using Microsoft.AspNetCore.Authorization
 @using FaunaFinder.Wildlife.Contracts
 @inject IWildlifeHttpClient WildlifeHttpClient
-@inject NavigationManager Navigation
 @inject IAppLocalizer L
 @inject ISnackbar Snackbar
 @attribute [Authorize(Roles = "Admin,Teacher")]
 
-<PageTitle>@L["ReviewQueue_Title"] - FaunaFinder</PageTitle>
+<PageTitle>@L["Dashboard_Title"] - FaunaFinder</PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.Large" Class="py-4">
-    <MudText Typo="Typo.h4" Class="mb-4">@L["ReviewQueue_Title"]</MudText>
+    <MudText Typo="Typo.h4" Class="mb-4">@L["Dashboard_Title"]</MudText>
 
-    @if (_isLoading)
-    {
-        <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
-    }
-    else if (_error is not null)
-    {
-        <MudAlert Severity="Severity.Error" Class="mb-4">@_error</MudAlert>
-    }
-    else if (_sightings is null || _sightings.Count == 0)
-    {
-        <MudPaper Class="pa-6 text-center">
-            <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Size="Size.Large" Color="Color.Success" Class="mb-4" />
-            <MudText Typo="Typo.h6" Color="Color.Secondary">@L["ReviewQueue_Empty"]</MudText>
-            <MudText Typo="Typo.body2" Color="Color.Secondary">@L["ReviewQueue_EmptyDescription"]</MudText>
-        </MudPaper>
-    }
-    else
-    {
-        <MudGrid>
-            @foreach (SightingListItem sighting in _sightings)
+    <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-4">
+        <MudTabPanel Text="@L["Dashboard_ReviewTab"]" Icon="@Icons.Material.Filled.RateReview">
+            @* Review Queue Content *@
+            @if (_isLoading)
             {
-                <MudItem xs="12" sm="6" md="4">
-                    <MudCard Elevation="2">
-                        @if (sighting.HasPhoto)
-                        {
-                            <MudCardMedia Image="@($"api/wildlife/sightings/{sighting.Id}/photo")" Height="160" />
-                        }
-                        else
-                        {
-                            <div class="d-flex justify-center align-center" style="height: 160px; background-color: var(--mud-palette-background-grey);">
-                                <MudIcon Icon="@Icons.Material.Filled.HideImage" Size="Size.Large" Color="Color.Secondary" />
-                            </div>
-                        }
-                        <MudCardContent>
-                            <MudText Typo="Typo.h6">@(sighting.SpeciesName ?? L["Sightings_UnknownSpecies"])</MudText>
-                            <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-1">
-                                <MudIcon Icon="@Icons.Material.Filled.CalendarToday" Size="Size.Small" Class="mr-1" Style="vertical-align: middle;" />
-                                @L["ReviewQueue_ObservedOn"]: @sighting.ObservedAt.ToLocalTime().ToString("MMM dd, yyyy HH:mm")
-                            </MudText>
-                            <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-1">
-                                <MudIcon Icon="@Icons.Material.Filled.Schedule" Size="Size.Small" Class="mr-1" Style="vertical-align: middle;" />
-                                @L["ReviewQueue_ReportedOn"]: @sighting.CreatedAt.ToLocalTime().ToString("MMM dd, yyyy HH:mm")
-                            </MudText>
-                            <MudText Typo="Typo.body2" Color="Color.Secondary">
-                                <MudIcon Icon="@Icons.Material.Filled.LocationOn" Size="Size.Small" Class="mr-1" Style="vertical-align: middle;" />
-                                @sighting.Latitude.ToString("F4"), @sighting.Longitude.ToString("F4")
-                            </MudText>
-                        </MudCardContent>
-                        <MudCardActions Class="d-flex flex-column pa-3">
-                            <MudButton Variant="Variant.Text"
-                                       Color="Color.Primary"
-                                       FullWidth="true"
-                                       OnClick="() => OpenDetailsDialog(sighting)"
-                                       Class="mb-2">
-                                @L["ReviewQueue_ViewDetails"]
-                            </MudButton>
-                            <div class="d-flex gap-2 w-100">
-                                <MudButton Variant="Variant.Filled"
-                                           Color="Color.Success"
-                                           StartIcon="@Icons.Material.Filled.Check"
-                                           OnClick="() => OpenReviewDialog(sighting, true)"
-                                           Disabled="_isReviewing"
-                                           Class="flex-grow-1">
-                                    @L["ReviewQueue_Approve"]
-                                </MudButton>
-                                <MudButton Variant="Variant.Filled"
-                                           Color="Color.Error"
-                                           StartIcon="@Icons.Material.Filled.Close"
-                                           OnClick="() => OpenReviewDialog(sighting, false)"
-                                           Disabled="_isReviewing"
-                                           Class="flex-grow-1">
-                                    @L["ReviewQueue_Reject"]
-                                </MudButton>
-                            </div>
-                        </MudCardActions>
-                    </MudCard>
-                </MudItem>
+                <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
             }
-        </MudGrid>
+            else if (_error is not null)
+            {
+                <MudAlert Severity="Severity.Error" Class="mb-4">@_error</MudAlert>
+            }
+            else if (_sightings is null || _sightings.Count == 0)
+            {
+                <MudPaper Class="pa-6 text-center" Elevation="0">
+                    <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Size="Size.Large" Color="Color.Success" Class="mb-4" />
+                    <MudText Typo="Typo.h6" Color="Color.Secondary">@L["ReviewQueue_Empty"]</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">@L["ReviewQueue_EmptyDescription"]</MudText>
+                </MudPaper>
+            }
+            else
+            {
+                <MudGrid>
+                    @foreach (var sighting in _sightings)
+                    {
+                        <MudItem xs="12" sm="6" md="4">
+                            <MudCard Elevation="2">
+                                @if (sighting.HasPhoto)
+                                {
+                                    <MudCardMedia Image="@($"/api/wildlife/sightings/{sighting.Id}/photo")" Height="160" />
+                                }
+                                else
+                                {
+                                    <div class="d-flex justify-center align-center" style="height: 160px; background-color: var(--mud-palette-background-grey);">
+                                        <MudIcon Icon="@Icons.Material.Filled.HideImage" Size="Size.Large" Color="Color.Secondary" />
+                                    </div>
+                                }
+                                <MudCardContent>
+                                    <MudText Typo="Typo.h6">@(sighting.SpeciesName ?? L["Sightings_UnknownSpecies"])</MudText>
+                                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-1">
+                                        <MudIcon Icon="@Icons.Material.Filled.CalendarToday" Size="Size.Small" Class="mr-1" Style="vertical-align: middle;" />
+                                        @sighting.ObservedAt.ToLocalTime().ToString("MMM dd, yyyy HH:mm")
+                                    </MudText>
+                                    <MudText Typo="Typo.body2" Color="Color.Secondary">
+                                        <MudIcon Icon="@Icons.Material.Filled.LocationOn" Size="Size.Small" Class="mr-1" Style="vertical-align: middle;" />
+                                        @sighting.Latitude.ToString("F4"), @sighting.Longitude.ToString("F4")
+                                    </MudText>
+                                </MudCardContent>
+                                <MudCardActions Class="d-flex flex-column pa-3">
+                                    <MudButton Variant="Variant.Text"
+                                               Color="Color.Primary"
+                                               FullWidth="true"
+                                               OnClick="() => OpenDetailsDialog(sighting)"
+                                               Class="mb-2">
+                                        @L["ReviewQueue_ViewDetails"]
+                                    </MudButton>
+                                    <div class="d-flex gap-2 w-100">
+                                        <MudButton Variant="Variant.Filled"
+                                                   Color="Color.Success"
+                                                   StartIcon="@Icons.Material.Filled.Check"
+                                                   OnClick="() => OpenReviewDialog(sighting, true)"
+                                                   Disabled="_isReviewing"
+                                                   Class="flex-grow-1">
+                                            @L["ReviewQueue_Approve"]
+                                        </MudButton>
+                                        <MudButton Variant="Variant.Filled"
+                                                   Color="Color.Error"
+                                                   StartIcon="@Icons.Material.Filled.Close"
+                                                   OnClick="() => OpenReviewDialog(sighting, false)"
+                                                   Disabled="_isReviewing"
+                                                   Class="flex-grow-1">
+                                            @L["ReviewQueue_Reject"]
+                                        </MudButton>
+                                    </div>
+                                </MudCardActions>
+                            </MudCard>
+                        </MudItem>
+                    }
+                </MudGrid>
 
-        @if (_totalPages > 1)
-        {
-            <div class="d-flex justify-center mt-4">
-                <MudPagination Count="_totalPages"
-                              Selected="_currentPage"
-                              SelectedChanged="OnPageChanged"
-                              Color="Color.Primary"
-                              Variant="Variant.Filled" />
-            </div>
-        }
-    }
+                @if (_totalPages > 1)
+                {
+                    <div class="d-flex justify-center mt-4">
+                        <MudPagination Count="_totalPages"
+                                      Selected="_currentPage"
+                                      SelectedChanged="OnPageChanged"
+                                      Color="Color.Primary"
+                                      Variant="Variant.Filled" />
+                    </div>
+                }
+            }
+        </MudTabPanel>
+    </MudTabs>
 </MudContainer>
 
 @* Review Dialog *@
 <MudDialog @bind-Visible="_showReviewDialog" Options="_dialogOptions">
     <TitleContent>
         <MudText Typo="Typo.h6">
-            @if (_isApproving)
-            {
-                @L["ReviewQueue_Approve"]
-            }
-            else
-            {
-                @L["ReviewQueue_Reject"]
-            }
+            @(_isApproving ? L["ReviewQueue_Approve"] : L["ReviewQueue_Reject"])
         </MudText>
     </TitleContent>
     <DialogContent>
@@ -142,14 +135,7 @@
             {
                 <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
             }
-            @if (_isApproving)
-            {
-                @L["ReviewQueue_Approve"]
-            }
-            else
-            {
-                @L["ReviewQueue_Reject"]
-            }
+            @(_isApproving ? L["ReviewQueue_Approve"] : L["ReviewQueue_Reject"])
         </MudButton>
     </DialogActions>
 </MudDialog>
@@ -237,7 +223,6 @@
 
 @code {
     private List<SightingListItem>? _sightings;
-    private int _totalCount;
     private int _currentPage = 1;
     private int _totalPages;
     private const int PageSize = 12;
@@ -283,8 +268,7 @@
         {
             var response = await WildlifeHttpClient.GetReviewQueueAsync(_currentPage, PageSize);
             _sightings = response.Items;
-            _totalCount = response.TotalCount;
-            _totalPages = (int)Math.Ceiling((double)_totalCount / PageSize);
+            _totalPages = (int)Math.Ceiling((double)response.TotalCount / PageSize);
         }
         catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Unauthorized ||
                                                ex.StatusCode == System.Net.HttpStatusCode.Forbidden)
