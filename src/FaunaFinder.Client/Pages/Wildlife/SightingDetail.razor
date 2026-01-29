@@ -264,6 +264,7 @@
     private bool _isUploadingPhoto;
     private int _photoVersion;
     private int? _currentUserId;
+    private bool _mapInitialized;
 
     private static readonly string[] AllowedContentTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
     private const long MaxFileSizeBytes = 5 * 1024 * 1024; // 5MB
@@ -286,8 +287,9 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender && _sighting is not null)
+        if (!_mapInitialized && _sighting is not null && !_isLoading)
         {
+            _mapInitialized = true;
             await InitializeMap();
         }
     }
