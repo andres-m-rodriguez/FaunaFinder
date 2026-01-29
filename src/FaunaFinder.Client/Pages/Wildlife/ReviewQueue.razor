@@ -1,0 +1,398 @@
+@page "/review-queue"
+@using Microsoft.AspNetCore.Authorization
+@using FaunaFinder.Wildlife.Contracts
+@inject IWildlifeHttpClient WildlifeHttpClient
+@inject NavigationManager Navigation
+@inject IAppLocalizer L
+@inject ISnackbar Snackbar
+@attribute [Authorize(Roles = "Admin,Teacher")]
+
+<PageTitle>@L["ReviewQueue_Title"] - FaunaFinder</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="py-4">
+    <MudText Typo="Typo.h4" Class="mb-4">@L["ReviewQueue_Title"]</MudText>
+
+    @if (_isLoading)
+    {
+        <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+    }
+    else if (_error is not null)
+    {
+        <MudAlert Severity="Severity.Error" Class="mb-4">@_error</MudAlert>
+    }
+    else if (_sightings is null || _sightings.Count == 0)
+    {
+        <MudPaper Class="pa-6 text-center">
+            <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Size="Size.Large" Color="Color.Success" Class="mb-4" />
+            <MudText Typo="Typo.h6" Color="Color.Secondary">@L["ReviewQueue_Empty"]</MudText>
+            <MudText Typo="Typo.body2" Color="Color.Secondary">@L["ReviewQueue_EmptyDescription"]</MudText>
+        </MudPaper>
+    }
+    else
+    {
+        <MudGrid>
+            @foreach (SightingListItem sighting in _sightings)
+            {
+                <MudItem xs="12" sm="6" md="4">
+                    <MudCard Elevation="2">
+                        @if (sighting.HasPhoto)
+                        {
+                            <MudCardMedia Image="@($"api/wildlife/sightings/{sighting.Id}/photo")" Height="160" />
+                        }
+                        else
+                        {
+                            <div class="d-flex justify-center align-center" style="height: 160px; background-color: var(--mud-palette-background-grey);">
+                                <MudIcon Icon="@Icons.Material.Filled.HideImage" Size="Size.Large" Color="Color.Secondary" />
+                            </div>
+                        }
+                        <MudCardContent>
+                            <MudText Typo="Typo.h6">@(sighting.SpeciesName ?? L["Sightings_UnknownSpecies"])</MudText>
+                            <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-1">
+                                <MudIcon Icon="@Icons.Material.Filled.CalendarToday" Size="Size.Small" Class="mr-1" Style="vertical-align: middle;" />
+                                @L["ReviewQueue_ObservedOn"]: @sighting.ObservedAt.ToLocalTime().ToString("MMM dd, yyyy HH:mm")
+                            </MudText>
+                            <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-1">
+                                <MudIcon Icon="@Icons.Material.Filled.Schedule" Size="Size.Small" Class="mr-1" Style="vertical-align: middle;" />
+                                @L["ReviewQueue_ReportedOn"]: @sighting.CreatedAt.ToLocalTime().ToString("MMM dd, yyyy HH:mm")
+                            </MudText>
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">
+                                <MudIcon Icon="@Icons.Material.Filled.LocationOn" Size="Size.Small" Class="mr-1" Style="vertical-align: middle;" />
+                                @sighting.Latitude.ToString("F4"), @sighting.Longitude.ToString("F4")
+                            </MudText>
+                        </MudCardContent>
+                        <MudCardActions Class="d-flex flex-column pa-3">
+                            <MudButton Variant="Variant.Text"
+                                       Color="Color.Primary"
+                                       FullWidth="true"
+                                       OnClick="() => OpenDetailsDialog(sighting)"
+                                       Class="mb-2">
+                                @L["ReviewQueue_ViewDetails"]
+                            </MudButton>
+                            <div class="d-flex gap-2 w-100">
+                                <MudButton Variant="Variant.Filled"
+                                           Color="Color.Success"
+                                           StartIcon="@Icons.Material.Filled.Check"
+                                           OnClick="() => OpenReviewDialog(sighting, true)"
+                                           Disabled="_isReviewing"
+                                           Class="flex-grow-1">
+                                    @L["ReviewQueue_Approve"]
+                                </MudButton>
+                                <MudButton Variant="Variant.Filled"
+                                           Color="Color.Error"
+                                           StartIcon="@Icons.Material.Filled.Close"
+                                           OnClick="() => OpenReviewDialog(sighting, false)"
+                                           Disabled="_isReviewing"
+                                           Class="flex-grow-1">
+                                    @L["ReviewQueue_Reject"]
+                                </MudButton>
+                            </div>
+                        </MudCardActions>
+                    </MudCard>
+                </MudItem>
+            }
+        </MudGrid>
+
+        @if (_totalPages > 1)
+        {
+            <div class="d-flex justify-center mt-4">
+                <MudPagination Count="_totalPages"
+                              Selected="_currentPage"
+                              SelectedChanged="OnPageChanged"
+                              Color="Color.Primary"
+                              Variant="Variant.Filled" />
+            </div>
+        }
+    }
+</MudContainer>
+
+@* Review Dialog *@
+<MudDialog @bind-Visible="_showReviewDialog" Options="_dialogOptions">
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            @if (_isApproving)
+            {
+                @L["ReviewQueue_Approve"]
+            }
+            else
+            {
+                @L["ReviewQueue_Reject"]
+            }
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudText Typo="Typo.body1" Class="mb-4">
+            @(_selectedSighting?.SpeciesName ?? L["Sightings_UnknownSpecies"])
+        </MudText>
+        <MudTextField @bind-Value="_reviewNotes"
+                      Label="@L["ReviewQueue_ReviewNotes"]"
+                      Placeholder="@L["ReviewQueue_ReviewNotesPlaceholder"]"
+                      Variant="Variant.Outlined"
+                      Lines="3"
+                      FullWidth="true" />
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Text" OnClick="CloseReviewDialog" Disabled="_isReviewing">
+            @L["Back"]
+        </MudButton>
+        <MudButton Variant="Variant.Filled"
+                   Color="@(_isApproving ? Color.Success : Color.Error)"
+                   OnClick="SubmitReview"
+                   Disabled="_isReviewing">
+            @if (_isReviewing)
+            {
+                <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+            }
+            @if (_isApproving)
+            {
+                @L["ReviewQueue_Approve"]
+            }
+            else
+            {
+                @L["ReviewQueue_Reject"]
+            }
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@* Details Dialog *@
+<MudDialog @bind-Visible="_showDetailsDialog" Options="_detailsDialogOptions">
+    <TitleContent>
+        <MudText Typo="Typo.h6">@(_detailsSighting?.SpeciesName ?? L["Sightings_UnknownSpecies"])</MudText>
+    </TitleContent>
+    <DialogContent>
+        @if (_detailsSighting is not null)
+        {
+            <MudGrid>
+                <MudItem xs="12" sm="6">
+                    @if (_detailsSighting.HasPhoto)
+                    {
+                        <MudImage Src="@($"/api/wildlife/sightings/{_detailsSighting.Id}/photo")"
+                                  Alt="Sighting photo"
+                                  ObjectFit="ObjectFit.Cover"
+                                  Class="rounded-lg mb-3"
+                                  Style="width: 100%; max-height: 300px;" />
+                    }
+                    else
+                    {
+                        <div class="d-flex justify-center align-center rounded-lg mb-3"
+                             style="height: 200px; background-color: var(--mud-palette-background-grey);">
+                            <MudStack AlignItems="AlignItems.Center">
+                                <MudIcon Icon="@Icons.Material.Filled.HideImage" Size="Size.Large" Color="Color.Secondary" />
+                                <MudText Color="Color.Secondary">@L["SightingDetail_NoPhoto"]</MudText>
+                            </MudStack>
+                        </div>
+                    }
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    <MudSimpleTable Dense="true" Hover="true">
+                        <tbody>
+                            <tr>
+                                <td><strong>@L["ReviewQueue_ObservedOn"]</strong></td>
+                                <td>@_detailsSighting.ObservedAt.ToLocalTime().ToString("g")</td>
+                            </tr>
+                            <tr>
+                                <td><strong>@L["ReviewQueue_ReportedOn"]</strong></td>
+                                <td>@_detailsSighting.CreatedAt.ToLocalTime().ToString("g")</td>
+                            </tr>
+                            <tr>
+                                <td><strong>@L["ReviewQueue_Location"]</strong></td>
+                                <td>@_detailsSighting.Latitude.ToString("F6"), @_detailsSighting.Longitude.ToString("F6")</td>
+                            </tr>
+                            <tr>
+                                <td><strong>@L["Sighting_Mode"]</strong></td>
+                                <td>@GetModeText(_detailsSighting.Mode)</td>
+                            </tr>
+                            <tr>
+                                <td><strong>@L["Sighting_Confidence"]</strong></td>
+                                <td>@GetConfidenceText(_detailsSighting.Confidence)</td>
+                            </tr>
+                            <tr>
+                                <td><strong>@L["Sighting_Count"]</strong></td>
+                                <td>@GetCountText(_detailsSighting.Count)</td>
+                            </tr>
+                        </tbody>
+                    </MudSimpleTable>
+                </MudItem>
+            </MudGrid>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Text" OnClick="CloseDetailsDialog">
+            @L["ReviewQueue_CloseDetails"]
+        </MudButton>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Success"
+                   StartIcon="@Icons.Material.Filled.Check"
+                   OnClick="() => { CloseDetailsDialog(); OpenReviewDialog(_detailsSighting!, true); }">
+            @L["ReviewQueue_Approve"]
+        </MudButton>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Error"
+                   StartIcon="@Icons.Material.Filled.Close"
+                   OnClick="() => { CloseDetailsDialog(); OpenReviewDialog(_detailsSighting!, false); }">
+            @L["ReviewQueue_Reject"]
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    private List<SightingListItem>? _sightings;
+    private int _totalCount;
+    private int _currentPage = 1;
+    private int _totalPages;
+    private const int PageSize = 12;
+    private bool _isLoading = true;
+    private bool _isReviewing;
+    private string? _error;
+
+    // Review dialog state
+    private bool _showReviewDialog;
+    private SightingListItem? _selectedSighting;
+    private bool _isApproving;
+    private string? _reviewNotes;
+
+    // Details dialog state
+    private bool _showDetailsDialog;
+    private SightingListItem? _detailsSighting;
+
+    private readonly DialogOptions _dialogOptions = new()
+    {
+        MaxWidth = MaxWidth.Small,
+        FullWidth = true,
+        CloseOnEscapeKey = true
+    };
+
+    private readonly DialogOptions _detailsDialogOptions = new()
+    {
+        MaxWidth = MaxWidth.Medium,
+        FullWidth = true,
+        CloseOnEscapeKey = true
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadSightings();
+    }
+
+    private async Task LoadSightings()
+    {
+        _isLoading = true;
+        _error = null;
+
+        try
+        {
+            var response = await WildlifeHttpClient.GetReviewQueueAsync(_currentPage, PageSize);
+            _sightings = response.Items;
+            _totalCount = response.TotalCount;
+            _totalPages = (int)Math.Ceiling((double)_totalCount / PageSize);
+        }
+        catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Unauthorized ||
+                                               ex.StatusCode == System.Net.HttpStatusCode.Forbidden)
+        {
+            _error = L["ReviewQueue_Unauthorized"];
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private async Task OnPageChanged(int page)
+    {
+        _currentPage = page;
+        await LoadSightings();
+    }
+
+    private void OpenReviewDialog(SightingListItem sighting, bool approve)
+    {
+        _selectedSighting = sighting;
+        _isApproving = approve;
+        _reviewNotes = null;
+        _showReviewDialog = true;
+    }
+
+    private void CloseReviewDialog()
+    {
+        _showReviewDialog = false;
+        _selectedSighting = null;
+        _reviewNotes = null;
+    }
+
+    private void OpenDetailsDialog(SightingListItem sighting)
+    {
+        _detailsSighting = sighting;
+        _showDetailsDialog = true;
+    }
+
+    private void CloseDetailsDialog()
+    {
+        _showDetailsDialog = false;
+        _detailsSighting = null;
+    }
+
+    private async Task SubmitReview()
+    {
+        if (_selectedSighting is null) return;
+
+        _isReviewing = true;
+
+        try
+        {
+            var status = _isApproving ? "Approved" : "Rejected";
+            var success = await WildlifeHttpClient.ReviewSightingAsync(
+                _selectedSighting.Id,
+                status,
+                _reviewNotes);
+
+            if (success)
+            {
+                Snackbar.Add(
+                    _isApproving ? L["ReviewQueue_ApproveSuccess"] : L["ReviewQueue_RejectSuccess"],
+                    _isApproving ? Severity.Success : Severity.Info);
+
+                CloseReviewDialog();
+                await LoadSightings();
+            }
+            else
+            {
+                Snackbar.Add(L["ReviewQueue_ReviewError"], Severity.Error);
+            }
+        }
+        catch (Exception)
+        {
+            Snackbar.Add(L["ReviewQueue_ReviewError"], Severity.Error);
+        }
+        finally
+        {
+            _isReviewing = false;
+        }
+    }
+
+    private string GetModeText(string mode) => mode switch
+    {
+        "Casual" => L["Sighting_ModeCasual"],
+        "Survey" => L["Sighting_ModeSurvey"],
+        _ => mode
+    };
+
+    private string GetConfidenceText(string confidence) => confidence switch
+    {
+        "Certain" => L["Sighting_ConfidenceCertain"],
+        "FairlySure" => L["Sighting_ConfidenceFairlySure"],
+        "Unsure" => L["Sighting_ConfidenceUnsure"],
+        _ => confidence
+    };
+
+    private string GetCountText(string count) => count switch
+    {
+        "One" => "1",
+        "TwoToFive" => "2-5",
+        "SixToTwenty" => "6-20",
+        "TwentyPlus" => "20+",
+        _ => count
+    };
+}

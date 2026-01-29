@@ -1,6 +1,7 @@
 using System.Net.Http.Json;
 using FaunaFinder.Wildlife.Contracts;
 using FaunaFinder.Wildlife.Contracts.Dtos;
+using FaunaFinder.Wildlife.Contracts.Requests;
 
 namespace FaunaFinder.Wildlife.Application.Client;
 
@@ -99,6 +100,19 @@ public sealed class WildlifeHttpClient : IWildlifeHttpClient
 
         var url = $"/api/wildlife/sightings/{sightingId}/photo";
         var response = await _httpClient.PatchAsync(url, content, cancellationToken);
+
+        return response.IsSuccessStatusCode;
+    }
+
+    public async Task<bool> ReviewSightingAsync(
+        int sightingId,
+        string status,
+        string? reviewNotes,
+        CancellationToken cancellationToken = default)
+    {
+        var request = new ReviewSightingRequest(status, reviewNotes);
+        var url = $"/api/wildlife/sightings/{sightingId}/review";
+        var response = await _httpClient.PostAsJsonAsync(url, request, cancellationToken);
 
         return response.IsSuccessStatusCode;
     }

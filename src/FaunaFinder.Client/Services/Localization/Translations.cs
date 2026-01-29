@@ -272,6 +272,25 @@ public static class Translations
         ["SightingDetail_PhotoUploadError"] = "Failed to upload photo. Please try again.",
         ["SightingDetail_InvalidFileType"] = "Invalid file type. Only JPEG, PNG, GIF, and WebP images are allowed.",
         ["SightingDetail_FileTooLarge"] = "File is too large. Maximum size is 5MB.",
+
+        // Review Queue
+        ["ReviewQueue_Title"] = "Review Queue",
+        ["ReviewQueue_Empty"] = "No pending sightings to review",
+        ["ReviewQueue_EmptyDescription"] = "All sightings have been reviewed. Check back later for new submissions.",
+        ["ReviewQueue_Approve"] = "Approve",
+        ["ReviewQueue_Reject"] = "Reject",
+        ["ReviewQueue_ReviewNotes"] = "Review Notes (optional)",
+        ["ReviewQueue_ReviewNotesPlaceholder"] = "Add notes about this review...",
+        ["ReviewQueue_ApproveSuccess"] = "Sighting approved successfully",
+        ["ReviewQueue_RejectSuccess"] = "Sighting rejected successfully",
+        ["ReviewQueue_ReviewError"] = "Failed to review sighting. Please try again.",
+        ["ReviewQueue_ObservedOn"] = "Observed",
+        ["ReviewQueue_ReportedOn"] = "Reported",
+        ["ReviewQueue_Location"] = "Location",
+        ["ReviewQueue_ViewDetails"] = "View Details",
+        ["ReviewQueue_CloseDetails"] = "Close",
+        ["ReviewQueue_Unauthorized"] = "You do not have permission to access this page.",
+        ["Nav_ReviewQueue"] = "Review Queue",
     };
 
     public static IReadOnlyDictionary<string, string> Spanish { get; } = new Dictionary<string, string>
@@ -544,5 +563,24 @@ public static class Translations
         ["SightingDetail_PhotoUploadError"] = "Error al subir la foto. Por favor, inténtelo de nuevo.",
         ["SightingDetail_InvalidFileType"] = "Tipo de archivo no válido. Solo se permiten imágenes JPEG, PNG, GIF y WebP.",
         ["SightingDetail_FileTooLarge"] = "El archivo es demasiado grande. El tamaño máximo es 5MB.",
+
+        // Review Queue
+        ["ReviewQueue_Title"] = "Cola de Revisión",
+        ["ReviewQueue_Empty"] = "No hay avistamientos pendientes de revisión",
+        ["ReviewQueue_EmptyDescription"] = "Todos los avistamientos han sido revisados. Vuelve más tarde para ver nuevas presentaciones.",
+        ["ReviewQueue_Approve"] = "Aprobar",
+        ["ReviewQueue_Reject"] = "Rechazar",
+        ["ReviewQueue_ReviewNotes"] = "Notas de Revisión (opcional)",
+        ["ReviewQueue_ReviewNotesPlaceholder"] = "Agregar notas sobre esta revisión...",
+        ["ReviewQueue_ApproveSuccess"] = "Avistamiento aprobado exitosamente",
+        ["ReviewQueue_RejectSuccess"] = "Avistamiento rechazado exitosamente",
+        ["ReviewQueue_ReviewError"] = "Error al revisar el avistamiento. Por favor, inténtelo de nuevo.",
+        ["ReviewQueue_ObservedOn"] = "Observado",
+        ["ReviewQueue_ReportedOn"] = "Reportado",
+        ["ReviewQueue_Location"] = "Ubicación",
+        ["ReviewQueue_ViewDetails"] = "Ver Detalles",
+        ["ReviewQueue_CloseDetails"] = "Cerrar",
+        ["ReviewQueue_Unauthorized"] = "No tienes permiso para acceder a esta página.",
+        ["Nav_ReviewQueue"] = "Cola de Revisión",
     };
 }
