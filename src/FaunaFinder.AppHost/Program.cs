@@ -1,3 +1,5 @@
+using Azure.Provisioning.AppContainers;
+
 var builder = DistributedApplication.CreateBuilder(args);
 
 // PostgreSQL database server
@@ -26,7 +28,16 @@ var seeder = builder.AddProject<Projects.FaunaFinder_Seeder>("seeder")
     .WithReference(wildlifeDb)
     .WaitFor(mainDb)
     .WaitFor(identityDb)
-    .WaitFor(wildlifeDb);
+    .WaitFor(wildlifeDb)
+    .PublishAsAzureContainerAppJob((infra, job) =>
+    {
+        job.Configuration = new ContainerAppJobConfiguration
+        {
+            TriggerType = ContainerAppJobTriggerType.Manual,
+            ReplicaTimeout = 1800, // 30 min max runtime
+            ReplicaRetryLimit = 0  // no retries
+        };
+    });
 
 // API + WASM Client
 builder.AddProject<Projects.FaunaFinder_Server>("server")
