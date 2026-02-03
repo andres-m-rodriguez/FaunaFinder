@@ -1,6 +1,7 @@
 using FaunaFinder.Identity.Application.Services;
 using FaunaFinder.Identity.Contracts.Errors;
 using FaunaFinder.Identity.Contracts.Requests;
+using FluentValidation;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -31,9 +32,14 @@ public static class AuthEndpoints
 
     private static async Task<IResult> Register(
         RegisterRequest request,
+        IValidator<RegisterRequest> validator,
         IAuthService authService,
         CancellationToken cancellationToken)
     {
+        var validation = await validator.ValidateAsync(request, cancellationToken);
+        if (!validation.IsValid)
+            return Results.ValidationProblem(validation.ToDictionary());
+
         var result = await authService.RegisterAsync(request, cancellationToken);
 
         return result.Match<IResult>(
@@ -47,9 +53,14 @@ public static class AuthEndpoints
 
     private static async Task<IResult> Login(
         LoginRequest request,
+        IValidator<LoginRequest> validator,
         IAuthService authService,
         CancellationToken cancellationToken)
     {
+        var validation = await validator.ValidateAsync(request, cancellationToken);
+        if (!validation.IsValid)
+            return Results.ValidationProblem(validation.ToDictionary());
+
         var result = await authService.LoginAsync(request, cancellationToken);
 
         return result.Match<IResult>(
@@ -112,9 +123,14 @@ public static class AuthEndpoints
     private static async Task<IResult> UpdateUserStatus(
         int id,
         UpdateUserStatusRequest request,
+        IValidator<UpdateUserStatusRequest> validator,
         IAuthService authService,
         CancellationToken cancellationToken)
     {
+        var validation = await validator.ValidateAsync(request, cancellationToken);
+        if (!validation.IsValid)
+            return Results.ValidationProblem(validation.ToDictionary());
+
         var result = await authService.UpdateUserStatusAsync(id, request, cancellationToken);
 
         return result.Match<IResult>(

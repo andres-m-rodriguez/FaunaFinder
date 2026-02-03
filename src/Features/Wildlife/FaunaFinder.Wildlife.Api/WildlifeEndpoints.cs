@@ -48,11 +48,11 @@ public static class WildlifeEndpoints
 
         // Teacher/Admin endpoints
         group.MapPost("/sightings/{id:int}/review", ReviewSighting)
-            .RequireAuthorization()
+            .RequireAuthorization(policy => policy.RequireRole("Admin", "Teacher"))
             .WithName("ReviewSighting");
 
         group.MapGet("/review-queue", GetReviewQueue)
-            .RequireAuthorization()
+            .RequireAuthorization(policy => policy.RequireRole("Admin", "Teacher"))
             .WithName("GetReviewQueue");
 
         return app;

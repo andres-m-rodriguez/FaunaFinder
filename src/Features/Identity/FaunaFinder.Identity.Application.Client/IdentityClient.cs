@@ -13,15 +13,18 @@ public sealed class IdentityClient : IIdentityClient
     private readonly HttpClient _httpClient;
     private readonly IValidator<LoginRequest> _loginValidator;
     private readonly IValidator<RegisterRequest> _registerValidator;
+    private readonly IValidator<UpdateUserStatusRequest> _updateUserStatusValidator;
 
     public IdentityClient(
         HttpClient httpClient,
         IValidator<LoginRequest> loginValidator,
-        IValidator<RegisterRequest> registerValidator)
+        IValidator<RegisterRequest> registerValidator,
+        IValidator<UpdateUserStatusRequest> updateUserStatusValidator)
     {
         _httpClient = httpClient;
         _loginValidator = loginValidator;
         _registerValidator = registerValidator;
+        _updateUserStatusValidator = updateUserStatusValidator;
     }
 
     public async Task<LoginResult> LoginAsync(LoginRequest request, CancellationToken cancellationToken = default)
@@ -139,6 +142,16 @@ public sealed class IdentityClient : IIdentityClient
 
     public async Task<UpdateUserStatusResult> UpdateUserStatusAsync(int userId, UpdateUserStatusRequest request, CancellationToken cancellationToken = default)
     {
+        var validationResult = await _updateUserStatusValidator.ValidateAsync(request, cancellationToken);
+        if (!validationResult.IsValid)
+        {
+            return new ValidationError(
+                "Validation failed",
+                validationResult.Errors
+                    .GroupBy(e => e.PropertyName)
+                    .ToDictionary(g => g.Key, g => g.Select(e => e.ErrorMessage).ToArray()));
+        }
+
         var response = await _httpClient.PutAsJsonAsync($"api/auth/users/{userId}/status", request, cancellationToken);
 
         if (response.IsSuccessStatusCode)

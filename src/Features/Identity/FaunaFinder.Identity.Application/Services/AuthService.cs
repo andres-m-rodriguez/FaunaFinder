@@ -124,14 +124,20 @@ public sealed class AuthService(
             return new ForbiddenError();
 
         var currentUserId = GetCurrentUserId();
-        if (currentUserId == userId)
+        if (currentUserId is null || currentUserId == userId)
             return new ForbiddenError();
+
+        if (!Enum.TryParse<UserStatus>(request.Status, out var newStatus))
+            return new ValidationError("Invalid status", new Dictionary<string, string[]>
+            {
+                ["Status"] = [$"'{request.Status}' is not a valid status"]
+            });
 
         var user = await userManager.FindByIdAsync(userId.ToString());
         if (user is null)
             return new UserNotFoundError(userId);
 
-        user.Status = Enum.Parse<UserStatus>(request.Status);
+        user.Status = newStatus;
         user.UpdatedAt = DateTime.UtcNow;
 
         await userManager.UpdateSecurityStampAsync(user);

@@ -1,6 +1,8 @@
 using FaunaFinder.Identity.Application.Services;
+using FaunaFinder.Identity.Contracts.Requests;
 using FaunaFinder.Identity.Database;
 using FaunaFinder.Identity.Database.Models;
+using FluentValidation;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -31,6 +33,9 @@ public static class IdentityApplicationConfigurator
         {
             options.ValidationInterval = TimeSpan.FromMinutes(1);
         });
+
+        // Register validators from Contracts assembly
+        services.AddValidatorsFromAssemblyContaining<LoginRequestValidator>();
 
         // Add application services
         services.AddScoped<IAuthService, AuthService>();
