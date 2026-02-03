@@ -2,11 +2,7 @@
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
 @using FaunaFinder.Wildlife.Contracts
-@using FaunaFinder.Identity.Application.Client
-@using FaunaFinder.Identity.Contracts.Requests
-@using FaunaFinder.Identity.Contracts.Responses
 @inject IWildlifeHttpClient WildlifeHttpClient
-@inject IIdentityClient IdentityClient
 @inject IAppLocalizer L
 @inject ISnackbar Snackbar
 @inject AuthenticationStateProvider AuthStateProvider
@@ -18,197 +14,157 @@
 <MudContainer MaxWidth="MaxWidth.Large" Class="py-4">
     <MudText Typo="Typo.h4" Class="mb-4">@L["Dashboard_Title"]</MudText>
 
-    <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-4">
-        <MudTabPanel Text="@L["Dashboard_ReviewTab"]" Icon="@Icons.Material.Filled.RateReview">
-            @* Review Queue Content *@
-            @if (_isLoading)
-            {
-                <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
-            }
-            else if (_error is not null)
-            {
-                <MudAlert Severity="Severity.Error" Class="mb-4">@_error</MudAlert>
-            }
-            else if (_sightings is null || _sightings.Count == 0)
-            {
-                <MudPaper Class="pa-6 text-center" Elevation="0">
-                    <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Size="Size.Large" Color="Color.Success" Class="mb-4" />
-                    <MudText Typo="Typo.h6" Color="Color.Secondary">@L["ReviewQueue_Empty"]</MudText>
-                    <MudText Typo="Typo.body2" Color="Color.Secondary">@L["ReviewQueue_EmptyDescription"]</MudText>
-                </MudPaper>
-            }
-            else
-            {
-                <MudGrid>
-                    @foreach (var sighting in _sightings)
-                    {
-                        <MudItem xs="12" sm="6" md="4">
-                            <MudCard Elevation="2">
-                                @if (sighting.HasPhoto)
-                                {
-                                    <MudCardMedia Image="@($"/api/wildlife/sightings/{sighting.Id}/photo")" Height="160" />
-                                }
-                                else
-                                {
-                                    <div class="d-flex justify-center align-center" style="height: 160px; background-color: var(--mud-palette-background-grey);">
-                                        <MudIcon Icon="@Icons.Material.Filled.HideImage" Size="Size.Large" Color="Color.Secondary" />
-                                    </div>
-                                }
-                                <MudCardContent>
-                                    <MudText Typo="Typo.h6">@(sighting.SpeciesName ?? L["Sightings_UnknownSpecies"])</MudText>
-                                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-1">
-                                        <MudIcon Icon="@Icons.Material.Filled.CalendarToday" Size="Size.Small" Class="mr-1" Style="vertical-align: middle;" />
-                                        @sighting.ObservedAt.ToLocalTime().ToString("MMM dd, yyyy HH:mm")
-                                    </MudText>
-                                    <MudText Typo="Typo.body2" Color="Color.Secondary">
-                                        <MudIcon Icon="@Icons.Material.Filled.LocationOn" Size="Size.Small" Class="mr-1" Style="vertical-align: middle;" />
-                                        @sighting.Latitude.ToString("F4"), @sighting.Longitude.ToString("F4")
-                                    </MudText>
-                                </MudCardContent>
-                                <MudCardActions Class="d-flex flex-column pa-3">
-                                    <MudButton Variant="Variant.Text"
-                                               Color="Color.Primary"
-                                               FullWidth="true"
-                                               OnClick="() => OpenDetailsDialog(sighting)"
-                                               Class="mb-2">
-                                        @L["ReviewQueue_ViewDetails"]
-                                    </MudButton>
-                                    <div class="d-flex gap-2 w-100">
-                                        <MudButton Variant="Variant.Filled"
-                                                   Color="Color.Success"
-                                                   StartIcon="@Icons.Material.Filled.Check"
-                                                   OnClick="() => OpenReviewDialog(sighting, true)"
-                                                   Disabled="_isReviewing"
-                                                   Class="flex-grow-1">
-                                            @L["ReviewQueue_Approve"]
-                                        </MudButton>
-                                        <MudButton Variant="Variant.Filled"
-                                                   Color="Color.Error"
-                                                   StartIcon="@Icons.Material.Filled.Close"
-                                                   OnClick="() => OpenReviewDialog(sighting, false)"
-                                                   Disabled="_isReviewing"
-                                                   Class="flex-grow-1">
-                                            @L["ReviewQueue_Reject"]
-                                        </MudButton>
-                                    </div>
-                                </MudCardActions>
-                            </MudCard>
-                        </MudItem>
-                    }
-                </MudGrid>
+    @* Review Queue Content *@
+    <MudText Typo="Typo.h5" Class="mb-3">@L["ReviewQueue_Title"]</MudText>
 
-                @if (_totalPages > 1)
-                {
-                    <div class="d-flex justify-center mt-4">
-                        <MudPagination Count="_totalPages"
-                                      Selected="_currentPage"
-                                      SelectedChanged="OnPageChanged"
-                                      Color="Color.Primary"
-                                      Variant="Variant.Filled" />
-                    </div>
-                }
-            }
-        </MudTabPanel>
-
-        <AuthorizeView Roles="Admin">
-            <MudTabPanel Text="@L["Admin_Title"]" Icon="@Icons.Material.Filled.People">
-                @* Access Requests Section *@
-                <MudText Typo="Typo.h6" Class="mb-3">@L["Admin_AccessRequests"]</MudText>
-
-                @if (_isLoadingAccessRequests)
-                {
-                    <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
-                }
-                else if (_accessRequestsError is not null)
-                {
-                    <MudAlert Severity="Severity.Error" Class="mb-4">@_accessRequestsError</MudAlert>
-                }
-                else if (_accessRequests is null || _accessRequests.Length == 0)
-                {
-                    <MudPaper Class="pa-4 text-center mb-6" Elevation="0">
-                        <MudText Typo="Typo.body2" Color="Color.Secondary">@L["Admin_NoAccessRequests"]</MudText>
-                    </MudPaper>
-                }
-                else
-                {
-                    <MudTable Items="_accessRequests" Dense="true" Hover="true" Striped="true" Elevation="2" Class="mb-6">
-                        <HeaderContent>
-                            <MudTh>@L["Admin_DisplayName"]</MudTh>
-                            <MudTh>@L["Admin_Email"]</MudTh>
-                            <MudTh>@L["Admin_Message"]</MudTh>
-                            <MudTh>@L["Admin_CreatedAt"]</MudTh>
-                            <MudTh>@L["Admin_Actions"]</MudTh>
-                        </HeaderContent>
-                        <RowTemplate Context="request">
-                            <MudTd DataLabel="@L["Admin_DisplayName"]">@request.DisplayName</MudTd>
-                            <MudTd DataLabel="@L["Admin_Email"]">@request.Email</MudTd>
-                            <MudTd DataLabel="@L["Admin_Message"]">@(request.Message ?? "-")</MudTd>
-                            <MudTd DataLabel="@L["Admin_CreatedAt"]">@request.CreatedAt.ToLocalTime().ToString("g")</MudTd>
-                            <MudTd DataLabel="@L["Admin_Actions"]">
-                                <MudButton Variant="Variant.Outlined"
-                                           Size="Size.Small"
-                                           Color="Color.Primary"
-                                           StartIcon="@Icons.Material.Filled.Info"
-                                           OnClick="@(() => Navigation.NavigateTo($"/dashboard/access-requests/{request.Id}"))">
-                                    @L["Admin_ViewDetails"]
+    @if (_isLoading)
+    {
+        <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+    }
+    else if (_error is not null)
+    {
+        <MudAlert Severity="Severity.Error" Class="mb-4">@_error</MudAlert>
+    }
+    else if (_sightings is null || _sightings.Count == 0)
+    {
+        <MudPaper Class="pa-6 text-center" Elevation="0">
+            <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Size="Size.Large" Color="Color.Success" Class="mb-4" />
+            <MudText Typo="Typo.h6" Color="Color.Secondary">@L["ReviewQueue_Empty"]</MudText>
+            <MudText Typo="Typo.body2" Color="Color.Secondary">@L["ReviewQueue_EmptyDescription"]</MudText>
+        </MudPaper>
+    }
+    else
+    {
+        <MudGrid>
+            @foreach (var sighting in _sightings)
+            {
+                <MudItem xs="12" sm="6" md="4">
+                    <MudCard Elevation="2">
+                        @if (sighting.HasPhoto)
+                        {
+                            <MudCardMedia Image="@($"/api/wildlife/sightings/{sighting.Id}/photo")" Height="160" />
+                        }
+                        else
+                        {
+                            <div class="d-flex justify-center align-center" style="height: 160px; background-color: var(--mud-palette-background-grey);">
+                                <MudIcon Icon="@Icons.Material.Filled.HideImage" Size="Size.Large" Color="Color.Secondary" />
+                            </div>
+                        }
+                        <MudCardContent>
+                            <MudText Typo="Typo.h6">@(sighting.SpeciesName ?? L["Sightings_UnknownSpecies"])</MudText>
+                            <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-1">
+                                <MudIcon Icon="@Icons.Material.Filled.CalendarToday" Size="Size.Small" Class="mr-1" Style="vertical-align: middle;" />
+                                @sighting.ObservedAt.ToLocalTime().ToString("MMM dd, yyyy HH:mm")
+                            </MudText>
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">
+                                <MudIcon Icon="@Icons.Material.Filled.LocationOn" Size="Size.Small" Class="mr-1" Style="vertical-align: middle;" />
+                                @sighting.Latitude.ToString("F4"), @sighting.Longitude.ToString("F4")
+                            </MudText>
+                        </MudCardContent>
+                        <MudCardActions Class="d-flex flex-column pa-3">
+                            <MudButton Variant="Variant.Text"
+                                       Color="Color.Primary"
+                                       FullWidth="true"
+                                       OnClick="() => OpenDetailsDialog(sighting)"
+                                       Class="mb-2">
+                                @L["ReviewQueue_ViewDetails"]
+                            </MudButton>
+                            <div class="d-flex gap-2 w-100">
+                                <MudButton Variant="Variant.Filled"
+                                           Color="Color.Success"
+                                           StartIcon="@Icons.Material.Filled.Check"
+                                           OnClick="() => OpenReviewDialog(sighting, true)"
+                                           Disabled="_isReviewing"
+                                           Class="flex-grow-1">
+                                    @L["ReviewQueue_Approve"]
                                 </MudButton>
-                            </MudTd>
-                        </RowTemplate>
-                    </MudTable>
-                }
-
-                @* Users Section *@
-                <MudText Typo="Typo.h6" Class="mb-3">@L["Admin_Title"]</MudText>
-
-                @if (_isLoadingUsers)
-                {
-                    <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
-                }
-                else if (_usersError is not null)
-                {
-                    <MudAlert Severity="Severity.Error" Class="mb-4">@_usersError</MudAlert>
-                }
-                else if (_users is null || _users.Length == 0)
-                {
-                    <MudPaper Class="pa-6 text-center" Elevation="0">
-                        <MudIcon Icon="@Icons.Material.Filled.PeopleOutline" Size="Size.Large" Color="Color.Secondary" Class="mb-4" />
-                        <MudText Typo="Typo.h6" Color="Color.Secondary">@L["Admin_NoUsers"]</MudText>
-                    </MudPaper>
-                }
-                else
-                {
-                    <MudTable Items="_users" Dense="true" Hover="true" Striped="true" Elevation="2">
-                        <HeaderContent>
-                            <MudTh>@L["Admin_DisplayName"]</MudTh>
-                            <MudTh>@L["Admin_Email"]</MudTh>
-                            <MudTh>@L["Admin_Role"]</MudTh>
-                            <MudTh>@L["Admin_Actions"]</MudTh>
-                        </HeaderContent>
-                        <RowTemplate Context="user">
-                            <MudTd DataLabel="@L["Admin_DisplayName"]">@user.DisplayName</MudTd>
-                            <MudTd DataLabel="@L["Admin_Email"]">@user.Email</MudTd>
-                            <MudTd DataLabel="@L["Admin_Role"]">
-                                <MudChip T="string"
-                                         Size="Size.Small"
-                                         Color="@GetRoleColor(user.Role)">
-                                    @GetRoleText(user.Role)
-                                </MudChip>
-                            </MudTd>
-                            <MudTd DataLabel="@L["Admin_Actions"]">
-                                <MudButton Variant="Variant.Outlined"
-                                           Size="Size.Small"
-                                           Color="Color.Primary"
-                                           StartIcon="@Icons.Material.Filled.Info"
-                                           OnClick="@(() => Navigation.NavigateTo($"/dashboard/users/{user.Id}"))">
-                                    @L["Admin_ViewDetails"]
+                                <MudButton Variant="Variant.Filled"
+                                           Color="Color.Error"
+                                           StartIcon="@Icons.Material.Filled.Close"
+                                           OnClick="() => OpenReviewDialog(sighting, false)"
+                                           Disabled="_isReviewing"
+                                           Class="flex-grow-1">
+                                    @L["ReviewQueue_Reject"]
                                 </MudButton>
-                            </MudTd>
-                        </RowTemplate>
-                    </MudTable>
-                }
-            </MudTabPanel>
-        </AuthorizeView>
-    </MudTabs>
+                            </div>
+                        </MudCardActions>
+                    </MudCard>
+                </MudItem>
+            }
+        </MudGrid>
+
+        @if (_totalPages > 1)
+        {
+            <div class="d-flex justify-center mt-4">
+                <MudPagination Count="_totalPages"
+                              Selected="_currentPage"
+                              SelectedChanged="OnPageChanged"
+                              Color="Color.Primary"
+                              Variant="Variant.Filled" />
+            </div>
+        }
+    }
+
+    @* Admin Navigation Cards *@
+    <AuthorizeView Roles="Admin">
+        <MudDivider Class="my-6" />
+        <MudText Typo="Typo.h5" Class="mb-2">@L["Dashboard_AdminPanel_Title"]</MudText>
+        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-4">@L["Dashboard_AdminPanel_Description"]</MudText>
+
+        <MudGrid>
+            <MudItem xs="12" sm="6" md="4">
+                <MudCard Elevation="2">
+                    <MudCardContent Class="d-flex flex-column align-center pa-6">
+                        <MudAvatar Size="Size.Large" Color="Color.Primary" Variant="Variant.Filled" Class="mb-3">
+                            <MudIcon Icon="@Icons.Material.Filled.People" />
+                        </MudAvatar>
+                        <MudText Typo="Typo.h6" Align="Align.Center">@L["Dashboard_Card_UserManagement"]</MudText>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary" Align="Align.Center">@L["Dashboard_Card_UserManagement_Desc"]</MudText>
+                    </MudCardContent>
+                    <MudCardActions Class="justify-end pa-3">
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" EndIcon="@Icons.Material.Filled.ArrowForward"
+                                   OnClick="@(() => Navigation.NavigateTo("/admin/users"))">
+                            @L["Admin_ViewDetails"]
+                        </MudButton>
+                    </MudCardActions>
+                </MudCard>
+            </MudItem>
+            <MudItem xs="12" sm="6" md="4">
+                <MudCard Elevation="2">
+                    <MudCardContent Class="d-flex flex-column align-center pa-6">
+                        <MudAvatar Size="Size.Large" Color="Color.Warning" Variant="Variant.Filled" Class="mb-3">
+                            <MudIcon Icon="@Icons.Material.Filled.HowToReg" />
+                        </MudAvatar>
+                        <MudText Typo="Typo.h6" Align="Align.Center">@L["Dashboard_Card_UserRequests"]</MudText>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary" Align="Align.Center">@L["Dashboard_Card_UserRequests_Desc"]</MudText>
+                    </MudCardContent>
+                    <MudCardActions Class="justify-end pa-3">
+                        <MudButton Variant="Variant.Filled" Color="Color.Warning" EndIcon="@Icons.Material.Filled.ArrowForward"
+                                   OnClick="@(() => Navigation.NavigateTo("/admin/access-requests"))">
+                            @L["Admin_ViewDetails"]
+                        </MudButton>
+                    </MudCardActions>
+                </MudCard>
+            </MudItem>
+            <MudItem xs="12" sm="6" md="4">
+                <MudCard Elevation="2">
+                    <MudCardContent Class="d-flex flex-column align-center pa-6">
+                        <MudAvatar Size="Size.Large" Color="Color.Success" Variant="Variant.Filled" Class="mb-3">
+                            <MudIcon Icon="@Icons.Material.Filled.Visibility" />
+                        </MudAvatar>
+                        <MudText Typo="Typo.h6" Align="Align.Center">@L["Dashboard_Card_UsersSightings"]</MudText>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary" Align="Align.Center">@L["Dashboard_Card_UsersSightings_Desc"]</MudText>
+                    </MudCardContent>
+                    <MudCardActions Class="justify-end pa-3">
+                        <MudButton Variant="Variant.Filled" Color="Color.Success" EndIcon="@Icons.Material.Filled.ArrowForward"
+                                   OnClick="@(() => Navigation.NavigateTo("/admin/sightings"))">
+                            @L["Admin_ViewDetails"]
+                        </MudButton>
+                    </MudCardActions>
+                </MudCard>
+            </MudItem>
+        </MudGrid>
+    </AuthorizeView>
 </MudContainer>
 
 @* Review Dialog *@
@@ -346,16 +302,6 @@
     private bool _showDetailsDialog;
     private SightingListItem? _detailsSighting;
 
-    // User management state
-    private UserInfo[]? _users;
-    private bool _isLoadingUsers;
-    private string? _usersError;
-
-    // Access requests state
-    private AccessRequestInfo[]? _accessRequests;
-    private bool _isLoadingAccessRequests;
-    private string? _accessRequestsError;
-
     private readonly DialogOptions _dialogOptions = new()
     {
         MaxWidth = MaxWidth.Small,
@@ -373,13 +319,6 @@
     protected override async Task OnInitializedAsync()
     {
         await LoadSightings();
-
-        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
-        if (authState.User.IsInRole("Admin"))
-        {
-            await LoadAccessRequests();
-            await LoadUsers();
-        }
     }
 
     private async Task LoadSightings()
@@ -478,72 +417,6 @@
             _isReviewing = false;
         }
     }
-
-    private async Task LoadAccessRequests()
-    {
-        _isLoadingAccessRequests = true;
-        _accessRequestsError = null;
-
-        try
-        {
-            var result = await IdentityClient.GetPendingAccessRequestsAsync();
-            result.Switch(
-                requests => _accessRequests = requests,
-                forbidden => _accessRequestsError = L["Admin_AccessDeniedMessage"],
-                unexpected => _accessRequestsError = unexpected.Message
-            );
-        }
-        catch (Exception ex)
-        {
-            _accessRequestsError = ex.Message;
-        }
-        finally
-        {
-            _isLoadingAccessRequests = false;
-        }
-    }
-
-    private async Task LoadUsers()
-    {
-        _isLoadingUsers = true;
-        _usersError = null;
-
-        try
-        {
-            var result = await IdentityClient.GetAllUsersAsync();
-            result.Switch(
-                users => _users = users,
-                forbidden => _usersError = L["Admin_AccessDeniedMessage"],
-                unexpected => _usersError = unexpected.Message
-            );
-        }
-        catch (Exception ex)
-        {
-            _usersError = ex.Message;
-        }
-        finally
-        {
-            _isLoadingUsers = false;
-        }
-    }
-
-    private Color GetRoleColor(string role) => role switch
-    {
-        "Admin" => Color.Error,
-        "Contributor" => Color.Primary,
-        "Teacher" => Color.Primary,
-        "Student" => Color.Info,
-        "Viewer" => Color.Default,
-        _ => Color.Default
-    };
-
-    private string GetRoleText(string role) => role switch
-    {
-        "Admin" => L["Admin_Admin"],
-        "Contributor" => L["Admin_Contributor"],
-        "Viewer" => L["Admin_Viewer"],
-        _ => role
-    };
 
     private string GetModeText(string mode) => mode switch
     {

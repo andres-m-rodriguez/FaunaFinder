@@ -1,5 +1,6 @@
 using FaunaFinder.Identity.Contracts.Errors;
 using FaunaFinder.Identity.Contracts.Responses;
+using FaunaFinder.Pagination.Contracts;
 using OneOf;
 
 namespace FaunaFinder.Identity.Contracts.Results;
@@ -23,3 +24,6 @@ public partial class GetAccessRequestsResult : OneOfBase<AccessRequestInfo[], Fo
 
 [GenerateOneOf]
 public partial class UpdateAccessRequestStatusResult : OneOfBase<AccessRequestInfo, AccessRequestNotFoundError, ForbiddenError, ValidationError, UnexpectedError>;
+
+[GenerateOneOf]
+public partial class GetUsersCursorPageResult : OneOfBase<CursorPage<UserInfo>, ForbiddenError, UnexpectedError>;

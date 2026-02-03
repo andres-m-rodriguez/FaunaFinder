@@ -12,4 +12,8 @@
     <PackageReference Include="OneOf.SourceGenerator" Version="3.0.271" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Common\FaunaFinder.Pagination.Contracts\FaunaFinder.Pagination.Contracts.csproj" />
+  </ItemGroup>
+
 </Project>

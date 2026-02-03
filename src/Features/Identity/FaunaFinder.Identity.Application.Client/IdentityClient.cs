@@ -4,6 +4,7 @@ using FaunaFinder.Identity.Contracts.Errors;
 using FaunaFinder.Identity.Contracts.Requests;
 using FaunaFinder.Identity.Contracts.Responses;
 using FaunaFinder.Identity.Contracts.Results;
+using FaunaFinder.Pagination.Contracts;
 using FluentValidation;
 
 namespace FaunaFinder.Identity.Application.Client;
@@ -116,6 +117,31 @@ public sealed class IdentityClient : IIdentityClient
         {
             var users = await response.Content.ReadFromJsonAsync<UserInfo[]>(cancellationToken);
             return users!;
+        }
+
+        if (response.StatusCode == HttpStatusCode.Forbidden)
+            return new ForbiddenError();
+
+        return new UnexpectedError(await response.Content.ReadAsStringAsync(cancellationToken));
+    }
+
+    public async Task<GetUsersCursorPageResult> GetUsersCursorPageAsync(CursorPageRequest request, CancellationToken cancellationToken = default)
+    {
+        var queryParams = new List<string> { $"pageSize={request.PageSize}" };
+
+        if (!string.IsNullOrEmpty(request.Cursor))
+            queryParams.Add($"cursor={Uri.EscapeDataString(request.Cursor)}");
+
+        if (!string.IsNullOrEmpty(request.Search))
+            queryParams.Add($"search={Uri.EscapeDataString(request.Search)}");
+
+        var url = $"api/auth/users/search?{string.Join("&", queryParams)}";
+        var response = await _httpClient.GetAsync(url, cancellationToken);
+
+        if (response.IsSuccessStatusCode)
+        {
+            var page = await response.Content.ReadFromJsonAsync<CursorPage<UserInfo>>(cancellationToken);
+            return page!;
         }
 
         if (response.StatusCode == HttpStatusCode.Forbidden)

@@ -1,6 +1,7 @@
 using FaunaFinder.Identity.Application.Services;
 using FaunaFinder.Identity.Contracts.Requests;
 using FaunaFinder.Identity.Contracts.Results;
+using FaunaFinder.Pagination.Contracts;
 using FluentValidation;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -21,6 +22,9 @@ public static class AuthEndpoints
         group.MapGet("/me", GetCurrentUser);
 
         group.MapGet("/users", GetAllUsers)
+            .RequireAuthorization(policy => policy.RequireRole("Admin"));
+
+        group.MapGet("/users/search", GetUsersCursorPage)
             .RequireAuthorization(policy => policy.RequireRole("Admin"));
 
         group.MapGet("/access-requests/pending", GetPendingAccessRequests)
@@ -116,6 +120,23 @@ public static class AuthEndpoints
 
         return result.Match<IResult>(
             requests => Results.Ok(requests),
+            forbidden => Results.Forbid(),
+            unexpected => Results.Problem(unexpected.Message, statusCode: StatusCodes.Status500InternalServerError)
+        );
+    }
+
+    private static async Task<IResult> GetUsersCursorPage(
+        string? cursor,
+        int? pageSize,
+        string? search,
+        IAuthService authService,
+        CancellationToken cancellationToken)
+    {
+        var request = new CursorPageRequest(cursor, pageSize ?? 20, search);
+        var result = await authService.GetUsersCursorPageAsync(request, cancellationToken);
+
+        return result.Match<IResult>(
+            page => Results.Ok(page),
             forbidden => Results.Forbid(),
             unexpected => Results.Problem(unexpected.Message, statusCode: StatusCodes.Status500InternalServerError)
         );

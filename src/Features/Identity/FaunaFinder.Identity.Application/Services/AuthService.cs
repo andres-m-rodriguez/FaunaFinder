@@ -5,6 +5,7 @@ using FaunaFinder.Identity.Contracts.Results;
 using FaunaFinder.Identity.Database;
 using FaunaFinder.Identity.Database.Models;
 using FaunaFinder.Identity.DataAccess.Interfaces;
+using FaunaFinder.Pagination.Contracts;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -114,6 +115,15 @@ public sealed class AuthService(
 
         var users = await userRepository.GetAllAsync(cancellationToken);
         return users.ToArray();
+    }
+
+    public async Task<GetUsersCursorPageResult> GetUsersCursorPageAsync(CursorPageRequest request, CancellationToken cancellationToken = default)
+    {
+        if (!await IsCurrentUserAdminAsync())
+            return new ForbiddenError();
+
+        var page = await userRepository.GetCursorPageAsync(request, cancellationToken);
+        return page;
     }
 
     public async Task<GetAccessRequestsResult> GetPendingAccessRequestsAsync(CancellationToken cancellationToken = default)

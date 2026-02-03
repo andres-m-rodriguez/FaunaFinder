@@ -289,6 +289,17 @@ public static class Translations
         // Dashboard
         ["Dashboard_Title"] = "Dashboard",
         ["Dashboard_ReviewTab"] = "Review",
+        ["Dashboard_AdminPanel_Title"] = "Administration",
+        ["Dashboard_AdminPanel_Description"] = "Manage users, review requests, and oversee platform activity.",
+        ["Dashboard_Card_UserManagement"] = "User Management",
+        ["Dashboard_Card_UserManagement_Desc"] = "View, search, and manage all user accounts.",
+        ["Dashboard_Card_UserRequests"] = "User Requests",
+        ["Dashboard_Card_UserRequests_Desc"] = "Review and approve pending registration requests.",
+        ["Dashboard_Card_UsersSightings"] = "Users Sightings",
+        ["Dashboard_Card_UsersSightings_Desc"] = "View and manage sightings reported by users.",
+
+        // Admin Users
+        ["Admin_Users_SearchPlaceholder"] = "Search by name or email...",
 
         // Review Queue
         ["ReviewQueue_Title"] = "Review Queue",
@@ -597,6 +608,17 @@ public static class Translations
         // Dashboard
         ["Dashboard_Title"] = "Panel",
         ["Dashboard_ReviewTab"] = "Revisar",
+        ["Dashboard_AdminPanel_Title"] = "Administracion",
+        ["Dashboard_AdminPanel_Description"] = "Gestiona usuarios, revisa solicitudes y supervisa la actividad de la plataforma.",
+        ["Dashboard_Card_UserManagement"] = "Gestion de Usuarios",
+        ["Dashboard_Card_UserManagement_Desc"] = "Ver, buscar y gestionar todas las cuentas de usuario.",
+        ["Dashboard_Card_UserRequests"] = "Solicitudes de Usuarios",
+        ["Dashboard_Card_UserRequests_Desc"] = "Revisar y aprobar solicitudes de registro pendientes.",
+        ["Dashboard_Card_UsersSightings"] = "Avistamientos de Usuarios",
+        ["Dashboard_Card_UsersSightings_Desc"] = "Ver y gestionar avistamientos reportados por usuarios.",
+
+        // Admin Users
+        ["Admin_Users_SearchPlaceholder"] = "Buscar por nombre o correo...",
 
         // Review Queue
         ["ReviewQueue_Title"] = "Cola de Revisión",
