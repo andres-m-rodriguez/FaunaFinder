@@ -135,6 +135,18 @@ public sealed class AuthService(
         return requests.ToArray();
     }
 
+    public async Task<GetAccessRequestByIdResult> GetAccessRequestByIdAsync(int id, CancellationToken cancellationToken = default)
+    {
+        if (!await IsCurrentUserAdminAsync())
+            return new ForbiddenError();
+
+        var accessRequest = await accessRequestRepository.GetByIdAsync(id, cancellationToken);
+        if (accessRequest is null)
+            return new AccessRequestNotFoundError(id);
+
+        return accessRequest;
+    }
+
     public async Task<GetAccessRequestsCursorPageResult> GetAccessRequestsCursorPageAsync(AccessRequestPageRequest request, CancellationToken cancellationToken = default)
     {
         if (!await IsCurrentUserAdminAsync())

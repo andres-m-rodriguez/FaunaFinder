@@ -29,4 +29,7 @@ public partial class UpdateAccessRequestStatusResult : OneOfBase<AccessRequestIn
 public partial class GetUsersCursorPageResult : OneOfBase<CursorPage<UserInfo>, ForbiddenError, UnexpectedError>;
 
 [GenerateOneOf]
+public partial class GetAccessRequestByIdResult : OneOfBase<AccessRequestInfo, AccessRequestNotFoundError, ForbiddenError, UnexpectedError>;
+
+[GenerateOneOf]
 public partial class GetAccessRequestsCursorPageResult : OneOfBase<CursorPage<AccessRequestInfo>, ForbiddenError, UnexpectedError>;

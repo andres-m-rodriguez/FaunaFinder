@@ -178,6 +178,24 @@ public sealed class IdentityClient : IIdentityClient
         return new UnexpectedError(await response.Content.ReadAsStringAsync(cancellationToken));
     }
 
+    public async Task<GetAccessRequestByIdResult> GetAccessRequestByIdAsync(int id, CancellationToken cancellationToken = default)
+    {
+        var response = await _httpClient.GetAsync($"api/auth/access-requests/{id}", cancellationToken);
+
+        if (response.IsSuccessStatusCode)
+        {
+            var accessRequest = await response.Content.ReadFromJsonAsync<AccessRequestInfo>(cancellationToken);
+            return accessRequest!;
+        }
+
+        return response.StatusCode switch
+        {
+            HttpStatusCode.NotFound => new AccessRequestNotFoundError(id),
+            HttpStatusCode.Forbidden => new ForbiddenError(),
+            _ => new UnexpectedError(await response.Content.ReadAsStringAsync(cancellationToken))
+        };
+    }
+
     public async Task<GetAccessRequestsResult> GetPendingAccessRequestsAsync(CancellationToken cancellationToken = default)
     {
         var response = await _httpClient.GetAsync("api/auth/access-requests/pending", cancellationToken);
