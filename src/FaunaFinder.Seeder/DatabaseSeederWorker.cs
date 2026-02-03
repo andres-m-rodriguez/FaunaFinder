@@ -6,6 +6,7 @@ namespace FaunaFinder.Seeder;
 
 public sealed class DatabaseSeederWorker(
     IServiceProvider serviceProvider,
+    IHostEnvironment environment,
     IHostApplicationLifetime lifetime,
     ILogger<DatabaseSeederWorker> logger
 ) : BackgroundService
@@ -17,7 +18,7 @@ public sealed class DatabaseSeederWorker(
             await using var scope = serviceProvider.CreateAsyncScope();
 
             // Apply migrations and seed all databases
-            await MigrateFeatureDatabaseAsync<IdentityDbContext>(scope.ServiceProvider, "Identity", stoppingToken);
+            await MigrateAndSeedIdentityDatabaseAsync(scope.ServiceProvider, stoppingToken);
             await MigrateAndSeedWildlifeDatabaseAsync(scope.ServiceProvider, stoppingToken);
 
             logger.LogInformation("All database migrations and seeding completed successfully.");
@@ -45,15 +46,19 @@ public sealed class DatabaseSeederWorker(
         logger.LogInformation("Wildlife database seeding completed.");
     }
 
-    private async Task MigrateFeatureDatabaseAsync<TContext>(
-        IServiceProvider services,
-        string featureName,
-        CancellationToken stoppingToken) where TContext : DbContext
+    private async Task MigrateAndSeedIdentityDatabaseAsync(IServiceProvider services, CancellationToken stoppingToken)
     {
-        var context = services.GetRequiredService<TContext>();
+        var context = services.GetRequiredService<IdentityDbContext>();
 
-        logger.LogInformation("Applying {Feature} database migrations...", featureName);
+        logger.LogInformation("Applying Identity database migrations...");
         await context.Database.MigrateAsync(stoppingToken);
-        logger.LogInformation("{Feature} database migrations applied.", featureName);
+        logger.LogInformation("Identity database migrations applied.");
+
+        if (environment.IsDevelopment())
+        {
+            logger.LogInformation("Seeding admin user (development only)...");
+            await IdentitySeeder.SeedAsync(context, stoppingToken);
+            logger.LogInformation("Identity database seeding completed.");
+        }
     }
 }
