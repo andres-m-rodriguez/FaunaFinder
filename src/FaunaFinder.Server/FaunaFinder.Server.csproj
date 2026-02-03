@@ -27,6 +27,7 @@
     <ProjectReference Include="..\FaunaFinder.ServiceDefaults\FaunaFinder.ServiceDefaults.csproj" />
     <ProjectReference Include="..\Features\Identity\FaunaFinder.Identity.Api\FaunaFinder.Identity.Api.csproj" />
     <ProjectReference Include="..\Features\Identity\FaunaFinder.Identity.Application\FaunaFinder.Identity.Application.csproj" />
+    <ProjectReference Include="..\Features\Identity\FaunaFinder.Identity.DataAccess\FaunaFinder.Identity.DataAccess.csproj" />
     <ProjectReference Include="..\Features\Identity\FaunaFinder.Identity.Database\FaunaFinder.Identity.Database.csproj" />
     <ProjectReference Include="..\Features\Wildlife\FaunaFinder.Wildlife.Api\FaunaFinder.Wildlife.Api.csproj" />
     <ProjectReference Include="..\Features\Wildlife\FaunaFinder.Wildlife.Contracts\FaunaFinder.Wildlife.Contracts.csproj" />

@@ -104,4 +104,74 @@ public sealed class IdentityClient : IIdentityClient
 
         return new UnexpectedError(await response.Content.ReadAsStringAsync(cancellationToken));
     }
+
+    public async Task<GetUsersResult> GetAllUsersAsync(CancellationToken cancellationToken = default)
+    {
+        var response = await _httpClient.GetAsync("api/auth/users", cancellationToken);
+
+        if (response.IsSuccessStatusCode)
+        {
+            var users = await response.Content.ReadFromJsonAsync<UserInfo[]>(cancellationToken);
+            return users!;
+        }
+
+        if (response.StatusCode == HttpStatusCode.Forbidden)
+            return new ForbiddenError();
+
+        return new UnexpectedError(await response.Content.ReadAsStringAsync(cancellationToken));
+    }
+
+    public async Task<GetPendingUsersResult> GetPendingUsersAsync(CancellationToken cancellationToken = default)
+    {
+        var response = await _httpClient.GetAsync("api/auth/users/pending", cancellationToken);
+
+        if (response.IsSuccessStatusCode)
+        {
+            var users = await response.Content.ReadFromJsonAsync<UserInfo[]>(cancellationToken);
+            return users!;
+        }
+
+        if (response.StatusCode == HttpStatusCode.Forbidden)
+            return new ForbiddenError();
+
+        return new UnexpectedError(await response.Content.ReadAsStringAsync(cancellationToken));
+    }
+
+    public async Task<UpdateUserStatusResult> UpdateUserStatusAsync(int userId, UpdateUserStatusRequest request, CancellationToken cancellationToken = default)
+    {
+        var response = await _httpClient.PutAsJsonAsync($"api/auth/users/{userId}/status", request, cancellationToken);
+
+        if (response.IsSuccessStatusCode)
+        {
+            var user = await response.Content.ReadFromJsonAsync<UserInfo>(cancellationToken);
+            return user!;
+        }
+
+        return response.StatusCode switch
+        {
+            HttpStatusCode.NotFound => new UserNotFoundError(userId),
+            HttpStatusCode.Forbidden => new ForbiddenError(),
+            HttpStatusCode.BadRequest => new ValidationError("Validation failed", new Dictionary<string, string[]>()),
+            _ => new UnexpectedError(await response.Content.ReadAsStringAsync(cancellationToken))
+        };
+    }
+
+    public async Task<UpdateUserRoleResult> UpdateUserRoleAsync(int userId, UpdateUserRoleRequest request, CancellationToken cancellationToken = default)
+    {
+        var response = await _httpClient.PutAsJsonAsync($"api/auth/users/{userId}/role", request, cancellationToken);
+
+        if (response.IsSuccessStatusCode)
+        {
+            var user = await response.Content.ReadFromJsonAsync<UserInfo>(cancellationToken);
+            return user!;
+        }
+
+        return response.StatusCode switch
+        {
+            HttpStatusCode.NotFound => new UserNotFoundError(userId),
+            HttpStatusCode.Forbidden => new ForbiddenError(),
+            HttpStatusCode.BadRequest => new ValidationError("Validation failed", new Dictionary<string, string[]>()),
+            _ => new UnexpectedError(await response.Content.ReadAsStringAsync(cancellationToken))
+        };
+    }
 }

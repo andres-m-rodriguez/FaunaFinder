@@ -4,6 +4,7 @@ using FaunaFinder.Server.Services.Export;
 using FaunaFinder.Server.Services.Localization;
 using FaunaFinder.Identity.Api;
 using FaunaFinder.Identity.Application.Extensions;
+using FaunaFinder.Identity.DataAccess.Extensions;
 using FaunaFinder.Identity.Database.Extensions;
 using FaunaFinder.Wildlife.Api;
 using FaunaFinder.Wildlife.Application.Extensions;
@@ -26,6 +27,7 @@ QuestPDF.Settings.License = LicenseType.Community;
 // Identity feature
 builder.AddIdentityDatabase();
 builder.Services.AddIdentityApplication();
+builder.Services.AddIdentityDataAccess();
 
 // Wildlife feature
 builder.AddWildlifeDatabase();

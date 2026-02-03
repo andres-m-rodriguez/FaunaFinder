@@ -3,6 +3,7 @@ using FaunaFinder.Identity.Contracts.Requests;
 using FaunaFinder.Identity.Contracts.Responses;
 using FaunaFinder.Identity.Contracts.Results;
 using FaunaFinder.Identity.Database.Models;
+using FaunaFinder.Identity.DataAccess.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 
@@ -11,7 +12,8 @@ namespace FaunaFinder.Identity.Application.Services;
 public sealed class AuthService(
     UserManager<User> userManager,
     SignInManager<User> signInManager,
-    IHttpContextAccessor httpContextAccessor
+    IHttpContextAccessor httpContextAccessor,
+    IUserRepository userRepository
 ) : IAuthService
 {
     public async Task<RegisterResult> RegisterAsync(RegisterRequest request, CancellationToken cancellationToken = default)
@@ -92,6 +94,71 @@ public sealed class AuthService(
         }
 
         return ToUserInfo(user);
+    }
+
+    public async Task<GetUsersResult> GetAllUsersAsync(CancellationToken cancellationToken = default)
+    {
+        if (!IsCurrentUserAdmin())
+            return new ForbiddenError();
+
+        var users = await userRepository.GetAllAsync(cancellationToken);
+        return users.ToArray();
+    }
+
+    public async Task<GetPendingUsersResult> GetPendingUsersAsync(CancellationToken cancellationToken = default)
+    {
+        if (!IsCurrentUserAdmin())
+            return new ForbiddenError();
+
+        var users = await userRepository.GetPendingUsersAsync(cancellationToken);
+        return users.ToArray();
+    }
+
+    public async Task<UpdateUserStatusResult> UpdateUserStatusAsync(int userId, UpdateUserStatusRequest request, CancellationToken cancellationToken = default)
+    {
+        if (!IsCurrentUserAdmin())
+            return new ForbiddenError();
+
+        var user = await userManager.FindByIdAsync(userId.ToString());
+        if (user is null)
+            return new UserNotFoundError(userId);
+
+        user.Status = Enum.Parse<UserStatus>(request.Status);
+        user.UpdatedAt = DateTime.UtcNow;
+
+        var result = await userManager.UpdateAsync(user);
+        if (!result.Succeeded)
+            return new UnexpectedError(string.Join(", ", result.Errors.Select(e => e.Description)));
+
+        return ToUserInfo(user);
+    }
+
+    public async Task<UpdateUserRoleResult> UpdateUserRoleAsync(int userId, UpdateUserRoleRequest request, CancellationToken cancellationToken = default)
+    {
+        if (!IsCurrentUserAdmin())
+            return new ForbiddenError();
+
+        var user = await userManager.FindByIdAsync(userId.ToString());
+        if (user is null)
+            return new UserNotFoundError(userId);
+
+        user.Role = Enum.Parse<UserRole>(request.Role);
+        user.UpdatedAt = DateTime.UtcNow;
+
+        var result = await userManager.UpdateAsync(user);
+        if (!result.Succeeded)
+            return new UnexpectedError(string.Join(", ", result.Errors.Select(e => e.Description)));
+
+        return ToUserInfo(user);
+    }
+
+    private bool IsCurrentUserAdmin()
+    {
+        var httpContext = httpContextAccessor.HttpContext;
+        if (httpContext?.User.Identity?.IsAuthenticated != true)
+            return false;
+
+        return httpContext.User.IsInRole("Admin");
     }
 
     private static UserInfo ToUserInfo(User user) => new(

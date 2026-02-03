@@ -22,7 +22,8 @@ public static class IdentityApplicationConfigurator
             options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
             options.Lockout.MaxFailedAccessAttempts = 5;
         })
-        .AddEntityFrameworkStores<IdentityDbContext>();
+        .AddEntityFrameworkStores<IdentityDbContext>()
+        .AddClaimsPrincipalFactory<CustomUserClaimsPrincipalFactory>();
 
         // Add application services
         services.AddScoped<IAuthService, AuthService>();
