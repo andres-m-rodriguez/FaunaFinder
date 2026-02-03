@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "FaunaFinder.Seeder": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}
