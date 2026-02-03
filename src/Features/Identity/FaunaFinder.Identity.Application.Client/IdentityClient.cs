@@ -125,7 +125,7 @@ public sealed class IdentityClient : IIdentityClient
         return new UnexpectedError(await response.Content.ReadAsStringAsync(cancellationToken));
     }
 
-    public async Task<GetUsersCursorPageResult> GetUsersCursorPageAsync(CursorPageRequest request, CancellationToken cancellationToken = default)
+    public async Task<GetUsersCursorPageResult> GetUsersCursorPageAsync(CursorPageParameter request, CancellationToken cancellationToken = default)
     {
         var queryParams = new List<string> { $"pageSize={request.PageSize}" };
 
@@ -150,7 +150,7 @@ public sealed class IdentityClient : IIdentityClient
         return new UnexpectedError(await response.Content.ReadAsStringAsync(cancellationToken));
     }
 
-    public async Task<GetAccessRequestsCursorPageResult> GetAccessRequestsCursorPageAsync(AccessRequestPageRequest request, CancellationToken cancellationToken = default)
+    public async Task<GetAccessRequestsCursorPageResult> GetAccessRequestsCursorPageAsync(AccessRequestPageParameter request, CancellationToken cancellationToken = default)
     {
         var queryParams = new List<string> { $"pageSize={request.PageSize}" };
 

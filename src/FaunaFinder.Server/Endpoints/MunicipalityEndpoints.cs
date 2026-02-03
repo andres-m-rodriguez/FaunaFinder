@@ -83,7 +83,7 @@ public static class MunicipalityEndpoints
             IMunicipalityRepository repository,
             CancellationToken ct) =>
         {
-            var request = new CursorPageRequest(cursor, pageSize, search);
+            var request = new CursorPageParameter(cursor, pageSize, search);
             var page = await repository.GetMunicipalitiesCursorPageAsync(request, ct);
             return Results.Ok(page);
         }).WithName("GetMunicipalitiesCursor");

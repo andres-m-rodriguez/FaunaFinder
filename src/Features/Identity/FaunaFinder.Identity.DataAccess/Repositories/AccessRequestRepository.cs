@@ -96,7 +96,7 @@ public sealed class AccessRequestRepository(
             request.CreatedAt);
     }
 
-    public async Task<CursorPage<AccessRequestInfo>> GetCursorPageAsync(AccessRequestPageRequest request, CancellationToken cancellationToken = default)
+    public async Task<CursorPage<AccessRequestInfo>> GetCursorPageAsync(AccessRequestPageParameter request, CancellationToken cancellationToken = default)
     {
         await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
 

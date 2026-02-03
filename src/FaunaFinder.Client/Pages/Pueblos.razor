@@ -119,7 +119,7 @@
         isLoadingMore = true;
         StateHasChanged();
 
-        var request = new CursorPageRequest(nextCursor, PageSize, string.IsNullOrWhiteSpace(searchTerm) ? null : searchTerm);
+        var request = new CursorPageParameter(nextCursor, PageSize, string.IsNullOrWhiteSpace(searchTerm) ? null : searchTerm);
         var page = await MunicipalityHttpClient.GetMunicipalitiesCursorPageAsync(request);
 
         municipalities.AddRange(page.Items);

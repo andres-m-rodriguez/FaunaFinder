@@ -1,6 +1,6 @@
 namespace FaunaFinder.Identity.Contracts.Requests;
 
-public record AccessRequestPageRequest(
+public record AccessRequestPageParameter(
     string? Cursor,
     int PageSize = 20,
     string? Search = null,

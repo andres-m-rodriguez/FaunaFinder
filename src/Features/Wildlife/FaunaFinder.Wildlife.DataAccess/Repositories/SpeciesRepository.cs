@@ -279,7 +279,7 @@ public sealed class SpeciesRepository(IDbContextFactory<WildlifeDbContext> conte
     }
 
     public async Task<CursorPage<SpeciesForSearchDto>> GetSpeciesCursorPageAsync(
-        CursorPageRequest request,
+        CursorPageParameter request,
         CancellationToken cancellationToken = default)
     {
         await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);

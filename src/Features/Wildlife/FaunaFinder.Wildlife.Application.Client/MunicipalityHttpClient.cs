@@ -70,7 +70,7 @@ public sealed class MunicipalityHttpClient : IMunicipalityHttpClient
     }
 
     public async Task<CursorPage<MunicipalityCardDto>> GetMunicipalitiesCursorPageAsync(
-        CursorPageRequest request,
+        CursorPageParameter request,
         CancellationToken cancellationToken = default)
     {
         var queryString = BuildCursorQueryString(request);
@@ -80,7 +80,7 @@ public sealed class MunicipalityHttpClient : IMunicipalityHttpClient
         return result ?? new CursorPage<MunicipalityCardDto>([], null, false);
     }
 
-    private static string BuildCursorQueryString(CursorPageRequest request)
+    private static string BuildCursorQueryString(CursorPageParameter request)
     {
         var queryParams = new List<string>
         {

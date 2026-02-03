@@ -175,7 +175,7 @@
         {
             var status = string.IsNullOrEmpty(_statusFilter) ? null : _statusFilter;
             var search = string.IsNullOrWhiteSpace(_searchText) ? null : _searchText;
-            var request = new AccessRequestPageRequest(_nextCursor, 20, search, status);
+            var request = new AccessRequestPageParameter(_nextCursor, 20, search, status);
             var result = await IdentityClient.GetAccessRequestsCursorPageAsync(request);
 
             result.Switch(

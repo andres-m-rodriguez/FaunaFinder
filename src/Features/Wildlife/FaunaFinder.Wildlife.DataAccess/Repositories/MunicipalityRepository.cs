@@ -89,7 +89,7 @@ public sealed class MunicipalityRepository(
     }
 
     public async Task<CursorPage<MunicipalityCardDto>> GetMunicipalitiesCursorPageAsync(
-        CursorPageRequest request,
+        CursorPageParameter request,
         CancellationToken cancellationToken = default)
     {
         await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
