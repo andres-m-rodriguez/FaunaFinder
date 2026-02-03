@@ -13,6 +13,25 @@ namespace FaunaFinder.Identity.Database.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
+                name: "access_requests",
+                columns: table => new
+                {
+                    id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    email = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: false),
+                    display_name = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    password_hash = table.Column<string>(type: "text", nullable: false),
+                    message = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
+                    status = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
+                    created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    updated_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("pk_access_requests", x => x.id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "roles",
                 columns: table => new
                 {
@@ -34,7 +53,6 @@ namespace FaunaFinder.Identity.Database.Migrations
                     id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     display_name = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
-                    status = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
                     role = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
                     created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     updated_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
@@ -165,6 +183,16 @@ namespace FaunaFinder.Identity.Database.Migrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "ix_access_requests_email",
+                table: "access_requests",
+                column: "email");
+
+            migrationBuilder.CreateIndex(
+                name: "ix_access_requests_status",
+                table: "access_requests",
+                column: "status");
+
+            migrationBuilder.CreateIndex(
                 name: "ix_role_claims_role_id",
                 table: "role_claims",
                 column: "role_id");
@@ -205,6 +233,9 @@ namespace FaunaFinder.Identity.Database.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "access_requests");
+
             migrationBuilder.DropTable(
                 name: "role_claims");
 

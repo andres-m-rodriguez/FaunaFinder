@@ -20,8 +20,8 @@ public sealed class UserRepository(
                 u.Id,
                 u.Email!,
                 u.DisplayName,
-                u.Status.ToString(),
-                u.Role.ToString()))
+                u.Role.ToString(),
+                u.CreatedAt))
             .FirstOrDefaultAsync(cancellationToken);
     }
 
@@ -36,8 +36,8 @@ public sealed class UserRepository(
                 u.Id,
                 u.Email!,
                 u.DisplayName,
-                u.Status.ToString(),
-                u.Role.ToString()))
+                u.Role.ToString(),
+                u.CreatedAt))
             .FirstOrDefaultAsync(cancellationToken);
     }
 
@@ -52,25 +52,8 @@ public sealed class UserRepository(
                 u.Id,
                 u.Email!,
                 u.DisplayName,
-                u.Status.ToString(),
-                u.Role.ToString()))
-            .ToListAsync(cancellationToken);
-    }
-
-    public async Task<IReadOnlyList<UserInfo>> GetPendingUsersAsync(CancellationToken cancellationToken = default)
-    {
-        await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
-
-        return await context.Users
-            .AsNoTracking()
-            .Where(u => u.Status == Database.Models.UserStatus.Pending)
-            .OrderBy(u => u.CreatedAt)
-            .Select(u => new UserInfo(
-                u.Id,
-                u.Email!,
-                u.DisplayName,
-                u.Status.ToString(),
-                u.Role.ToString()))
+                u.Role.ToString(),
+                u.CreatedAt))
             .ToListAsync(cancellationToken);
     }
 }

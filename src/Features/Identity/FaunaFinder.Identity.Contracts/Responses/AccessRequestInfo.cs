@@ -1,8 +1,9 @@
 namespace FaunaFinder.Identity.Contracts.Responses;
 
-public sealed record UserInfo(
+public sealed record AccessRequestInfo(
     int Id,
     string Email,
     string DisplayName,
-    string Role,
+    string? Message,
+    string Status,
     DateTime CreatedAt);

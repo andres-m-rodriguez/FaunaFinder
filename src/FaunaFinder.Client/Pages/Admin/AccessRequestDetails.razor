@@ -1,0 +1,215 @@
+@page "/dashboard/access-requests/{Id:int}"
+@using Microsoft.AspNetCore.Authorization
+@using FaunaFinder.Identity.Application.Client
+@using FaunaFinder.Identity.Contracts.Requests
+@using FaunaFinder.Identity.Contracts.Responses
+@inject IIdentityClient IdentityClient
+@inject IAppLocalizer L
+@inject ISnackbar Snackbar
+@inject NavigationManager Navigation
+@attribute [Authorize(Roles = "Admin")]
+
+<PageTitle>@L["Admin_AccessRequestDetails"] - FaunaFinder</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Small" Class="py-4">
+    <MudButton Variant="Variant.Text"
+               Color="Color.Primary"
+               StartIcon="@Icons.Material.Filled.ArrowBack"
+               OnClick="@(() => Navigation.NavigateTo("/dashboard"))"
+               Class="mb-4">
+        @L["Back"]
+    </MudButton>
+
+    @if (_isLoading)
+    {
+        <MudPaper Elevation="2" Class="pa-4">
+            <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="40px" Class="mb-3 rounded" />
+            <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="24px" Width="60%" Class="mb-3 rounded" />
+            <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="200px" Class="rounded" />
+        </MudPaper>
+    }
+    else if (_error is not null)
+    {
+        <MudAlert Severity="Severity.Error" Class="mb-4">@_error</MudAlert>
+    }
+    else if (_request is not null)
+    {
+        @* Info Card *@
+        <MudCard Elevation="2" Class="mb-4">
+            <MudCardHeader>
+                <CardHeaderAvatar>
+                    <MudAvatar Color="Color.Warning" Variant="Variant.Filled">
+                        @_request.DisplayName[0]
+                    </MudAvatar>
+                </CardHeaderAvatar>
+                <CardHeaderContent>
+                    <MudText Typo="Typo.h6">@_request.DisplayName</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">@_request.Email</MudText>
+                </CardHeaderContent>
+                <CardHeaderActions>
+                    <MudChip T="string"
+                             Size="Size.Small"
+                             Color="@GetStatusColor(_request.Status)">
+                        @GetStatusText(_request.Status)
+                    </MudChip>
+                </CardHeaderActions>
+            </MudCardHeader>
+            <MudCardContent>
+                <MudText Typo="Typo.subtitle2" Color="Color.Secondary" Class="mb-2">@L["Admin_AccessRequestDetails"]</MudText>
+                <MudSimpleTable Dense="true" Hover="true">
+                    <tbody>
+                        <tr>
+                            <td style="width: 40%;"><strong>@L["Admin_DisplayName"]</strong></td>
+                            <td>@_request.DisplayName</td>
+                        </tr>
+                        <tr>
+                            <td><strong>@L["Admin_Email"]</strong></td>
+                            <td>@_request.Email</td>
+                        </tr>
+                        <tr>
+                            <td><strong>@L["Admin_Message"]</strong></td>
+                            <td>@(_request.Message ?? "-")</td>
+                        </tr>
+                        <tr>
+                            <td><strong>@L["Admin_Status"]</strong></td>
+                            <td>
+                                <MudChip T="string"
+                                         Size="Size.Small"
+                                         Color="@GetStatusColor(_request.Status)">
+                                    @GetStatusText(_request.Status)
+                                </MudChip>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>@L["Admin_CreatedAt"]</strong></td>
+                            <td>@_request.CreatedAt.ToLocalTime().ToString("g")</td>
+                        </tr>
+                    </tbody>
+                </MudSimpleTable>
+            </MudCardContent>
+        </MudCard>
+
+        @* Actions Card *@
+        <MudCard Elevation="2">
+            <MudCardContent>
+                <MudText Typo="Typo.subtitle2" Color="Color.Secondary" Class="mb-3">@L["Admin_Actions"]</MudText>
+                @if (_request.Status == "Pending")
+                {
+                    <MudText Typo="Typo.body2" Class="mb-3">@L["Admin_PendingActionDescription"]</MudText>
+                    <div class="d-flex gap-2">
+                        <MudButton Variant="Variant.Filled"
+                                   Color="Color.Success"
+                                   StartIcon="@Icons.Material.Filled.Check"
+                                   OnClick="@(() => UpdateStatus("Approved"))"
+                                   Disabled="_isUpdating">
+                            @if (_isUpdating)
+                            {
+                                <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                            }
+                            @L["Admin_Approve"]
+                        </MudButton>
+                        <MudButton Variant="Variant.Filled"
+                                   Color="Color.Error"
+                                   StartIcon="@Icons.Material.Filled.Close"
+                                   OnClick="@(() => UpdateStatus("Rejected"))"
+                                   Disabled="_isUpdating">
+                            @L["Admin_Reject"]
+                        </MudButton>
+                    </div>
+                }
+                else
+                {
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">@L["Admin_NoActionsAvailable"]</MudText>
+                }
+            </MudCardContent>
+        </MudCard>
+    }
+</MudContainer>
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    private AccessRequestInfo? _request;
+    private bool _isLoading = true;
+    private bool _isUpdating;
+    private string? _error;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAccessRequest();
+    }
+
+    private async Task LoadAccessRequest()
+    {
+        _isLoading = true;
+        _error = null;
+
+        try
+        {
+            var result = await IdentityClient.GetPendingAccessRequestsAsync();
+            result.Switch(
+                requests =>
+                {
+                    _request = requests.FirstOrDefault(r => r.Id == Id);
+                    if (_request is null)
+                        _error = L["Admin_UserNotFound"];
+                },
+                forbidden => _error = L["Admin_AccessDeniedMessage"],
+                unexpected => _error = unexpected.Message
+            );
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private async Task UpdateStatus(string status)
+    {
+        _isUpdating = true;
+
+        try
+        {
+            var result = await IdentityClient.UpdateAccessRequestStatusAsync(Id, new UpdateAccessRequestStatusRequest(status));
+            result.Switch(
+                updated =>
+                {
+                    _request = updated;
+                    Snackbar.Add(status == "Approved" ? L["Admin_Approve"] : L["Admin_Reject"], Severity.Success);
+                },
+                notFound => Snackbar.Add(notFound.Message, Severity.Error),
+                forbidden => Snackbar.Add(L["Admin_AccessDeniedMessage"], Severity.Error),
+                validation => Snackbar.Add(validation.Message, Severity.Error),
+                unexpected => Snackbar.Add(unexpected.Message, Severity.Error)
+            );
+        }
+        catch (Exception)
+        {
+            Snackbar.Add(L["Admin_AccessDeniedMessage"], Severity.Error);
+        }
+        finally
+        {
+            _isUpdating = false;
+        }
+    }
+
+    private Color GetStatusColor(string status) => status switch
+    {
+        "Pending" => Color.Warning,
+        "Approved" => Color.Success,
+        "Rejected" => Color.Error,
+        _ => Color.Default
+    };
+
+    private string GetStatusText(string status) => status switch
+    {
+        "Pending" => L["Admin_Pending"],
+        "Approved" => L["Admin_Approved"],
+        "Rejected" => L["Admin_Rejected"],
+        _ => status
+    };
+}

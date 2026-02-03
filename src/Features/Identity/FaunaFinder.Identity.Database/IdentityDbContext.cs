@@ -8,12 +8,17 @@ namespace FaunaFinder.Identity.Database;
 public sealed class IdentityDbContext(DbContextOptions<IdentityDbContext> options)
     : IdentityDbContext<User, IdentityRole<int>, int>(options)
 {
+    public DbSet<AccessRequest> AccessRequests => Set<AccessRequest>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
 
         // Apply user configuration
         modelBuilder.ApplyConfiguration(new User.EntityConfiguration());
+
+        // Apply access request configuration
+        modelBuilder.ApplyConfiguration(new AccessRequest.EntityConfiguration());
 
         // Configure Identity table names to use snake_case
         modelBuilder.Entity<User>().ToTable("users");

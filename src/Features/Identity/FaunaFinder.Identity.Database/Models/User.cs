@@ -7,7 +7,6 @@ namespace FaunaFinder.Identity.Database.Models;
 public sealed class User : IdentityUser<int>
 {
     public required string DisplayName { get; set; }
-    public required UserStatus Status { get; set; }
     public required UserRole Role { get; set; }
     public required DateTime CreatedAt { get; set; }
     public required DateTime UpdatedAt { get; set; }
@@ -20,11 +19,6 @@ public sealed class User : IdentityUser<int>
 
             builder.Property(static e => e.DisplayName)
                 .HasMaxLength(200)
-                .IsRequired();
-
-            builder.Property(static e => e.Status)
-                .HasConversion<string>()
-                .HasMaxLength(20)
                 .IsRequired();
 
             builder.Property(static e => e.Role)

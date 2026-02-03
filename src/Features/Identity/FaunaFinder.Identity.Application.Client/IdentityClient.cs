@@ -13,18 +13,18 @@ public sealed class IdentityClient : IIdentityClient
     private readonly HttpClient _httpClient;
     private readonly IValidator<LoginRequest> _loginValidator;
     private readonly IValidator<RegisterRequest> _registerValidator;
-    private readonly IValidator<UpdateUserStatusRequest> _updateUserStatusValidator;
+    private readonly IValidator<UpdateAccessRequestStatusRequest> _updateAccessRequestStatusValidator;
 
     public IdentityClient(
         HttpClient httpClient,
         IValidator<LoginRequest> loginValidator,
         IValidator<RegisterRequest> registerValidator,
-        IValidator<UpdateUserStatusRequest> updateUserStatusValidator)
+        IValidator<UpdateAccessRequestStatusRequest> updateAccessRequestStatusValidator)
     {
         _httpClient = httpClient;
         _loginValidator = loginValidator;
         _registerValidator = registerValidator;
-        _updateUserStatusValidator = updateUserStatusValidator;
+        _updateAccessRequestStatusValidator = updateAccessRequestStatusValidator;
     }
 
     public async Task<LoginResult> LoginAsync(LoginRequest request, CancellationToken cancellationToken = default)
@@ -72,8 +72,8 @@ public sealed class IdentityClient : IIdentityClient
 
         if (response.IsSuccessStatusCode)
         {
-            var user = await response.Content.ReadFromJsonAsync<UserInfo>(cancellationToken);
-            return user!;
+            var success = await response.Content.ReadFromJsonAsync<RegisterSuccess>(cancellationToken);
+            return success!;
         }
 
         if (response.StatusCode == HttpStatusCode.Conflict)
@@ -124,14 +124,14 @@ public sealed class IdentityClient : IIdentityClient
         return new UnexpectedError(await response.Content.ReadAsStringAsync(cancellationToken));
     }
 
-    public async Task<GetPendingUsersResult> GetPendingUsersAsync(CancellationToken cancellationToken = default)
+    public async Task<GetAccessRequestsResult> GetPendingAccessRequestsAsync(CancellationToken cancellationToken = default)
     {
-        var response = await _httpClient.GetAsync("api/auth/users/pending", cancellationToken);
+        var response = await _httpClient.GetAsync("api/auth/access-requests/pending", cancellationToken);
 
         if (response.IsSuccessStatusCode)
         {
-            var users = await response.Content.ReadFromJsonAsync<UserInfo[]>(cancellationToken);
-            return users!;
+            var requests = await response.Content.ReadFromJsonAsync<AccessRequestInfo[]>(cancellationToken);
+            return requests!;
         }
 
         if (response.StatusCode == HttpStatusCode.Forbidden)
@@ -140,9 +140,9 @@ public sealed class IdentityClient : IIdentityClient
         return new UnexpectedError(await response.Content.ReadAsStringAsync(cancellationToken));
     }
 
-    public async Task<UpdateUserStatusResult> UpdateUserStatusAsync(int userId, UpdateUserStatusRequest request, CancellationToken cancellationToken = default)
+    public async Task<UpdateAccessRequestStatusResult> UpdateAccessRequestStatusAsync(int id, UpdateAccessRequestStatusRequest request, CancellationToken cancellationToken = default)
     {
-        var validationResult = await _updateUserStatusValidator.ValidateAsync(request, cancellationToken);
+        var validationResult = await _updateAccessRequestStatusValidator.ValidateAsync(request, cancellationToken);
         if (!validationResult.IsValid)
         {
             return new ValidationError(
@@ -152,21 +152,20 @@ public sealed class IdentityClient : IIdentityClient
                     .ToDictionary(g => g.Key, g => g.Select(e => e.ErrorMessage).ToArray()));
         }
 
-        var response = await _httpClient.PutAsJsonAsync($"api/auth/users/{userId}/status", request, cancellationToken);
+        var response = await _httpClient.PutAsJsonAsync($"api/auth/access-requests/{id}/status", request, cancellationToken);
 
         if (response.IsSuccessStatusCode)
         {
-            var user = await response.Content.ReadFromJsonAsync<UserInfo>(cancellationToken);
-            return user!;
+            var accessRequest = await response.Content.ReadFromJsonAsync<AccessRequestInfo>(cancellationToken);
+            return accessRequest!;
         }
 
         return response.StatusCode switch
         {
-            HttpStatusCode.NotFound => new UserNotFoundError(userId),
+            HttpStatusCode.NotFound => new AccessRequestNotFoundError(id),
             HttpStatusCode.Forbidden => new ForbiddenError(),
             HttpStatusCode.BadRequest => new ValidationError("Validation failed", new Dictionary<string, string[]>()),
             _ => new UnexpectedError(await response.Content.ReadAsStringAsync(cancellationToken))
         };
     }
-
 }

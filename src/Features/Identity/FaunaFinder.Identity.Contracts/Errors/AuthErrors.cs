@@ -26,6 +26,9 @@ public sealed record UnauthorizedError()
 public sealed record UserNotFoundError(int UserId)
     : AuthError($"User with ID '{UserId}' was not found");
 
+public sealed record AccessRequestNotFoundError(int RequestId)
+    : AuthError($"Access request with ID '{RequestId}' was not found");
+
 public sealed record ForbiddenError()
     : AuthError("You do not have permission to perform this action");
 

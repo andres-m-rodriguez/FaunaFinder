@@ -112,6 +112,54 @@
 
         <AuthorizeView Roles="Admin">
             <MudTabPanel Text="@L["Admin_Title"]" Icon="@Icons.Material.Filled.People">
+                @* Access Requests Section *@
+                <MudText Typo="Typo.h6" Class="mb-3">@L["Admin_AccessRequests"]</MudText>
+
+                @if (_isLoadingAccessRequests)
+                {
+                    <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+                }
+                else if (_accessRequestsError is not null)
+                {
+                    <MudAlert Severity="Severity.Error" Class="mb-4">@_accessRequestsError</MudAlert>
+                }
+                else if (_accessRequests is null || _accessRequests.Length == 0)
+                {
+                    <MudPaper Class="pa-4 text-center mb-6" Elevation="0">
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">@L["Admin_NoAccessRequests"]</MudText>
+                    </MudPaper>
+                }
+                else
+                {
+                    <MudTable Items="_accessRequests" Dense="true" Hover="true" Striped="true" Elevation="2" Class="mb-6">
+                        <HeaderContent>
+                            <MudTh>@L["Admin_DisplayName"]</MudTh>
+                            <MudTh>@L["Admin_Email"]</MudTh>
+                            <MudTh>@L["Admin_Message"]</MudTh>
+                            <MudTh>@L["Admin_CreatedAt"]</MudTh>
+                            <MudTh>@L["Admin_Actions"]</MudTh>
+                        </HeaderContent>
+                        <RowTemplate Context="request">
+                            <MudTd DataLabel="@L["Admin_DisplayName"]">@request.DisplayName</MudTd>
+                            <MudTd DataLabel="@L["Admin_Email"]">@request.Email</MudTd>
+                            <MudTd DataLabel="@L["Admin_Message"]">@(request.Message ?? "-")</MudTd>
+                            <MudTd DataLabel="@L["Admin_CreatedAt"]">@request.CreatedAt.ToLocalTime().ToString("g")</MudTd>
+                            <MudTd DataLabel="@L["Admin_Actions"]">
+                                <MudButton Variant="Variant.Outlined"
+                                           Size="Size.Small"
+                                           Color="Color.Primary"
+                                           StartIcon="@Icons.Material.Filled.Info"
+                                           OnClick="@(() => Navigation.NavigateTo($"/dashboard/access-requests/{request.Id}"))">
+                                    @L["Admin_ViewDetails"]
+                                </MudButton>
+                            </MudTd>
+                        </RowTemplate>
+                    </MudTable>
+                }
+
+                @* Users Section *@
+                <MudText Typo="Typo.h6" Class="mb-3">@L["Admin_Title"]</MudText>
+
                 @if (_isLoadingUsers)
                 {
                     <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
@@ -133,20 +181,12 @@
                         <HeaderContent>
                             <MudTh>@L["Admin_DisplayName"]</MudTh>
                             <MudTh>@L["Admin_Email"]</MudTh>
-                            <MudTh>@L["Admin_Status"]</MudTh>
                             <MudTh>@L["Admin_Role"]</MudTh>
                             <MudTh>@L["Admin_Actions"]</MudTh>
                         </HeaderContent>
                         <RowTemplate Context="user">
                             <MudTd DataLabel="@L["Admin_DisplayName"]">@user.DisplayName</MudTd>
                             <MudTd DataLabel="@L["Admin_Email"]">@user.Email</MudTd>
-                            <MudTd DataLabel="@L["Admin_Status"]">
-                                <MudChip T="string"
-                                         Size="Size.Small"
-                                         Color="@GetStatusColor(user.Status)">
-                                    @GetStatusText(user.Status)
-                                </MudChip>
-                            </MudTd>
                             <MudTd DataLabel="@L["Admin_Role"]">
                                 <MudChip T="string"
                                          Size="Size.Small"
@@ -155,34 +195,13 @@
                                 </MudChip>
                             </MudTd>
                             <MudTd DataLabel="@L["Admin_Actions"]">
-                                <div class="d-flex gap-2 flex-wrap">
-                                    @if (user.Status == "Pending")
-                                    {
-                                        <MudButton Variant="Variant.Filled"
-                                                   Size="Size.Small"
-                                                   Color="Color.Success"
-                                                   StartIcon="@Icons.Material.Filled.Check"
-                                                   OnClick="@(() => UpdateUserStatus(user.Id, "Approved"))"
-                                                   Disabled="_isUpdatingUser">
-                                            @L["Admin_Approve"]
-                                        </MudButton>
-                                        <MudButton Variant="Variant.Filled"
-                                                   Size="Size.Small"
-                                                   Color="Color.Error"
-                                                   StartIcon="@Icons.Material.Filled.Close"
-                                                   OnClick="@(() => UpdateUserStatus(user.Id, "Rejected"))"
-                                                   Disabled="_isUpdatingUser">
-                                            @L["Admin_Reject"]
-                                        </MudButton>
-                                    }
-                                    <MudButton Variant="Variant.Outlined"
-                                               Size="Size.Small"
-                                               Color="Color.Primary"
-                                               StartIcon="@Icons.Material.Filled.Info"
-                                               OnClick="@(() => Navigation.NavigateTo($"/dashboard/users/{user.Id}"))">
-                                        @L["Admin_ViewDetails"]
-                                    </MudButton>
-                                </div>
+                                <MudButton Variant="Variant.Outlined"
+                                           Size="Size.Small"
+                                           Color="Color.Primary"
+                                           StartIcon="@Icons.Material.Filled.Info"
+                                           OnClick="@(() => Navigation.NavigateTo($"/dashboard/users/{user.Id}"))">
+                                    @L["Admin_ViewDetails"]
+                                </MudButton>
                             </MudTd>
                         </RowTemplate>
                     </MudTable>
@@ -330,8 +349,12 @@
     // User management state
     private UserInfo[]? _users;
     private bool _isLoadingUsers;
-    private bool _isUpdatingUser;
     private string? _usersError;
+
+    // Access requests state
+    private AccessRequestInfo[]? _accessRequests;
+    private bool _isLoadingAccessRequests;
+    private string? _accessRequestsError;
 
     private readonly DialogOptions _dialogOptions = new()
     {
@@ -354,6 +377,7 @@
         var authState = await AuthStateProvider.GetAuthenticationStateAsync();
         if (authState.User.IsInRole("Admin"))
         {
+            await LoadAccessRequests();
             await LoadUsers();
         }
     }
@@ -455,6 +479,30 @@
         }
     }
 
+    private async Task LoadAccessRequests()
+    {
+        _isLoadingAccessRequests = true;
+        _accessRequestsError = null;
+
+        try
+        {
+            var result = await IdentityClient.GetPendingAccessRequestsAsync();
+            result.Switch(
+                requests => _accessRequests = requests,
+                forbidden => _accessRequestsError = L["Admin_AccessDeniedMessage"],
+                unexpected => _accessRequestsError = unexpected.Message
+            );
+        }
+        catch (Exception ex)
+        {
+            _accessRequestsError = ex.Message;
+        }
+        finally
+        {
+            _isLoadingAccessRequests = false;
+        }
+    }
+
     private async Task LoadUsers()
     {
         _isLoadingUsers = true;
@@ -478,49 +526,6 @@
             _isLoadingUsers = false;
         }
     }
-
-    private async Task UpdateUserStatus(int userId, string status)
-    {
-        _isUpdatingUser = true;
-
-        try
-        {
-            var result = await IdentityClient.UpdateUserStatusAsync(userId, new UpdateUserStatusRequest(status));
-            var success = false;
-            result.Switch(
-                userInfo => { Snackbar.Add(status == "Approved" ? L["Admin_Approve"] : L["Admin_Reject"], Severity.Success); success = true; },
-                notFound => Snackbar.Add(notFound.Message, Severity.Error),
-                forbidden => Snackbar.Add(L["Admin_AccessDeniedMessage"], Severity.Error),
-                validation => Snackbar.Add(validation.Message, Severity.Error),
-                unexpected => Snackbar.Add(unexpected.Message, Severity.Error)
-            );
-            if (success) await LoadUsers();
-        }
-        catch (Exception)
-        {
-            Snackbar.Add(L["Admin_AccessDeniedMessage"], Severity.Error);
-        }
-        finally
-        {
-            _isUpdatingUser = false;
-        }
-    }
-
-    private Color GetStatusColor(string status) => status switch
-    {
-        "Pending" => Color.Warning,
-        "Approved" => Color.Success,
-        "Rejected" => Color.Error,
-        _ => Color.Default
-    };
-
-    private string GetStatusText(string status) => status switch
-    {
-        "Pending" => L["Admin_Pending"],
-        "Approved" => L["Admin_Approved"],
-        "Rejected" => L["Admin_Rejected"],
-        _ => status
-    };
 
     private Color GetRoleColor(string role) => role switch
     {

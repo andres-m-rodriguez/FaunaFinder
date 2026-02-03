@@ -10,6 +10,6 @@ public interface IIdentityClient
     Task LogoutAsync(CancellationToken cancellationToken = default);
     Task<GetCurrentUserResult> GetCurrentUserAsync(CancellationToken cancellationToken = default);
     Task<GetUsersResult> GetAllUsersAsync(CancellationToken cancellationToken = default);
-    Task<GetPendingUsersResult> GetPendingUsersAsync(CancellationToken cancellationToken = default);
-    Task<UpdateUserStatusResult> UpdateUserStatusAsync(int userId, UpdateUserStatusRequest request, CancellationToken cancellationToken = default);
+    Task<GetAccessRequestsResult> GetPendingAccessRequestsAsync(CancellationToken cancellationToken = default);
+    Task<UpdateAccessRequestStatusResult> UpdateAccessRequestStatusAsync(int id, UpdateAccessRequestStatusRequest request, CancellationToken cancellationToken = default);
 }

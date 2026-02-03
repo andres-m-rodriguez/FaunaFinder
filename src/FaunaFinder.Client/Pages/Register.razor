@@ -43,7 +43,7 @@
                     @if (_success)
                     {
                         <MudAlert Severity="Severity.Success" Class="mb-4">
-                            @L["Register_Success"]
+                            @L["Register_SuccessPending"]
                         </MudAlert>
                         <MudButton Variant="Variant.Filled"
                                    Color="Color.Primary"
@@ -90,6 +90,15 @@
                                           Required="true"
                                           RequiredError="@L["Register_ConfirmPasswordRequired"]" />
 
+                            <MudTextField @bind-Value="_model.Message"
+                                          Label="@L["Register_Message"]"
+                                          Variant="Variant.Outlined"
+                                          Class="mb-4"
+                                          Lines="3"
+                                          HelperText="@L["Register_MessageHelper"]"
+                                          Counter="500"
+                                          MaxLength="500" />
+
                             <MudButton ButtonType="ButtonType.Submit"
                                        Variant="Variant.Filled"
                                        Color="Color.Primary"
@@ -134,10 +143,11 @@
         _error = null;
         StateHasChanged();
 
-        var result = await AuthStateProvider.RegisterAsync(_model.Email, _model.Password, _model.DisplayName);
+        var message = string.IsNullOrWhiteSpace(_model.Message) ? null : _model.Message.Trim();
+        var result = await AuthStateProvider.RegisterAsync(_model.Email, _model.Password, _model.DisplayName, message);
 
         result.Switch(
-            user => _success = true,
+            success => _success = true,
             emailExists => _error = emailExists.Message,
             registrationFailed => _error = registrationFailed.Message,
             validationError => _error = validationError.Message,
@@ -152,5 +162,6 @@
         public string Email { get; set; } = "";
         public string Password { get; set; } = "";
         public string ConfirmPassword { get; set; } = "";
+        public string? Message { get; set; }
     }
 }
