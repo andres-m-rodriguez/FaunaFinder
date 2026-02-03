@@ -20,5 +20,9 @@ public sealed class RegisterRequestValidator : AbstractValidator<RegisterRequest
         RuleFor(x => x.DisplayName)
             .NotEmpty().WithMessage("Display name is required")
             .MaximumLength(200).WithMessage("Display name must not exceed 200 characters");
+
+        RuleFor(x => x.Message)
+            .MaximumLength(500).WithMessage("Message must not exceed 500 characters")
+            .When(x => x.Message is not null);
     }
 }

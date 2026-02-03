@@ -156,6 +156,9 @@ public static class Translations
         ["Register_CreateAccount"] = "Create Account",
         ["Register_HasAccount"] = "Already have an account? ",
         ["Register_Success"] = "Account created successfully! Your account is pending approval.",
+        ["Register_Message"] = "Message (optional)",
+        ["Register_MessageHelper"] = "Tell us why you'd like access",
+        ["Register_SuccessPending"] = "Registration submitted! An admin will review your request.",
 
         // Admin
         ["Admin_Title"] = "User Management",
@@ -185,6 +188,10 @@ public static class Translations
         ["Admin_UserInfo"] = "User Information",
         ["Admin_PendingActionDescription"] = "This user is awaiting approval. Approve or reject their account request.",
         ["Admin_NoActionsAvailable"] = "No actions available for this user.",
+        ["Admin_AccessRequests"] = "Access Requests",
+        ["Admin_AccessRequestDetails"] = "Access Request Details",
+        ["Admin_Message"] = "Message",
+        ["Admin_NoAccessRequests"] = "No pending access requests.",
         ["Nav_Admin"] = "Admin",
 
         // User Menu
@@ -282,6 +289,17 @@ public static class Translations
         // Dashboard
         ["Dashboard_Title"] = "Dashboard",
         ["Dashboard_ReviewTab"] = "Review",
+        ["Dashboard_AdminPanel_Title"] = "Administration",
+        ["Dashboard_AdminPanel_Description"] = "Manage users, review requests, and oversee platform activity.",
+        ["Dashboard_Card_UserManagement"] = "User Management",
+        ["Dashboard_Card_UserManagement_Desc"] = "View, search, and manage all user accounts.",
+        ["Dashboard_Card_UserRequests"] = "User Requests",
+        ["Dashboard_Card_UserRequests_Desc"] = "Review and approve pending registration requests.",
+        ["Dashboard_Card_UsersSightings"] = "Users Sightings",
+        ["Dashboard_Card_UsersSightings_Desc"] = "View and manage sightings reported by users.",
+
+        // Admin Users
+        ["Admin_Users_SearchPlaceholder"] = "Search by name or email...",
 
         // Review Queue
         ["ReviewQueue_Title"] = "Review Queue",
@@ -457,6 +475,9 @@ public static class Translations
         ["Register_CreateAccount"] = "Crear cuenta",
         ["Register_HasAccount"] = "¿Ya tienes cuenta? ",
         ["Register_Success"] = "Cuenta creada exitosamente. Tu cuenta está pendiente de aprobación.",
+        ["Register_Message"] = "Mensaje (opcional)",
+        ["Register_MessageHelper"] = "Cuéntanos por qué quieres acceso",
+        ["Register_SuccessPending"] = "Registro enviado! Un administrador revisará tu solicitud.",
 
         // Admin
         ["Admin_Title"] = "Gestión de usuarios",
@@ -486,6 +507,10 @@ public static class Translations
         ["Admin_UserInfo"] = "Información del Usuario",
         ["Admin_PendingActionDescription"] = "Este usuario está esperando aprobación. Aprueba o rechaza su solicitud de cuenta.",
         ["Admin_NoActionsAvailable"] = "No hay acciones disponibles para este usuario.",
+        ["Admin_AccessRequests"] = "Solicitudes de Acceso",
+        ["Admin_AccessRequestDetails"] = "Detalles de Solicitud",
+        ["Admin_Message"] = "Mensaje",
+        ["Admin_NoAccessRequests"] = "No hay solicitudes de acceso pendientes.",
         ["Nav_Admin"] = "Admin",
 
         // User Menu
@@ -583,6 +608,17 @@ public static class Translations
         // Dashboard
         ["Dashboard_Title"] = "Panel",
         ["Dashboard_ReviewTab"] = "Revisar",
+        ["Dashboard_AdminPanel_Title"] = "Administracion",
+        ["Dashboard_AdminPanel_Description"] = "Gestiona usuarios, revisa solicitudes y supervisa la actividad de la plataforma.",
+        ["Dashboard_Card_UserManagement"] = "Gestion de Usuarios",
+        ["Dashboard_Card_UserManagement_Desc"] = "Ver, buscar y gestionar todas las cuentas de usuario.",
+        ["Dashboard_Card_UserRequests"] = "Solicitudes de Usuarios",
+        ["Dashboard_Card_UserRequests_Desc"] = "Revisar y aprobar solicitudes de registro pendientes.",
+        ["Dashboard_Card_UsersSightings"] = "Avistamientos de Usuarios",
+        ["Dashboard_Card_UsersSightings_Desc"] = "Ver y gestionar avistamientos reportados por usuarios.",
+
+        // Admin Users
+        ["Admin_Users_SearchPlaceholder"] = "Buscar por nombre o correo...",
 
         // Review Queue
         ["ReviewQueue_Title"] = "Cola de Revisión",

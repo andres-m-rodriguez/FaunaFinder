@@ -9,6 +9,7 @@ public static class IdentityDataAccessConfigurator
     public static IServiceCollection AddIdentityDataAccess(this IServiceCollection services)
     {
         services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IAccessRequestRepository, AccessRequestRepository>();
 
         return services;
     }

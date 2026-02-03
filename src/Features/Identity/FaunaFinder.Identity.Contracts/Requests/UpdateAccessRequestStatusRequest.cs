@@ -2,13 +2,13 @@ using FluentValidation;
 
 namespace FaunaFinder.Identity.Contracts.Requests;
 
-public sealed record UpdateUserStatusRequest(string Status);
+public sealed record UpdateAccessRequestStatusRequest(string Status);
 
-public sealed class UpdateUserStatusRequestValidator : AbstractValidator<UpdateUserStatusRequest>
+public sealed class UpdateAccessRequestStatusRequestValidator : AbstractValidator<UpdateAccessRequestStatusRequest>
 {
     private static readonly string[] ValidStatuses = ["Approved", "Rejected"];
 
-    public UpdateUserStatusRequestValidator()
+    public UpdateAccessRequestStatusRequestValidator()
     {
         RuleFor(x => x.Status)
             .NotEmpty().WithMessage("Status is required")

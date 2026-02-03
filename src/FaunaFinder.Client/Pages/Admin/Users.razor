@@ -1,0 +1,229 @@
+@page "/admin/users"
+@using Microsoft.AspNetCore.Authorization
+@using FaunaFinder.Identity.Application.Client
+@using FaunaFinder.Identity.Contracts.Responses
+@inject IIdentityClient IdentityClient
+@inject IAppLocalizer L
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+@implements IDisposable
+@attribute [Authorize(Roles = "Admin")]
+
+<PageTitle>@L["Dashboard_Card_UserManagement"] - FaunaFinder</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="py-4">
+    <MudButton Variant="Variant.Text"
+               Color="Color.Primary"
+               StartIcon="@Icons.Material.Filled.ArrowBack"
+               OnClick="@(() => Navigation.NavigateTo("/dashboard"))"
+               Class="mb-4">
+        @L["Back"]
+    </MudButton>
+
+    <MudText Typo="Typo.h4" Class="mb-2">@L["Dashboard_Card_UserManagement"]</MudText>
+    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-4">@L["Dashboard_Card_UserManagement_Desc"]</MudText>
+
+    <MudTextField T="string"
+                  Value="_searchText"
+                  ValueChanged="OnSearchChanged"
+                  Placeholder="@L["Admin_Users_SearchPlaceholder"]"
+                  Variant="Variant.Outlined"
+                  Adornment="Adornment.Start"
+                  AdornmentIcon="@Icons.Material.Filled.Search"
+                  DebounceInterval="300"
+                  Immediate="true"
+                  Class="mb-4" />
+
+    @if (_isInitialLoading)
+    {
+        <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+    }
+    else if (_error is not null)
+    {
+        <MudAlert Severity="Severity.Error" Class="mb-4">@_error</MudAlert>
+    }
+    else if (_users.Count == 0)
+    {
+        <MudPaper Class="pa-6 text-center" Elevation="0">
+            <MudIcon Icon="@Icons.Material.Filled.PeopleOutline" Size="Size.Large" Color="Color.Secondary" Class="mb-4" />
+            <MudText Typo="Typo.h6" Color="Color.Secondary">@L["Admin_NoUsers"]</MudText>
+        </MudPaper>
+    }
+    else
+    {
+        <MudTable Items="_users" Dense="true" Hover="true" Striped="true" Elevation="2">
+            <HeaderContent>
+                <MudTh>@L["Admin_DisplayName"]</MudTh>
+                <MudTh>@L["Admin_Email"]</MudTh>
+                <MudTh>@L["Admin_Role"]</MudTh>
+                <MudTh>@L["Admin_CreatedAt"]</MudTh>
+                <MudTh>@L["Admin_Actions"]</MudTh>
+            </HeaderContent>
+            <RowTemplate Context="user">
+                <MudTd DataLabel="@L["Admin_DisplayName"]">@user.DisplayName</MudTd>
+                <MudTd DataLabel="@L["Admin_Email"]">@user.Email</MudTd>
+                <MudTd DataLabel="@L["Admin_Role"]">
+                    <MudChip T="string"
+                             Size="Size.Small"
+                             Color="@GetRoleColor(user.Role)">
+                        @GetRoleText(user.Role)
+                    </MudChip>
+                </MudTd>
+                <MudTd DataLabel="@L["Admin_CreatedAt"]">@user.CreatedAt.ToLocalTime().ToString("g")</MudTd>
+                <MudTd DataLabel="@L["Admin_Actions"]">
+                    <MudButton Variant="Variant.Outlined"
+                               Size="Size.Small"
+                               Color="Color.Primary"
+                               StartIcon="@Icons.Material.Filled.Info"
+                               OnClick="@(() => Navigation.NavigateTo($"/admin/users/{user.Id}"))">
+                        @L["Admin_ViewDetails"]
+                    </MudButton>
+                </MudTd>
+            </RowTemplate>
+        </MudTable>
+
+        @if (_isLoadingMore)
+        {
+            <div class="d-flex justify-center mt-4">
+                <MudProgressCircular Indeterminate="true" Color="Color.Primary" />
+            </div>
+        }
+
+        @if (_hasMore)
+        {
+            <div @ref="_sentinel" style="height: 1px;"></div>
+        }
+    }
+</MudContainer>
+
+@code {
+    private readonly List<UserInfo> _users = new();
+    private string? _nextCursor;
+    private bool _hasMore;
+    private bool _isInitialLoading = true;
+    private bool _isLoadingMore;
+    private string? _error;
+    private string _searchText = string.Empty;
+
+    private ElementReference _sentinel;
+    private DotNetObjectReference<Users>? _dotNetRef;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _dotNetRef = DotNetObjectReference.Create(this);
+        await LoadPageAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender && _hasMore && !_isLoadingMore && !_isInitialLoading)
+        {
+            try
+            {
+                await JS.InvokeVoidAsync("infiniteScrollInterop.observe", _sentinel, _dotNetRef);
+            }
+            catch (JSException)
+            {
+                // Element may not be in DOM yet
+            }
+        }
+    }
+
+    [JSInvokable]
+    public async Task LoadMore()
+    {
+        if (_isLoadingMore || !_hasMore) return;
+        await LoadPageAsync();
+        StateHasChanged();
+    }
+
+    private async Task LoadPageAsync()
+    {
+        if (_isLoadingMore) return;
+
+        var isFirstPage = _nextCursor is null && _users.Count == 0;
+        if (isFirstPage)
+            _isInitialLoading = true;
+        else
+            _isLoadingMore = true;
+
+        _error = null;
+
+        try
+        {
+            var request = new CursorPageRequest(_nextCursor, 20, string.IsNullOrWhiteSpace(_searchText) ? null : _searchText);
+            var result = await IdentityClient.GetUsersCursorPageAsync(request);
+
+            result.Switch(
+                page =>
+                {
+                    _users.AddRange(page.Items);
+                    _nextCursor = page.NextCursor;
+                    _hasMore = page.HasMore;
+                },
+                forbidden => _error = L["Admin_AccessDeniedMessage"],
+                unexpected => _error = unexpected.Message
+            );
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _isInitialLoading = false;
+            _isLoadingMore = false;
+        }
+    }
+
+    private async Task OnSearchChanged(string value)
+    {
+        _searchText = value;
+        _users.Clear();
+        _nextCursor = null;
+        _hasMore = false;
+
+        try
+        {
+            await JS.InvokeVoidAsync("infiniteScrollInterop.disconnect");
+        }
+        catch (JSException)
+        {
+            // Interop may not be initialized
+        }
+
+        await LoadPageAsync();
+    }
+
+    private Color GetRoleColor(string role) => role switch
+    {
+        "Admin" => Color.Error,
+        "Contributor" => Color.Primary,
+        "Teacher" => Color.Primary,
+        "Student" => Color.Info,
+        "Viewer" => Color.Default,
+        _ => Color.Default
+    };
+
+    private string GetRoleText(string role) => role switch
+    {
+        "Admin" => L["Admin_Admin"],
+        "Contributor" => L["Admin_Contributor"],
+        "Viewer" => L["Admin_Viewer"],
+        _ => role
+    };
+
+    public void Dispose()
+    {
+        try
+        {
+            JS.InvokeVoidAsync("infiniteScrollInterop.disconnect");
+        }
+        catch
+        {
+            // Ignore disposal errors
+        }
+
+        _dotNetRef?.Dispose();
+    }
+}

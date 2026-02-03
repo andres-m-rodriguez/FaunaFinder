@@ -1,11 +1,9 @@
-@page "/dashboard/users/{Id:int}"
+@page "/admin/users/{Id:int}"
 @using Microsoft.AspNetCore.Authorization
 @using FaunaFinder.Identity.Application.Client
-@using FaunaFinder.Identity.Contracts.Requests
 @using FaunaFinder.Identity.Contracts.Responses
 @inject IIdentityClient IdentityClient
 @inject IAppLocalizer L
-@inject ISnackbar Snackbar
 @inject NavigationManager Navigation
 @attribute [Authorize(Roles = "Admin")]
 
@@ -15,7 +13,7 @@
     <MudButton Variant="Variant.Text"
                Color="Color.Primary"
                StartIcon="@Icons.Material.Filled.ArrowBack"
-               OnClick="@(() => Navigation.NavigateTo("/dashboard"))"
+               OnClick="@(() => Navigation.NavigateTo("/admin/users"))"
                Class="mb-4">
         @L["Back"]
     </MudButton>
@@ -34,7 +32,6 @@
     }
     else if (_user is not null)
     {
-        @* User Info Card *@
         <MudCard Elevation="2" Class="mb-4">
             <MudCardHeader>
                 <CardHeaderAvatar>
@@ -46,13 +43,6 @@
                     <MudText Typo="Typo.h6">@_user.DisplayName</MudText>
                     <MudText Typo="Typo.body2" Color="Color.Secondary">@_user.Email</MudText>
                 </CardHeaderContent>
-                <CardHeaderActions>
-                    <MudChip T="string"
-                             Size="Size.Small"
-                             Color="@GetStatusColor(_user.Status)">
-                        @GetStatusText(_user.Status)
-                    </MudChip>
-                </CardHeaderActions>
             </MudCardHeader>
             <MudCardContent>
                 <MudText Typo="Typo.subtitle2" Color="Color.Secondary" Class="mb-2">@L["Admin_UserInfo"]</MudText>
@@ -67,16 +57,6 @@
                             <td>@_user.Email</td>
                         </tr>
                         <tr>
-                            <td><strong>@L["Admin_Status"]</strong></td>
-                            <td>
-                                <MudChip T="string"
-                                         Size="Size.Small"
-                                         Color="@GetStatusColor(_user.Status)">
-                                    @GetStatusText(_user.Status)
-                                </MudChip>
-                            </td>
-                        </tr>
-                        <tr>
                             <td><strong>@L["Admin_Role"]</strong></td>
                             <td>
                                 <MudChip T="string"
@@ -86,43 +66,12 @@
                                 </MudChip>
                             </td>
                         </tr>
+                        <tr>
+                            <td><strong>@L["Admin_CreatedAt"]</strong></td>
+                            <td>@_user.CreatedAt.ToLocalTime().ToString("g")</td>
+                        </tr>
                     </tbody>
                 </MudSimpleTable>
-            </MudCardContent>
-        </MudCard>
-
-        @* Actions Card *@
-        <MudCard Elevation="2">
-            <MudCardContent>
-                <MudText Typo="Typo.subtitle2" Color="Color.Secondary" Class="mb-3">@L["Admin_Actions"]</MudText>
-                @if (_user.Status == "Pending")
-                {
-                    <MudText Typo="Typo.body2" Class="mb-3">@L["Admin_PendingActionDescription"]</MudText>
-                    <div class="d-flex gap-2">
-                        <MudButton Variant="Variant.Filled"
-                                   Color="Color.Success"
-                                   StartIcon="@Icons.Material.Filled.Check"
-                                   OnClick="@(() => UpdateUserStatus("Approved"))"
-                                   Disabled="_isUpdating">
-                            @if (_isUpdating)
-                            {
-                                <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
-                            }
-                            @L["Admin_Approve"]
-                        </MudButton>
-                        <MudButton Variant="Variant.Filled"
-                                   Color="Color.Error"
-                                   StartIcon="@Icons.Material.Filled.Close"
-                                   OnClick="@(() => UpdateUserStatus("Rejected"))"
-                                   Disabled="_isUpdating">
-                            @L["Admin_Reject"]
-                        </MudButton>
-                    </div>
-                }
-                else
-                {
-                    <MudText Typo="Typo.body2" Color="Color.Secondary">@L["Admin_NoActionsAvailable"]</MudText>
-                }
             </MudCardContent>
         </MudCard>
     }
@@ -133,7 +82,6 @@
 
     private UserInfo? _user;
     private bool _isLoading = true;
-    private bool _isUpdating;
     private string? _error;
 
     protected override async Task OnInitializedAsync()
@@ -169,47 +117,6 @@
             _isLoading = false;
         }
     }
-
-    private async Task UpdateUserStatus(string status)
-    {
-        _isUpdating = true;
-
-        try
-        {
-            var result = await IdentityClient.UpdateUserStatusAsync(Id, new UpdateUserStatusRequest(status));
-            result.Switch(
-                userInfo => { _user = userInfo; Snackbar.Add(status == "Approved" ? L["Admin_Approve"] : L["Admin_Reject"], Severity.Success); },
-                notFound => Snackbar.Add(notFound.Message, Severity.Error),
-                forbidden => Snackbar.Add(L["Admin_AccessDeniedMessage"], Severity.Error),
-                validation => Snackbar.Add(validation.Message, Severity.Error),
-                unexpected => Snackbar.Add(unexpected.Message, Severity.Error)
-            );
-        }
-        catch (Exception)
-        {
-            Snackbar.Add(L["Admin_AccessDeniedMessage"], Severity.Error);
-        }
-        finally
-        {
-            _isUpdating = false;
-        }
-    }
-
-    private Color GetStatusColor(string status) => status switch
-    {
-        "Pending" => Color.Warning,
-        "Approved" => Color.Success,
-        "Rejected" => Color.Error,
-        _ => Color.Default
-    };
-
-    private string GetStatusText(string status) => status switch
-    {
-        "Pending" => L["Admin_Pending"],
-        "Approved" => L["Admin_Approved"],
-        "Rejected" => L["Admin_Rejected"],
-        _ => status
-    };
 
     private Color GetRoleColor(string role) => role switch
     {

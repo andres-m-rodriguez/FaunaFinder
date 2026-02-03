@@ -1,6 +1,5 @@
 using System.Security.Claims;
 using FaunaFinder.Identity.Application.Client;
-using FaunaFinder.Identity.Contracts.Errors;
 using FaunaFinder.Identity.Contracts.Requests;
 using FaunaFinder.Identity.Contracts.Responses;
 using FaunaFinder.Identity.Contracts.Results;
@@ -53,9 +52,9 @@ public class CookieAuthenticationStateProvider : AuthenticationStateProvider
         return result;
     }
 
-    public async Task<RegisterResult> RegisterAsync(string email, string password, string displayName)
+    public async Task<RegisterResult> RegisterAsync(string email, string password, string displayName, string? message = null)
     {
-        return await _identityClient.RegisterAsync(new RegisterRequest(email, password, displayName));
+        return await _identityClient.RegisterAsync(new RegisterRequest(email, password, displayName, message));
     }
 
     public async Task LogoutAsync()
@@ -79,7 +78,6 @@ public class CookieAuthenticationStateProvider : AuthenticationStateProvider
             new(ClaimTypes.NameIdentifier, user.Id.ToString()),
             new(ClaimTypes.Email, user.Email),
             new(ClaimTypes.Name, user.DisplayName),
-            new("status", user.Status),
             new(ClaimTypes.Role, user.Role)
         };
 
