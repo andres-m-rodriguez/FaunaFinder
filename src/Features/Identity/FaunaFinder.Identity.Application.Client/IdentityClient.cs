@@ -150,6 +150,34 @@ public sealed class IdentityClient : IIdentityClient
         return new UnexpectedError(await response.Content.ReadAsStringAsync(cancellationToken));
     }
 
+    public async Task<GetAccessRequestsCursorPageResult> GetAccessRequestsCursorPageAsync(AccessRequestPageRequest request, CancellationToken cancellationToken = default)
+    {
+        var queryParams = new List<string> { $"pageSize={request.PageSize}" };
+
+        if (!string.IsNullOrEmpty(request.Cursor))
+            queryParams.Add($"cursor={Uri.EscapeDataString(request.Cursor)}");
+
+        if (!string.IsNullOrEmpty(request.Search))
+            queryParams.Add($"search={Uri.EscapeDataString(request.Search)}");
+
+        if (!string.IsNullOrEmpty(request.Status))
+            queryParams.Add($"status={Uri.EscapeDataString(request.Status)}");
+
+        var url = $"api/auth/access-requests/search?{string.Join("&", queryParams)}";
+        var response = await _httpClient.GetAsync(url, cancellationToken);
+
+        if (response.IsSuccessStatusCode)
+        {
+            var page = await response.Content.ReadFromJsonAsync<CursorPage<AccessRequestInfo>>(cancellationToken);
+            return page!;
+        }
+
+        if (response.StatusCode == HttpStatusCode.Forbidden)
+            return new ForbiddenError();
+
+        return new UnexpectedError(await response.Content.ReadAsStringAsync(cancellationToken));
+    }
+
     public async Task<GetAccessRequestsResult> GetPendingAccessRequestsAsync(CancellationToken cancellationToken = default)
     {
         var response = await _httpClient.GetAsync("api/auth/access-requests/pending", cancellationToken);
