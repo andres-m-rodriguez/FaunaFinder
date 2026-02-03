@@ -23,5 +23,11 @@ public sealed record RegistrationFailedError(IEnumerable<string> Errors)
 public sealed record UnauthorizedError()
     : AuthError("You must be logged in to perform this action");
 
+public sealed record UserNotFoundError(int UserId)
+    : AuthError($"User with ID '{UserId}' was not found");
+
+public sealed record ForbiddenError()
+    : AuthError("You do not have permission to perform this action");
+
 public sealed record UnexpectedError(string Details)
     : AuthError("An unexpected error occurred");

@@ -55,20 +55,7 @@ public class CookieAuthenticationStateProvider : AuthenticationStateProvider
 
     public async Task<RegisterResult> RegisterAsync(string email, string password, string displayName)
     {
-        var result = await _identityClient.RegisterAsync(new RegisterRequest(email, password, displayName));
-
-        result.Switch(
-            user =>
-            {
-                _cachedUser = user;
-                NotifyAuthenticationStateChanged(Task.FromResult(CreateAuthenticationState(_cachedUser)));
-            },
-            _ => { },
-            _ => { },
-            _ => { },
-            _ => { });
-
-        return result;
+        return await _identityClient.RegisterAsync(new RegisterRequest(email, password, displayName));
     }
 
     public async Task LogoutAsync()

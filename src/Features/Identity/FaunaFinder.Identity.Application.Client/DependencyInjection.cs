@@ -10,6 +10,7 @@ public static class DependencyInjection
     {
         services.AddScoped<IValidator<LoginRequest>, LoginRequestValidator>();
         services.AddScoped<IValidator<RegisterRequest>, RegisterRequestValidator>();
+        services.AddScoped<IValidator<UpdateUserStatusRequest>, UpdateUserStatusRequestValidator>();
 
         services.AddHttpClient<IIdentityClient, IdentityClient>(client =>
         {

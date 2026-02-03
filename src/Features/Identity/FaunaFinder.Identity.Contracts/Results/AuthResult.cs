@@ -12,3 +12,12 @@ public partial class RegisterResult : OneOfBase<UserInfo, EmailAlreadyExistsErro
 
 [GenerateOneOf]
 public partial class GetCurrentUserResult : OneOfBase<UserInfo, UnauthorizedError, UnexpectedError>;
+
+[GenerateOneOf]
+public partial class GetUsersResult : OneOfBase<UserInfo[], ForbiddenError, UnexpectedError>;
+
+[GenerateOneOf]
+public partial class GetPendingUsersResult : OneOfBase<UserInfo[], ForbiddenError, UnexpectedError>;
+
+[GenerateOneOf]
+public partial class UpdateUserStatusResult : OneOfBase<UserInfo, UserNotFoundError, ForbiddenError, ValidationError, UnexpectedError>;

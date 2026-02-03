@@ -3,6 +3,7 @@ using FaunaFinder.Identity.Contracts.Requests;
 using FaunaFinder.Identity.Contracts.Responses;
 using FaunaFinder.Identity.Contracts.Results;
 using FaunaFinder.Identity.Database.Models;
+using FaunaFinder.Identity.DataAccess.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 
@@ -11,7 +12,8 @@ namespace FaunaFinder.Identity.Application.Services;
 public sealed class AuthService(
     UserManager<User> userManager,
     SignInManager<User> signInManager,
-    IHttpContextAccessor httpContextAccessor
+    IHttpContextAccessor httpContextAccessor,
+    IUserRepository userRepository
 ) : IAuthService
 {
     public async Task<RegisterResult> RegisterAsync(RegisterRequest request, CancellationToken cancellationToken = default)
@@ -38,8 +40,6 @@ public sealed class AuthService(
         {
             return new RegistrationFailedError(result.Errors.Select(e => e.Description));
         }
-
-        await signInManager.SignInAsync(user, isPersistent: true);
 
         return ToUserInfo(user);
     }
@@ -69,6 +69,12 @@ public sealed class AuthService(
             return new InvalidCredentialsError();
         }
 
+        if (user.Status != UserStatus.Approved)
+        {
+            await signInManager.SignOutAsync();
+            return new AccountNotApprovedError();
+        }
+
         return ToUserInfo(user);
     }
 
@@ -92,6 +98,74 @@ public sealed class AuthService(
         }
 
         return ToUserInfo(user);
+    }
+
+    public async Task<GetUsersResult> GetAllUsersAsync(CancellationToken cancellationToken = default)
+    {
+        if (!await IsCurrentUserApprovedAdminAsync())
+            return new ForbiddenError();
+
+        var users = await userRepository.GetAllAsync(cancellationToken);
+        return users.ToArray();
+    }
+
+    public async Task<GetPendingUsersResult> GetPendingUsersAsync(CancellationToken cancellationToken = default)
+    {
+        if (!await IsCurrentUserApprovedAdminAsync())
+            return new ForbiddenError();
+
+        var users = await userRepository.GetPendingUsersAsync(cancellationToken);
+        return users.ToArray();
+    }
+
+    public async Task<UpdateUserStatusResult> UpdateUserStatusAsync(int userId, UpdateUserStatusRequest request, CancellationToken cancellationToken = default)
+    {
+        if (!await IsCurrentUserApprovedAdminAsync())
+            return new ForbiddenError();
+
+        var currentUserId = GetCurrentUserId();
+        if (currentUserId is null || currentUserId == userId)
+            return new ForbiddenError();
+
+        if (!Enum.TryParse<UserStatus>(request.Status, out var newStatus))
+            return new ValidationError("Invalid status", new Dictionary<string, string[]>
+            {
+                ["Status"] = [$"'{request.Status}' is not a valid status"]
+            });
+
+        var user = await userManager.FindByIdAsync(userId.ToString());
+        if (user is null)
+            return new UserNotFoundError(userId);
+
+        user.Status = newStatus;
+        user.UpdatedAt = DateTime.UtcNow;
+
+        await userManager.UpdateSecurityStampAsync(user);
+        var result = await userManager.UpdateAsync(user);
+        if (!result.Succeeded)
+            return new UnexpectedError(string.Join(", ", result.Errors.Select(e => e.Description)));
+
+        return ToUserInfo(user);
+    }
+
+    private int? GetCurrentUserId()
+    {
+        var httpContext = httpContextAccessor.HttpContext;
+        var idClaim = httpContext?.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        return int.TryParse(idClaim, out var id) ? id : null;
+    }
+
+    private async Task<bool> IsCurrentUserApprovedAdminAsync()
+    {
+        var httpContext = httpContextAccessor.HttpContext;
+        if (httpContext?.User.Identity?.IsAuthenticated != true)
+            return false;
+
+        if (!httpContext.User.IsInRole("Admin"))
+            return false;
+
+        var user = await userManager.GetUserAsync(httpContext.User);
+        return user is { Status: UserStatus.Approved, Role: UserRole.Admin };
     }
 
     private static UserInfo ToUserInfo(User user) => new(

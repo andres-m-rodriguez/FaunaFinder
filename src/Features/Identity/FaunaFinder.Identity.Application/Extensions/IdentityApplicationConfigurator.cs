@@ -1,6 +1,8 @@
 using FaunaFinder.Identity.Application.Services;
+using FaunaFinder.Identity.Contracts.Requests;
 using FaunaFinder.Identity.Database;
 using FaunaFinder.Identity.Database.Models;
+using FluentValidation;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -22,7 +24,18 @@ public static class IdentityApplicationConfigurator
             options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
             options.Lockout.MaxFailedAccessAttempts = 5;
         })
-        .AddEntityFrameworkStores<IdentityDbContext>();
+        .AddEntityFrameworkStores<IdentityDbContext>()
+        .AddClaimsPrincipalFactory<CustomUserClaimsPrincipalFactory>();
+
+        // Revalidate the security stamp frequently so that status/role
+        // changes invalidate existing sessions quickly
+        services.Configure<SecurityStampValidatorOptions>(options =>
+        {
+            options.ValidationInterval = TimeSpan.FromMinutes(1);
+        });
+
+        // Register validators from Contracts assembly
+        services.AddValidatorsFromAssemblyContaining<LoginRequestValidator>();
 
         // Add application services
         services.AddScoped<IAuthService, AuthService>();

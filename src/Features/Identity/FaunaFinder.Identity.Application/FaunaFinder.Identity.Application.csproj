@@ -11,6 +11,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.1" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\FaunaFinder.Identity.DataAccess\FaunaFinder.Identity.DataAccess.csproj" />
     <ProjectReference Include="..\FaunaFinder.Identity.Contracts\FaunaFinder.Identity.Contracts.csproj" />
   </ItemGroup>

@@ -1,9 +1,16 @@
 @page "/dashboard"
 @using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
 @using FaunaFinder.Wildlife.Contracts
+@using FaunaFinder.Identity.Application.Client
+@using FaunaFinder.Identity.Contracts.Requests
+@using FaunaFinder.Identity.Contracts.Responses
 @inject IWildlifeHttpClient WildlifeHttpClient
+@inject IIdentityClient IdentityClient
 @inject IAppLocalizer L
 @inject ISnackbar Snackbar
+@inject AuthenticationStateProvider AuthStateProvider
+@inject NavigationManager Navigation
 @attribute [Authorize(Roles = "Admin,Teacher")]
 
 <PageTitle>@L["Dashboard_Title"] - FaunaFinder</PageTitle>
@@ -102,6 +109,86 @@
                 }
             }
         </MudTabPanel>
+
+        <AuthorizeView Roles="Admin">
+            <MudTabPanel Text="@L["Admin_Title"]" Icon="@Icons.Material.Filled.People">
+                @if (_isLoadingUsers)
+                {
+                    <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+                }
+                else if (_usersError is not null)
+                {
+                    <MudAlert Severity="Severity.Error" Class="mb-4">@_usersError</MudAlert>
+                }
+                else if (_users is null || _users.Length == 0)
+                {
+                    <MudPaper Class="pa-6 text-center" Elevation="0">
+                        <MudIcon Icon="@Icons.Material.Filled.PeopleOutline" Size="Size.Large" Color="Color.Secondary" Class="mb-4" />
+                        <MudText Typo="Typo.h6" Color="Color.Secondary">@L["Admin_NoUsers"]</MudText>
+                    </MudPaper>
+                }
+                else
+                {
+                    <MudTable Items="_users" Dense="true" Hover="true" Striped="true" Elevation="2">
+                        <HeaderContent>
+                            <MudTh>@L["Admin_DisplayName"]</MudTh>
+                            <MudTh>@L["Admin_Email"]</MudTh>
+                            <MudTh>@L["Admin_Status"]</MudTh>
+                            <MudTh>@L["Admin_Role"]</MudTh>
+                            <MudTh>@L["Admin_Actions"]</MudTh>
+                        </HeaderContent>
+                        <RowTemplate Context="user">
+                            <MudTd DataLabel="@L["Admin_DisplayName"]">@user.DisplayName</MudTd>
+                            <MudTd DataLabel="@L["Admin_Email"]">@user.Email</MudTd>
+                            <MudTd DataLabel="@L["Admin_Status"]">
+                                <MudChip T="string"
+                                         Size="Size.Small"
+                                         Color="@GetStatusColor(user.Status)">
+                                    @GetStatusText(user.Status)
+                                </MudChip>
+                            </MudTd>
+                            <MudTd DataLabel="@L["Admin_Role"]">
+                                <MudChip T="string"
+                                         Size="Size.Small"
+                                         Color="@GetRoleColor(user.Role)">
+                                    @GetRoleText(user.Role)
+                                </MudChip>
+                            </MudTd>
+                            <MudTd DataLabel="@L["Admin_Actions"]">
+                                <div class="d-flex gap-2 flex-wrap">
+                                    @if (user.Status == "Pending")
+                                    {
+                                        <MudButton Variant="Variant.Filled"
+                                                   Size="Size.Small"
+                                                   Color="Color.Success"
+                                                   StartIcon="@Icons.Material.Filled.Check"
+                                                   OnClick="@(() => UpdateUserStatus(user.Id, "Approved"))"
+                                                   Disabled="_isUpdatingUser">
+                                            @L["Admin_Approve"]
+                                        </MudButton>
+                                        <MudButton Variant="Variant.Filled"
+                                                   Size="Size.Small"
+                                                   Color="Color.Error"
+                                                   StartIcon="@Icons.Material.Filled.Close"
+                                                   OnClick="@(() => UpdateUserStatus(user.Id, "Rejected"))"
+                                                   Disabled="_isUpdatingUser">
+                                            @L["Admin_Reject"]
+                                        </MudButton>
+                                    }
+                                    <MudButton Variant="Variant.Outlined"
+                                               Size="Size.Small"
+                                               Color="Color.Primary"
+                                               StartIcon="@Icons.Material.Filled.Info"
+                                               OnClick="@(() => Navigation.NavigateTo($"/dashboard/users/{user.Id}"))">
+                                        @L["Admin_ViewDetails"]
+                                    </MudButton>
+                                </div>
+                            </MudTd>
+                        </RowTemplate>
+                    </MudTable>
+                }
+            </MudTabPanel>
+        </AuthorizeView>
     </MudTabs>
 </MudContainer>
 
@@ -240,6 +327,12 @@
     private bool _showDetailsDialog;
     private SightingListItem? _detailsSighting;
 
+    // User management state
+    private UserInfo[]? _users;
+    private bool _isLoadingUsers;
+    private bool _isUpdatingUser;
+    private string? _usersError;
+
     private readonly DialogOptions _dialogOptions = new()
     {
         MaxWidth = MaxWidth.Small,
@@ -257,6 +350,12 @@
     protected override async Task OnInitializedAsync()
     {
         await LoadSightings();
+
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        if (authState.User.IsInRole("Admin"))
+        {
+            await LoadUsers();
+        }
     }
 
     private async Task LoadSightings()
@@ -355,6 +454,91 @@
             _isReviewing = false;
         }
     }
+
+    private async Task LoadUsers()
+    {
+        _isLoadingUsers = true;
+        _usersError = null;
+
+        try
+        {
+            var result = await IdentityClient.GetAllUsersAsync();
+            result.Switch(
+                users => _users = users,
+                forbidden => _usersError = L["Admin_AccessDeniedMessage"],
+                unexpected => _usersError = unexpected.Message
+            );
+        }
+        catch (Exception ex)
+        {
+            _usersError = ex.Message;
+        }
+        finally
+        {
+            _isLoadingUsers = false;
+        }
+    }
+
+    private async Task UpdateUserStatus(int userId, string status)
+    {
+        _isUpdatingUser = true;
+
+        try
+        {
+            var result = await IdentityClient.UpdateUserStatusAsync(userId, new UpdateUserStatusRequest(status));
+            var success = false;
+            result.Switch(
+                userInfo => { Snackbar.Add(status == "Approved" ? L["Admin_Approve"] : L["Admin_Reject"], Severity.Success); success = true; },
+                notFound => Snackbar.Add(notFound.Message, Severity.Error),
+                forbidden => Snackbar.Add(L["Admin_AccessDeniedMessage"], Severity.Error),
+                validation => Snackbar.Add(validation.Message, Severity.Error),
+                unexpected => Snackbar.Add(unexpected.Message, Severity.Error)
+            );
+            if (success) await LoadUsers();
+        }
+        catch (Exception)
+        {
+            Snackbar.Add(L["Admin_AccessDeniedMessage"], Severity.Error);
+        }
+        finally
+        {
+            _isUpdatingUser = false;
+        }
+    }
+
+    private Color GetStatusColor(string status) => status switch
+    {
+        "Pending" => Color.Warning,
+        "Approved" => Color.Success,
+        "Rejected" => Color.Error,
+        _ => Color.Default
+    };
+
+    private string GetStatusText(string status) => status switch
+    {
+        "Pending" => L["Admin_Pending"],
+        "Approved" => L["Admin_Approved"],
+        "Rejected" => L["Admin_Rejected"],
+        _ => status
+    };
+
+    private Color GetRoleColor(string role) => role switch
+    {
+        "Admin" => Color.Error,
+        "Contributor" => Color.Primary,
+        "Teacher" => Color.Primary,
+        "Student" => Color.Info,
+        "Viewer" => Color.Default,
+        _ => Color.Default
+    };
+
+    private string GetRoleText(string role) => role switch
+    {
+        "Admin" => L["Admin_Admin"],
+        "Contributor" => L["Admin_Contributor"],
+        "Viewer" => L["Admin_Viewer"],
+        _ => role
+    };
 
     private string GetModeText(string mode) => mode switch
     {
