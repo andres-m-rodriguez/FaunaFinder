@@ -31,6 +31,8 @@ public static class AuthEndpoints
             .RequireAuthorization(policy => policy.RequireRole("Admin"));
         group.MapGet("/access-requests/search", GetAccessRequestsCursorPage)
             .RequireAuthorization(policy => policy.RequireRole("Admin"));
+        group.MapGet("/access-requests/{id}", GetAccessRequestById)
+            .RequireAuthorization(policy => policy.RequireRole("Admin"));
         group.MapPut("/access-requests/{id}/status", UpdateAccessRequestStatus)
             .RequireAuthorization(policy => policy.RequireRole("Admin"));
 
@@ -122,6 +124,21 @@ public static class AuthEndpoints
 
         return result.Match<IResult>(
             requests => Results.Ok(requests),
+            forbidden => Results.Forbid(),
+            unexpected => Results.Problem(unexpected.Message, statusCode: StatusCodes.Status500InternalServerError)
+        );
+    }
+
+    private static async Task<IResult> GetAccessRequestById(
+        int id,
+        IAuthService authService,
+        CancellationToken cancellationToken)
+    {
+        var result = await authService.GetAccessRequestByIdAsync(id, cancellationToken);
+
+        return result.Match<IResult>(
+            accessRequest => Results.Ok(accessRequest),
+            notFound => Results.NotFound(notFound),
             forbidden => Results.Forbid(),
             unexpected => Results.Problem(unexpected.Message, statusCode: StatusCodes.Status500InternalServerError)
         );

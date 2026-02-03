@@ -146,14 +146,10 @@
 
         try
         {
-            var result = await IdentityClient.GetPendingAccessRequestsAsync();
+            var result = await IdentityClient.GetAccessRequestByIdAsync(Id);
             result.Switch(
-                requests =>
-                {
-                    _request = requests.FirstOrDefault(r => r.Id == Id);
-                    if (_request is null)
-                        _error = L["Admin_UserNotFound"];
-                },
+                accessRequest => _request = accessRequest,
+                notFound => _error = L["Admin_UserNotFound"],
                 forbidden => _error = L["Admin_AccessDeniedMessage"],
                 unexpected => _error = unexpected.Message
             );
