@@ -22,15 +22,13 @@ public sealed class AuthService(
             return new EmailAlreadyExistsError(request.Email);
         }
 
-        var isFirstUser = !userManager.Users.Any();
-
         var user = new User
         {
             UserName = request.Email,
             Email = request.Email,
             DisplayName = request.DisplayName,
-            Status = isFirstUser ? UserStatus.Approved : UserStatus.Pending,
-            Role = isFirstUser ? UserRole.Admin : UserRole.Viewer,
+            Status = UserStatus.Pending,
+            Role = UserRole.Viewer,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
         };
