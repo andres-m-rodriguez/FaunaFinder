@@ -25,8 +25,6 @@ public static class AuthEndpoints
             .RequireAuthorization(policy => policy.RequireRole("Admin"));
         group.MapPut("/users/{id}/status", UpdateUserStatus)
             .RequireAuthorization(policy => policy.RequireRole("Admin"));
-        group.MapPut("/users/{id}/role", UpdateUserRole)
-            .RequireAuthorization(policy => policy.RequireRole("Admin"));
 
         return app;
     }
@@ -128,20 +126,4 @@ public static class AuthEndpoints
         );
     }
 
-    private static async Task<IResult> UpdateUserRole(
-        int id,
-        UpdateUserRoleRequest request,
-        IAuthService authService,
-        CancellationToken cancellationToken)
-    {
-        var result = await authService.UpdateUserRoleAsync(id, request, cancellationToken);
-
-        return result.Match<IResult>(
-            userInfo => Results.Ok(userInfo),
-            notFound => Results.NotFound(notFound),
-            forbidden => Results.Forbid(),
-            validation => Results.BadRequest(validation),
-            unexpected => Results.Problem(unexpected.Message, statusCode: StatusCodes.Status500InternalServerError)
-        );
-    }
 }

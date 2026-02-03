@@ -25,6 +25,13 @@ public static class IdentityApplicationConfigurator
         .AddEntityFrameworkStores<IdentityDbContext>()
         .AddClaimsPrincipalFactory<CustomUserClaimsPrincipalFactory>();
 
+        // Revalidate the security stamp frequently so that status/role
+        // changes invalidate existing sessions quickly
+        services.Configure<SecurityStampValidatorOptions>(options =>
+        {
+            options.ValidationInterval = TimeSpan.FromMinutes(1);
+        });
+
         // Add application services
         services.AddScoped<IAuthService, AuthService>();
 

@@ -156,22 +156,4 @@ public sealed class IdentityClient : IIdentityClient
         };
     }
 
-    public async Task<UpdateUserRoleResult> UpdateUserRoleAsync(int userId, UpdateUserRoleRequest request, CancellationToken cancellationToken = default)
-    {
-        var response = await _httpClient.PutAsJsonAsync($"api/auth/users/{userId}/role", request, cancellationToken);
-
-        if (response.IsSuccessStatusCode)
-        {
-            var user = await response.Content.ReadFromJsonAsync<UserInfo>(cancellationToken);
-            return user!;
-        }
-
-        return response.StatusCode switch
-        {
-            HttpStatusCode.NotFound => new UserNotFoundError(userId),
-            HttpStatusCode.Forbidden => new ForbiddenError(),
-            HttpStatusCode.BadRequest => new ValidationError("Validation failed", new Dictionary<string, string[]>()),
-            _ => new UnexpectedError(await response.Content.ReadAsStringAsync(cancellationToken))
-        };
-    }
 }

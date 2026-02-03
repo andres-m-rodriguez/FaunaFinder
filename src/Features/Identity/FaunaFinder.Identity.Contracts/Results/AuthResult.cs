@@ -21,6 +21,3 @@ public partial class GetPendingUsersResult : OneOfBase<UserInfo[], ForbiddenErro
 
 [GenerateOneOf]
 public partial class UpdateUserStatusResult : OneOfBase<UserInfo, UserNotFoundError, ForbiddenError, ValidationError, UnexpectedError>;
-
-[GenerateOneOf]
-public partial class UpdateUserRoleResult : OneOfBase<UserInfo, UserNotFoundError, ForbiddenError, ValidationError, UnexpectedError>;

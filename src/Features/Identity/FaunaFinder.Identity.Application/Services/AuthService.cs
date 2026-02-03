@@ -41,8 +41,6 @@ public sealed class AuthService(
             return new RegistrationFailedError(result.Errors.Select(e => e.Description));
         }
 
-        await signInManager.SignInAsync(user, isPersistent: true);
-
         return ToUserInfo(user);
     }
 
@@ -69,6 +67,12 @@ public sealed class AuthService(
         if (!result.Succeeded)
         {
             return new InvalidCredentialsError();
+        }
+
+        if (user.Status != UserStatus.Approved)
+        {
+            await signInManager.SignOutAsync();
+            return new AccountNotApprovedError();
         }
 
         return ToUserInfo(user);
@@ -98,7 +102,7 @@ public sealed class AuthService(
 
     public async Task<GetUsersResult> GetAllUsersAsync(CancellationToken cancellationToken = default)
     {
-        if (!IsCurrentUserAdmin())
+        if (!await IsCurrentUserApprovedAdminAsync())
             return new ForbiddenError();
 
         var users = await userRepository.GetAllAsync(cancellationToken);
@@ -107,7 +111,7 @@ public sealed class AuthService(
 
     public async Task<GetPendingUsersResult> GetPendingUsersAsync(CancellationToken cancellationToken = default)
     {
-        if (!IsCurrentUserAdmin())
+        if (!await IsCurrentUserApprovedAdminAsync())
             return new ForbiddenError();
 
         var users = await userRepository.GetPendingUsersAsync(cancellationToken);
@@ -116,7 +120,11 @@ public sealed class AuthService(
 
     public async Task<UpdateUserStatusResult> UpdateUserStatusAsync(int userId, UpdateUserStatusRequest request, CancellationToken cancellationToken = default)
     {
-        if (!IsCurrentUserAdmin())
+        if (!await IsCurrentUserApprovedAdminAsync())
+            return new ForbiddenError();
+
+        var currentUserId = GetCurrentUserId();
+        if (currentUserId == userId)
             return new ForbiddenError();
 
         var user = await userManager.FindByIdAsync(userId.ToString());
@@ -126,6 +134,7 @@ public sealed class AuthService(
         user.Status = Enum.Parse<UserStatus>(request.Status);
         user.UpdatedAt = DateTime.UtcNow;
 
+        await userManager.UpdateSecurityStampAsync(user);
         var result = await userManager.UpdateAsync(user);
         if (!result.Succeeded)
             return new UnexpectedError(string.Join(", ", result.Errors.Select(e => e.Description)));
@@ -133,32 +142,24 @@ public sealed class AuthService(
         return ToUserInfo(user);
     }
 
-    public async Task<UpdateUserRoleResult> UpdateUserRoleAsync(int userId, UpdateUserRoleRequest request, CancellationToken cancellationToken = default)
+    private int? GetCurrentUserId()
     {
-        if (!IsCurrentUserAdmin())
-            return new ForbiddenError();
-
-        var user = await userManager.FindByIdAsync(userId.ToString());
-        if (user is null)
-            return new UserNotFoundError(userId);
-
-        user.Role = Enum.Parse<UserRole>(request.Role);
-        user.UpdatedAt = DateTime.UtcNow;
-
-        var result = await userManager.UpdateAsync(user);
-        if (!result.Succeeded)
-            return new UnexpectedError(string.Join(", ", result.Errors.Select(e => e.Description)));
-
-        return ToUserInfo(user);
+        var httpContext = httpContextAccessor.HttpContext;
+        var idClaim = httpContext?.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        return int.TryParse(idClaim, out var id) ? id : null;
     }
 
-    private bool IsCurrentUserAdmin()
+    private async Task<bool> IsCurrentUserApprovedAdminAsync()
     {
         var httpContext = httpContextAccessor.HttpContext;
         if (httpContext?.User.Identity?.IsAuthenticated != true)
             return false;
 
-        return httpContext.User.IsInRole("Admin");
+        if (!httpContext.User.IsInRole("Admin"))
+            return false;
+
+        var user = await userManager.GetUserAsync(httpContext.User);
+        return user is { Status: UserStatus.Approved, Role: UserRole.Admin };
     }
 
     private static UserInfo ToUserInfo(User user) => new(

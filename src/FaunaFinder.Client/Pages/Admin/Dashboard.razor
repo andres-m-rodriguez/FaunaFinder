@@ -1,5 +1,6 @@
 @page "/dashboard"
 @using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
 @using FaunaFinder.Wildlife.Contracts
 @using FaunaFinder.Identity.Application.Client
 @using FaunaFinder.Identity.Contracts.Requests
@@ -8,6 +9,8 @@
 @inject IIdentityClient IdentityClient
 @inject IAppLocalizer L
 @inject ISnackbar Snackbar
+@inject AuthenticationStateProvider AuthStateProvider
+@inject NavigationManager Navigation
 @attribute [Authorize(Roles = "Admin,Teacher")]
 
 <PageTitle>@L["Dashboard_Title"] - FaunaFinder</PageTitle>
@@ -172,11 +175,13 @@
                                             @L["Admin_Reject"]
                                         </MudButton>
                                     }
-                                    <MudMenu Label="@L["Admin_Role"]" Variant="Variant.Outlined" Size="Size.Small" EndIcon="@Icons.Material.Filled.ArrowDropDown">
-                                        <MudMenuItem OnClick="@(() => UpdateUserRole(user.Id, "Viewer"))">@L["Admin_MakeViewer"]</MudMenuItem>
-                                        <MudMenuItem OnClick="@(() => UpdateUserRole(user.Id, "Contributor"))">@L["Admin_MakeContributor"]</MudMenuItem>
-                                        <MudMenuItem OnClick="@(() => UpdateUserRole(user.Id, "Admin"))">@L["Admin_MakeAdmin"]</MudMenuItem>
-                                    </MudMenu>
+                                    <MudButton Variant="Variant.Outlined"
+                                               Size="Size.Small"
+                                               Color="Color.Primary"
+                                               StartIcon="@Icons.Material.Filled.Info"
+                                               OnClick="@(() => Navigation.NavigateTo($"/dashboard/users/{user.Id}"))">
+                                        @L["Admin_ViewDetails"]
+                                    </MudButton>
                                 </div>
                             </MudTd>
                         </RowTemplate>
@@ -345,7 +350,12 @@
     protected override async Task OnInitializedAsync()
     {
         await LoadSightings();
-        await LoadUsers();
+
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        if (authState.User.IsInRole("Admin"))
+        {
+            await LoadUsers();
+        }
     }
 
     private async Task LoadSightings()
@@ -479,33 +489,6 @@
             var success = false;
             result.Switch(
                 userInfo => { Snackbar.Add(status == "Approved" ? L["Admin_Approve"] : L["Admin_Reject"], Severity.Success); success = true; },
-                notFound => Snackbar.Add(notFound.Message, Severity.Error),
-                forbidden => Snackbar.Add(L["Admin_AccessDeniedMessage"], Severity.Error),
-                validation => Snackbar.Add(validation.Message, Severity.Error),
-                unexpected => Snackbar.Add(unexpected.Message, Severity.Error)
-            );
-            if (success) await LoadUsers();
-        }
-        catch (Exception)
-        {
-            Snackbar.Add(L["Admin_AccessDeniedMessage"], Severity.Error);
-        }
-        finally
-        {
-            _isUpdatingUser = false;
-        }
-    }
-
-    private async Task UpdateUserRole(int userId, string role)
-    {
-        _isUpdatingUser = true;
-
-        try
-        {
-            var result = await IdentityClient.UpdateUserRoleAsync(userId, new UpdateUserRoleRequest(role));
-            var success = false;
-            result.Switch(
-                userInfo => { Snackbar.Add($"{L["Admin_Role"]}: {role}", Severity.Success); success = true; },
                 notFound => Snackbar.Add(notFound.Message, Severity.Error),
                 forbidden => Snackbar.Add(L["Admin_AccessDeniedMessage"], Severity.Error),
                 validation => Snackbar.Add(validation.Message, Severity.Error),

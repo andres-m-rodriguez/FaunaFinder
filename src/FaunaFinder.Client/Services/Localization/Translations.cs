@@ -180,6 +180,11 @@ public static class Translations
         ["Admin_Admin"] = "Admin",
         ["Admin_AccessDenied"] = "Access Denied",
         ["Admin_AccessDeniedMessage"] = "You do not have permission to access this page.",
+        ["Admin_ViewDetails"] = "View Details",
+        ["Admin_UserNotFound"] = "User not found.",
+        ["Admin_UserInfo"] = "User Information",
+        ["Admin_PendingActionDescription"] = "This user is awaiting approval. Approve or reject their account request.",
+        ["Admin_NoActionsAvailable"] = "No actions available for this user.",
         ["Nav_Admin"] = "Admin",
 
         // User Menu
@@ -476,6 +481,11 @@ public static class Translations
         ["Admin_Admin"] = "Admin",
         ["Admin_AccessDenied"] = "Acceso denegado",
         ["Admin_AccessDeniedMessage"] = "No tienes permiso para acceder a esta página.",
+        ["Admin_ViewDetails"] = "Ver Detalles",
+        ["Admin_UserNotFound"] = "Usuario no encontrado.",
+        ["Admin_UserInfo"] = "Información del Usuario",
+        ["Admin_PendingActionDescription"] = "Este usuario está esperando aprobación. Aprueba o rechaza su solicitud de cuenta.",
+        ["Admin_NoActionsAvailable"] = "No hay acciones disponibles para este usuario.",
         ["Nav_Admin"] = "Admin",
 
         // User Menu

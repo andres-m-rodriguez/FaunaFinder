@@ -12,5 +12,4 @@ public interface IIdentityClient
     Task<GetUsersResult> GetAllUsersAsync(CancellationToken cancellationToken = default);
     Task<GetPendingUsersResult> GetPendingUsersAsync(CancellationToken cancellationToken = default);
     Task<UpdateUserStatusResult> UpdateUserStatusAsync(int userId, UpdateUserStatusRequest request, CancellationToken cancellationToken = default);
-    Task<UpdateUserRoleResult> UpdateUserRoleAsync(int userId, UpdateUserRoleRequest request, CancellationToken cancellationToken = default);
 }
