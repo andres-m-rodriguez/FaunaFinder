@@ -117,7 +117,7 @@ public sealed class AuthService(
         return users.ToArray();
     }
 
-    public async Task<GetUsersCursorPageResult> GetUsersCursorPageAsync(CursorPageRequest request, CancellationToken cancellationToken = default)
+    public async Task<GetUsersCursorPageResult> GetUsersCursorPageAsync(CursorPageParameter request, CancellationToken cancellationToken = default)
     {
         if (!await IsCurrentUserAdminAsync())
             return new ForbiddenError();
@@ -147,7 +147,7 @@ public sealed class AuthService(
         return accessRequest;
     }
 
-    public async Task<GetAccessRequestsCursorPageResult> GetAccessRequestsCursorPageAsync(AccessRequestPageRequest request, CancellationToken cancellationToken = default)
+    public async Task<GetAccessRequestsCursorPageResult> GetAccessRequestsCursorPageAsync(AccessRequestPageParameter request, CancellationToken cancellationToken = default)
     {
         if (!await IsCurrentUserAdminAsync())
             return new ForbiddenError();

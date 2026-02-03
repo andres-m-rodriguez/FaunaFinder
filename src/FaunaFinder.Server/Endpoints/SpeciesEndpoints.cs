@@ -63,7 +63,7 @@ public static class SpeciesEndpoints
             ISpeciesRepository repository,
             CancellationToken ct) =>
         {
-            var request = new CursorPageRequest(cursor, pageSize, search);
+            var request = new CursorPageParameter(cursor, pageSize, search);
             var page = await repository.GetSpeciesCursorPageAsync(request, ct);
             return Results.Ok(page);
         }).WithName("GetSpeciesCursor");

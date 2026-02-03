@@ -12,5 +12,5 @@ public interface IAccessRequestRepository
     Task<AccessRequest?> GetEntityByEmailAsync(string email, CancellationToken cancellationToken = default);
     Task<AccessRequestInfo> CreateAsync(AccessRequest accessRequest, CancellationToken cancellationToken = default);
     Task<AccessRequestInfo?> UpdateStatusAsync(int id, AccessRequestStatus status, CancellationToken cancellationToken = default);
-    Task<CursorPage<AccessRequestInfo>> GetCursorPageAsync(AccessRequestPageRequest request, CancellationToken cancellationToken = default);
+    Task<CursorPage<AccessRequestInfo>> GetCursorPageAsync(AccessRequestPageParameter request, CancellationToken cancellationToken = default);
 }

@@ -29,6 +29,6 @@ public interface ISpeciesHttpClient
         CancellationToken cancellationToken = default);
 
     Task<CursorPage<SpeciesForSearchDto>> GetSpeciesCursorPageAsync(
-        CursorPageRequest request,
+        CursorPageParameter request,
         CancellationToken cancellationToken = default);
 }

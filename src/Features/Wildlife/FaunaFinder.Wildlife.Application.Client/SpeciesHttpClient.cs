@@ -88,7 +88,7 @@ public sealed class SpeciesHttpClient : ISpeciesHttpClient
     }
 
     public async Task<CursorPage<SpeciesForSearchDto>> GetSpeciesCursorPageAsync(
-        CursorPageRequest request,
+        CursorPageParameter request,
         CancellationToken cancellationToken = default)
     {
         var queryString = BuildCursorQueryString(request);
@@ -98,7 +98,7 @@ public sealed class SpeciesHttpClient : ISpeciesHttpClient
         return result ?? new CursorPage<SpeciesForSearchDto>([], null, false);
     }
 
-    private static string BuildCursorQueryString(CursorPageRequest request)
+    private static string BuildCursorQueryString(CursorPageParameter request)
     {
         var queryParams = new List<string>
         {

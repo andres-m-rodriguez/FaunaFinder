@@ -58,7 +58,7 @@ public sealed class UserRepository(
             .ToListAsync(cancellationToken);
     }
 
-    public async Task<CursorPage<UserInfo>> GetCursorPageAsync(CursorPageRequest request, CancellationToken cancellationToken = default)
+    public async Task<CursorPage<UserInfo>> GetCursorPageAsync(CursorPageParameter request, CancellationToken cancellationToken = default)
     {
         await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
 

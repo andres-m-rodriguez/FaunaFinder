@@ -151,7 +151,7 @@
 
         try
         {
-            var request = new CursorPageRequest(_nextCursor, 20, string.IsNullOrWhiteSpace(_searchText) ? null : _searchText);
+            var request = new CursorPageParameter(_nextCursor, 20, string.IsNullOrWhiteSpace(_searchText) ? null : _searchText);
             var result = await IdentityClient.GetUsersCursorPageAsync(request);
 
             result.Switch(

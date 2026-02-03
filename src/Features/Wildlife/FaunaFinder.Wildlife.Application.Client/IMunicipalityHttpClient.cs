@@ -22,6 +22,6 @@ public interface IMunicipalityHttpClient
         CancellationToken cancellationToken = default);
 
     Task<CursorPage<MunicipalityCardDto>> GetMunicipalitiesCursorPageAsync(
-        CursorPageRequest request,
+        CursorPageParameter request,
         CancellationToken cancellationToken = default);
 }

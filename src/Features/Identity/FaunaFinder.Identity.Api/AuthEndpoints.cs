@@ -151,7 +151,7 @@ public static class AuthEndpoints
         IAuthService authService,
         CancellationToken cancellationToken)
     {
-        var request = new CursorPageRequest(cursor, pageSize ?? 20, search);
+        var request = new CursorPageParameter(cursor, pageSize ?? 20, search);
         var result = await authService.GetUsersCursorPageAsync(request, cancellationToken);
 
         return result.Match<IResult>(
@@ -169,7 +169,7 @@ public static class AuthEndpoints
         IAuthService authService,
         CancellationToken cancellationToken)
     {
-        var request = new AccessRequestPageRequest(cursor, pageSize ?? 20, search, status);
+        var request = new AccessRequestPageParameter(cursor, pageSize ?? 20, search, status);
         var result = await authService.GetAccessRequestsCursorPageAsync(request, cancellationToken);
 
         return result.Match<IResult>(
