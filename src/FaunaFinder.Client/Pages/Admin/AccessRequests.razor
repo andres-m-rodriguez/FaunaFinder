@@ -1,0 +1,262 @@
+@page "/admin/access-requests"
+@using Microsoft.AspNetCore.Authorization
+@using FaunaFinder.Identity.Application.Client
+@using FaunaFinder.Identity.Contracts.Requests
+@using FaunaFinder.Identity.Contracts.Responses
+@inject IIdentityClient IdentityClient
+@inject IAppLocalizer L
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+@implements IDisposable
+@attribute [Authorize(Roles = "Admin")]
+
+<PageTitle>@L["Admin_AccessRequests_Title"] - FaunaFinder</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="py-4">
+    <MudButton Variant="Variant.Text"
+               Color="Color.Primary"
+               StartIcon="@Icons.Material.Filled.ArrowBack"
+               OnClick="@(() => Navigation.NavigateTo("/dashboard"))"
+               Class="mb-4">
+        @L["Back"]
+    </MudButton>
+
+    <MudText Typo="Typo.h4" Class="mb-2">@L["Admin_AccessRequests_Title"]</MudText>
+    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-4">@L["Admin_AccessRequests_Description"]</MudText>
+
+    <MudGrid Class="mb-4">
+        <MudItem xs="12" sm="8" md="9">
+            <MudTextField T="string"
+                          Value="_searchText"
+                          ValueChanged="OnSearchChanged"
+                          Placeholder="@L["Admin_AccessRequests_SearchPlaceholder"]"
+                          Variant="Variant.Outlined"
+                          Adornment="Adornment.Start"
+                          AdornmentIcon="@Icons.Material.Filled.Search"
+                          DebounceInterval="300"
+                          Immediate="true" />
+        </MudItem>
+        <MudItem xs="12" sm="4" md="3">
+            <MudSelect T="string"
+                       Value="_statusFilter"
+                       ValueChanged="OnStatusFilterChanged"
+                       Variant="Variant.Outlined">
+                <MudSelectItem T="string" Value="@("Pending")">@L["Admin_Pending"]</MudSelectItem>
+                <MudSelectItem T="string" Value="@("Approved")">@L["Admin_Approved"]</MudSelectItem>
+                <MudSelectItem T="string" Value="@("Rejected")">@L["Admin_Rejected"]</MudSelectItem>
+                <MudSelectItem T="string" Value="@("")">@L["Admin_AccessRequests_StatusAll"]</MudSelectItem>
+            </MudSelect>
+        </MudItem>
+    </MudGrid>
+
+    @if (_isInitialLoading)
+    {
+        <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+    }
+    else if (_error is not null)
+    {
+        <MudAlert Severity="Severity.Error" Class="mb-4">@_error</MudAlert>
+    }
+    else if (_requests.Count == 0)
+    {
+        <MudPaper Class="pa-6 text-center" Elevation="0">
+            <MudIcon Icon="@Icons.Material.Filled.HowToReg" Size="Size.Large" Color="Color.Secondary" Class="mb-4" />
+            <MudText Typo="Typo.h6" Color="Color.Secondary">@L["Admin_NoAccessRequests"]</MudText>
+        </MudPaper>
+    }
+    else
+    {
+        <MudTable Items="_requests" Dense="true" Hover="true" Striped="true" Elevation="2">
+            <HeaderContent>
+                <MudTh>@L["Admin_DisplayName"]</MudTh>
+                <MudTh>@L["Admin_Email"]</MudTh>
+                <MudTh>@L["Admin_Message"]</MudTh>
+                <MudTh>@L["Admin_Status"]</MudTh>
+                <MudTh>@L["Admin_CreatedAt"]</MudTh>
+                <MudTh>@L["Admin_Actions"]</MudTh>
+            </HeaderContent>
+            <RowTemplate Context="request">
+                <MudTd DataLabel="@L["Admin_DisplayName"]">@request.DisplayName</MudTd>
+                <MudTd DataLabel="@L["Admin_Email"]">@request.Email</MudTd>
+                <MudTd DataLabel="@L["Admin_Message"]">
+                    @(request.Message is not null && request.Message.Length > 50
+                        ? request.Message[..50] + "..."
+                        : request.Message ?? "-")
+                </MudTd>
+                <MudTd DataLabel="@L["Admin_Status"]">
+                    <MudChip T="string"
+                             Size="Size.Small"
+                             Color="@GetStatusColor(request.Status)">
+                        @GetStatusText(request.Status)
+                    </MudChip>
+                </MudTd>
+                <MudTd DataLabel="@L["Admin_CreatedAt"]">@request.CreatedAt.ToLocalTime().ToString("g")</MudTd>
+                <MudTd DataLabel="@L["Admin_Actions"]">
+                    <MudButton Variant="Variant.Outlined"
+                               Size="Size.Small"
+                               Color="Color.Primary"
+                               StartIcon="@Icons.Material.Filled.Info"
+                               OnClick="@(() => Navigation.NavigateTo($"/admin/access-requests/{request.Id}"))">
+                        @L["Admin_ViewDetails"]
+                    </MudButton>
+                </MudTd>
+            </RowTemplate>
+        </MudTable>
+
+        @if (_isLoadingMore)
+        {
+            <div class="d-flex justify-center mt-4">
+                <MudProgressCircular Indeterminate="true" Color="Color.Primary" />
+            </div>
+        }
+
+        @if (_hasMore)
+        {
+            <div @ref="_sentinel" style="height: 1px;"></div>
+        }
+    }
+</MudContainer>
+
+@code {
+    private readonly List<AccessRequestInfo> _requests = new();
+    private string? _nextCursor;
+    private bool _hasMore;
+    private bool _isInitialLoading = true;
+    private bool _isLoadingMore;
+    private string? _error;
+    private string _searchText = string.Empty;
+    private string _statusFilter = "Pending";
+
+    private ElementReference _sentinel;
+    private DotNetObjectReference<AccessRequests>? _dotNetRef;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _dotNetRef = DotNetObjectReference.Create(this);
+        await LoadPageAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender && _hasMore && !_isLoadingMore && !_isInitialLoading)
+        {
+            try
+            {
+                await JS.InvokeVoidAsync("infiniteScrollInterop.observe", _sentinel, _dotNetRef);
+            }
+            catch (JSException)
+            {
+                // Element may not be in DOM yet
+            }
+        }
+    }
+
+    [JSInvokable]
+    public async Task LoadMore()
+    {
+        if (_isLoadingMore || !_hasMore) return;
+        await LoadPageAsync();
+        StateHasChanged();
+    }
+
+    private async Task LoadPageAsync()
+    {
+        if (_isLoadingMore) return;
+
+        var isFirstPage = _nextCursor is null && _requests.Count == 0;
+        if (isFirstPage)
+            _isInitialLoading = true;
+        else
+            _isLoadingMore = true;
+
+        _error = null;
+
+        try
+        {
+            var status = string.IsNullOrEmpty(_statusFilter) ? null : _statusFilter;
+            var search = string.IsNullOrWhiteSpace(_searchText) ? null : _searchText;
+            var request = new AccessRequestPageRequest(_nextCursor, 20, search, status);
+            var result = await IdentityClient.GetAccessRequestsCursorPageAsync(request);
+
+            result.Switch(
+                page =>
+                {
+                    _requests.AddRange(page.Items);
+                    _nextCursor = page.NextCursor;
+                    _hasMore = page.HasMore;
+                },
+                forbidden => _error = L["Admin_AccessDeniedMessage"],
+                unexpected => _error = unexpected.Message
+            );
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _isInitialLoading = false;
+            _isLoadingMore = false;
+        }
+    }
+
+    private async Task OnSearchChanged(string value)
+    {
+        _searchText = value;
+        await ResetAndReload();
+    }
+
+    private async Task OnStatusFilterChanged(string value)
+    {
+        _statusFilter = value;
+        await ResetAndReload();
+    }
+
+    private async Task ResetAndReload()
+    {
+        _requests.Clear();
+        _nextCursor = null;
+        _hasMore = false;
+
+        try
+        {
+            await JS.InvokeVoidAsync("infiniteScrollInterop.disconnect");
+        }
+        catch (JSException)
+        {
+            // Interop may not be initialized
+        }
+
+        await LoadPageAsync();
+    }
+
+    private Color GetStatusColor(string status) => status switch
+    {
+        "Pending" => Color.Warning,
+        "Approved" => Color.Success,
+        "Rejected" => Color.Error,
+        _ => Color.Default
+    };
+
+    private string GetStatusText(string status) => status switch
+    {
+        "Pending" => L["Admin_Pending"],
+        "Approved" => L["Admin_Approved"],
+        "Rejected" => L["Admin_Rejected"],
+        _ => status
+    };
+
+    public void Dispose()
+    {
+        try
+        {
+            JS.InvokeVoidAsync("infiniteScrollInterop.disconnect");
+        }
+        catch
+        {
+            // Ignore disposal errors
+        }
+
+        _dotNetRef?.Dispose();
+    }
+}

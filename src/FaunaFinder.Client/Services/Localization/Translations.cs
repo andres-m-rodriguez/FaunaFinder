@@ -192,6 +192,11 @@ public static class Translations
         ["Admin_AccessRequestDetails"] = "Access Request Details",
         ["Admin_Message"] = "Message",
         ["Admin_NoAccessRequests"] = "No pending access requests.",
+        ["Admin_AccessRequests_Title"] = "Access Requests",
+        ["Admin_AccessRequests_Description"] = "Review and manage user registration requests.",
+        ["Admin_AccessRequests_SearchPlaceholder"] = "Search by name or email...",
+        ["Admin_AccessRequests_StatusFilter"] = "Status",
+        ["Admin_AccessRequests_StatusAll"] = "All",
         ["Nav_Admin"] = "Admin",
 
         // User Menu
@@ -511,6 +516,11 @@ public static class Translations
         ["Admin_AccessRequestDetails"] = "Detalles de Solicitud",
         ["Admin_Message"] = "Mensaje",
         ["Admin_NoAccessRequests"] = "No hay solicitudes de acceso pendientes.",
+        ["Admin_AccessRequests_Title"] = "Solicitudes de Acceso",
+        ["Admin_AccessRequests_Description"] = "Revisar y gestionar solicitudes de registro de usuarios.",
+        ["Admin_AccessRequests_SearchPlaceholder"] = "Buscar por nombre o correo...",
+        ["Admin_AccessRequests_StatusFilter"] = "Estado",
+        ["Admin_AccessRequests_StatusAll"] = "Todos",
         ["Nav_Admin"] = "Admin",
 
         // User Menu

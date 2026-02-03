@@ -1,7 +1,9 @@
+using FaunaFinder.Identity.Contracts.Requests;
 using FaunaFinder.Identity.Contracts.Responses;
 using FaunaFinder.Identity.Database;
 using FaunaFinder.Identity.Database.Models;
 using FaunaFinder.Identity.DataAccess.Interfaces;
+using FaunaFinder.Pagination.Contracts;
 using Microsoft.EntityFrameworkCore;
 
 namespace FaunaFinder.Identity.DataAccess.Repositories;
@@ -92,5 +94,55 @@ public sealed class AccessRequestRepository(
             request.Message,
             request.Status.ToString(),
             request.CreatedAt);
+    }
+
+    public async Task<CursorPage<AccessRequestInfo>> GetCursorPageAsync(AccessRequestPageRequest request, CancellationToken cancellationToken = default)
+    {
+        await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
+
+        var query = context.AccessRequests.AsNoTracking();
+
+        if (!string.IsNullOrWhiteSpace(request.Status) &&
+            Enum.TryParse<AccessRequestStatus>(request.Status, out var statusFilter))
+        {
+            query = query.Where(r => r.Status == statusFilter);
+        }
+
+        if (!string.IsNullOrWhiteSpace(request.Search))
+        {
+            var search = request.Search.ToLower();
+            query = query.Where(r =>
+                r.Email.ToLower().Contains(search) ||
+                r.DisplayName.ToLower().Contains(search));
+        }
+
+        if (request.Cursor is not null && CursorHelper.TryDecode(request.Cursor, out var cursorId))
+        {
+            query = query.Where(r => r.Id > cursorId);
+        }
+
+        var items = await query
+            .OrderBy(r => r.Id)
+            .Take(request.PageSize + 1)
+            .Select(r => new AccessRequestInfo(
+                r.Id,
+                r.Email,
+                r.DisplayName,
+                r.Message,
+                r.Status.ToString(),
+                r.CreatedAt))
+            .ToListAsync(cancellationToken);
+
+        var hasMore = items.Count > request.PageSize;
+        if (hasMore)
+        {
+            items.RemoveAt(items.Count - 1);
+        }
+
+        var nextCursor = hasMore && items.Count > 0
+            ? CursorHelper.Encode(items[^1].Id)
+            : null;
+
+        return new CursorPage<AccessRequestInfo>(items, nextCursor, hasMore);
     }
 }

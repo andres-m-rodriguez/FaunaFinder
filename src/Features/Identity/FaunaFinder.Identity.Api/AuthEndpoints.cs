@@ -29,6 +29,8 @@ public static class AuthEndpoints
 
         group.MapGet("/access-requests/pending", GetPendingAccessRequests)
             .RequireAuthorization(policy => policy.RequireRole("Admin"));
+        group.MapGet("/access-requests/search", GetAccessRequestsCursorPage)
+            .RequireAuthorization(policy => policy.RequireRole("Admin"));
         group.MapPut("/access-requests/{id}/status", UpdateAccessRequestStatus)
             .RequireAuthorization(policy => policy.RequireRole("Admin"));
 
@@ -134,6 +136,24 @@ public static class AuthEndpoints
     {
         var request = new CursorPageRequest(cursor, pageSize ?? 20, search);
         var result = await authService.GetUsersCursorPageAsync(request, cancellationToken);
+
+        return result.Match<IResult>(
+            page => Results.Ok(page),
+            forbidden => Results.Forbid(),
+            unexpected => Results.Problem(unexpected.Message, statusCode: StatusCodes.Status500InternalServerError)
+        );
+    }
+
+    private static async Task<IResult> GetAccessRequestsCursorPage(
+        string? cursor,
+        int? pageSize,
+        string? search,
+        string? status,
+        IAuthService authService,
+        CancellationToken cancellationToken)
+    {
+        var request = new AccessRequestPageRequest(cursor, pageSize ?? 20, search, status);
+        var result = await authService.GetAccessRequestsCursorPageAsync(request, cancellationToken);
 
         return result.Match<IResult>(
             page => Results.Ok(page),
