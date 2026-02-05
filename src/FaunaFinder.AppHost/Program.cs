@@ -2,6 +2,9 @@ using Azure.Provisioning.AppContainers;
 
 var builder = DistributedApplication.CreateBuilder(args);
 
+// Azure Container App Environment (required for publishing to Azure Container Apps)
+builder.AddAzureContainerAppEnvironment("aca");
+
 // PostgreSQL database server
 // - Uses container locally for development
 // - Uses Azure PostgreSQL Flexible Server when deployed to Azure
