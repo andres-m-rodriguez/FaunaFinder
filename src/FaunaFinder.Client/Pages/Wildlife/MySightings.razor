@@ -102,37 +102,17 @@
     private async Task LoadSightings()
     {
         _error = null;
-
-        try
-        {
-            var response = await WildlifeHttpClient.GetMySightingsAsync(_page, PageSize);
-            _sightings = response.Items;
-            _totalCount = response.TotalCount;
-        }
-        catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-        {
-            _error = L["Sightings_Unauthorized"];
-        }
-        catch (Exception ex)
-        {
-            _error = ex.Message;
-        }
+        var response = await WildlifeHttpClient.GetMySightingsAsync(_page, PageSize);
+        _sightings = response.Items;
+        _totalCount = response.TotalCount;
     }
 
     [RelayCommand]
     private async Task LoadMore()
     {
         _page++;
-
-        try
-        {
-            var response = await WildlifeHttpClient.GetMySightingsAsync(_page, PageSize);
-            _sightings?.AddRange(response.Items);
-        }
-        catch
-        {
-            _page--;
-        }
+        var response = await WildlifeHttpClient.GetMySightingsAsync(_page, PageSize);
+        _sightings?.AddRange(response.Items);
     }
 
     private void ViewSighting(int id)

@@ -290,31 +290,15 @@
     private async Task LoadSighting()
     {
         _error = null;
+        _sighting = await WildlifeHttpClient.GetSightingDetailAsync(Id);
+        _isOwner = _sighting is not null && _currentUserId.HasValue && _sighting.ReportedByUserId == _currentUserId.Value;
 
-        try
+        // Initialize map after data loads
+        if (_sighting is not null && !_mapInitialized)
         {
-            _sighting = await WildlifeHttpClient.GetSightingDetailAsync(Id);
-            _isOwner = _sighting is not null && _currentUserId.HasValue && _sighting.ReportedByUserId == _currentUserId.Value;
-
-            // Initialize map after data loads
-            if (_sighting is not null && !_mapInitialized)
-            {
-                _mapInitialized = true;
-                await Task.Delay(50);
-                await InitializeMap();
-            }
-        }
-        catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-        {
-            _error = L["Sightings_Unauthorized"];
-        }
-        catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
-        {
-            _sighting = null;
-        }
-        catch (Exception ex)
-        {
-            _error = ex.Message;
+            _mapInitialized = true;
+            await Task.Delay(50);
+            await InitializeMap();
         }
     }
 
@@ -345,33 +329,23 @@
     {
         if (_pendingPhoto is null) return;
 
-        try
+        using var stream = _pendingPhoto.OpenReadStream(MaxFileSizeBytes);
+        using var memoryStream = new MemoryStream();
+        await stream.CopyToAsync(memoryStream);
+        var photoData = memoryStream.ToArray();
+
+        var success = await WildlifeHttpClient.UploadSightingPhotoAsync(Id, photoData, _pendingPhoto.ContentType);
+        _pendingPhoto = null;
+
+        if (success)
         {
-            using var stream = _pendingPhoto.OpenReadStream(MaxFileSizeBytes);
-            using var memoryStream = new MemoryStream();
-            await stream.CopyToAsync(memoryStream);
-            var photoData = memoryStream.ToArray();
-
-            var success = await WildlifeHttpClient.UploadSightingPhotoAsync(Id, photoData, _pendingPhoto.ContentType);
-
-            if (success)
-            {
-                Snackbar.Add(L["SightingDetail_PhotoUploaded"], Severity.Success);
-                _photoVersion++;
-                await LoadSightingCommand.ExecuteAsync();
-            }
-            else
-            {
-                Snackbar.Add(L["SightingDetail_PhotoUploadError"], Severity.Error);
-            }
+            Snackbar.Add(L["SightingDetail_PhotoUploaded"], Severity.Success);
+            _photoVersion++;
+            await LoadSightingCommand.ExecuteAsync();
         }
-        catch (Exception)
+        else
         {
             Snackbar.Add(L["SightingDetail_PhotoUploadError"], Severity.Error);
-        }
-        finally
-        {
-            _pendingPhoto = null;
         }
     }
 

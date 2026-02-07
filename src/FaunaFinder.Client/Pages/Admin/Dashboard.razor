@@ -324,22 +324,9 @@
     private async Task LoadSightings()
     {
         _error = null;
-
-        try
-        {
-            var response = await WildlifeHttpClient.GetReviewQueueAsync(_currentPage, PageSize);
-            _sightings = response.Items;
-            _totalPages = (int)Math.Ceiling((double)response.TotalCount / PageSize);
-        }
-        catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Unauthorized ||
-                                               ex.StatusCode == System.Net.HttpStatusCode.Forbidden)
-        {
-            _error = L["ReviewQueue_Unauthorized"];
-        }
-        catch (Exception ex)
-        {
-            _error = ex.Message;
-        }
+        var response = await WildlifeHttpClient.GetReviewQueueAsync(_currentPage, PageSize);
+        _sightings = response.Items;
+        _totalPages = (int)Math.Ceiling((double)response.TotalCount / PageSize);
     }
 
     private async Task OnPageChanged(int page)
@@ -380,29 +367,22 @@
     {
         if (_selectedSighting is null) return;
 
-        try
+        var status = _isApproving ? "Approved" : "Rejected";
+        var success = await WildlifeHttpClient.ReviewSightingAsync(
+            _selectedSighting.Id,
+            status,
+            _reviewNotes);
+
+        if (success)
         {
-            var status = _isApproving ? "Approved" : "Rejected";
-            var success = await WildlifeHttpClient.ReviewSightingAsync(
-                _selectedSighting.Id,
-                status,
-                _reviewNotes);
+            Snackbar.Add(
+                _isApproving ? L["ReviewQueue_ApproveSuccess"] : L["ReviewQueue_RejectSuccess"],
+                _isApproving ? Severity.Success : Severity.Info);
 
-            if (success)
-            {
-                Snackbar.Add(
-                    _isApproving ? L["ReviewQueue_ApproveSuccess"] : L["ReviewQueue_RejectSuccess"],
-                    _isApproving ? Severity.Success : Severity.Info);
-
-                CloseReviewDialog();
-                await LoadSightingsCommand.ExecuteAsync();
-            }
-            else
-            {
-                Snackbar.Add(L["ReviewQueue_ReviewError"], Severity.Error);
-            }
+            CloseReviewDialog();
+            await LoadSightingsCommand.ExecuteAsync();
         }
-        catch (Exception)
+        else
         {
             Snackbar.Add(L["ReviewQueue_ReviewError"], Severity.Error);
         }

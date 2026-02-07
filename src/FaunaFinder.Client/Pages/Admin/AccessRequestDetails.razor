@@ -143,21 +143,13 @@
     private async Task LoadAccessRequest()
     {
         _error = null;
-
-        try
-        {
-            var result = await IdentityClient.GetAccessRequestByIdAsync(Id);
-            result.Switch(
-                accessRequest => _request = accessRequest,
-                notFound => _error = L["Admin_UserNotFound"],
-                forbidden => _error = L["Admin_AccessDeniedMessage"],
-                unexpected => _error = unexpected.Message
-            );
-        }
-        catch (Exception ex)
-        {
-            _error = ex.Message;
-        }
+        var result = await IdentityClient.GetAccessRequestByIdAsync(Id);
+        result.Switch(
+            accessRequest => _request = accessRequest,
+            notFound => _error = L["Admin_UserNotFound"],
+            forbidden => _error = L["Admin_AccessDeniedMessage"],
+            unexpected => _error = unexpected.Message
+        );
     }
 
     private async Task UpdateStatus(string status)
@@ -171,25 +163,18 @@
     {
         if (_pendingStatus is null) return;
 
-        try
-        {
-            var result = await IdentityClient.UpdateAccessRequestStatusAsync(Id, new UpdateAccessRequestStatusRequest(_pendingStatus));
-            result.Switch(
-                updated =>
-                {
-                    _request = updated;
-                    Snackbar.Add(_pendingStatus == "Approved" ? L["Admin_Approve"] : L["Admin_Reject"], Severity.Success);
-                },
-                notFound => Snackbar.Add(notFound.Message, Severity.Error),
-                forbidden => Snackbar.Add(L["Admin_AccessDeniedMessage"], Severity.Error),
-                validation => Snackbar.Add(validation.Message, Severity.Error),
-                unexpected => Snackbar.Add(unexpected.Message, Severity.Error)
-            );
-        }
-        catch (Exception)
-        {
-            Snackbar.Add(L["Admin_AccessDeniedMessage"], Severity.Error);
-        }
+        var result = await IdentityClient.UpdateAccessRequestStatusAsync(Id, new UpdateAccessRequestStatusRequest(_pendingStatus));
+        result.Switch(
+            updated =>
+            {
+                _request = updated;
+                Snackbar.Add(_pendingStatus == "Approved" ? L["Admin_Approve"] : L["Admin_Reject"], Severity.Success);
+            },
+            notFound => Snackbar.Add(notFound.Message, Severity.Error),
+            forbidden => Snackbar.Add(L["Admin_AccessDeniedMessage"], Severity.Error),
+            validation => Snackbar.Add(validation.Message, Severity.Error),
+            unexpected => Snackbar.Add(unexpected.Message, Severity.Error)
+        );
     }
 
     private Color GetStatusColor(string status) => status switch

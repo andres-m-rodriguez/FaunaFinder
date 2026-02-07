@@ -93,25 +93,17 @@
     private async Task LoadUser()
     {
         _error = null;
-
-        try
-        {
-            var result = await IdentityClient.GetAllUsersAsync();
-            result.Switch(
-                users =>
-                {
-                    _user = users.FirstOrDefault(u => u.Id == Id);
-                    if (_user is null)
-                        _error = L["Admin_UserNotFound"];
-                },
-                forbidden => _error = L["Admin_AccessDeniedMessage"],
-                unexpected => _error = unexpected.Message
-            );
-        }
-        catch (Exception ex)
-        {
-            _error = ex.Message;
-        }
+        var result = await IdentityClient.GetAllUsersAsync();
+        result.Switch(
+            users =>
+            {
+                _user = users.FirstOrDefault(u => u.Id == Id);
+                if (_user is null)
+                    _error = L["Admin_UserNotFound"];
+            },
+            forbidden => _error = L["Admin_AccessDeniedMessage"],
+            unexpected => _error = unexpected.Message
+        );
     }
 
     private Color GetRoleColor(string role) => role switch
