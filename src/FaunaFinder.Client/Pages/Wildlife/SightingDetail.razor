@@ -1,4 +1,5 @@
 @page "/my-sightings/{Id:int}"
+@using BlazingSingularity.Commands
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
 @using System.Security.Claims
@@ -23,7 +24,7 @@
         @L["Back"]
     </MudButton>
 
-    @if (_isLoading)
+    @if (LoadSightingCommand.IsLoading)
     {
         <MudPaper Elevation="2" Class="pa-4 mb-4">
             <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="40px" Class="mb-3 rounded" />
@@ -92,14 +93,14 @@
                             <MudFileUpload T="IBrowserFile"
                                            Accept=".jpg,.jpeg,.png,.gif,.webp"
                                            FilesChanged="OnPhotoSelected"
-                                           Disabled="_isUploadingPhoto">
+                                           Disabled="UploadPhotoCommand.IsLoading">
                                 <ActivatorContent>
                                     <MudButton Variant="Variant.Outlined"
                                                Color="Color.Primary"
-                                               StartIcon="@(_isUploadingPhoto ? null : Icons.Material.Filled.CloudUpload)"
-                                               Disabled="_isUploadingPhoto"
+                                               StartIcon="@(UploadPhotoCommand.IsLoading ? null : Icons.Material.Filled.CloudUpload)"
+                                               Disabled="UploadPhotoCommand.IsLoading"
                                                FullWidth="true">
-                                        @if (_isUploadingPhoto)
+                                        @if (UploadPhotoCommand.IsLoading)
                                         {
                                             <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
                                             @L["SightingDetail_UploadingPhoto"]
@@ -258,13 +259,12 @@
     public int Id { get; set; }
 
     private SightingDetailDto? _sighting;
-    private bool _isLoading = true;
     private string? _error;
     private bool _isOwner;
-    private bool _isUploadingPhoto;
     private int _photoVersion;
     private int? _currentUserId;
     private bool _mapInitialized;
+    private IBrowserFile? _pendingPhoto;
 
     private static readonly string[] AllowedContentTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
     private const long MaxFileSizeBytes = 5 * 1024 * 1024; // 5MB
@@ -272,7 +272,7 @@
     protected override async Task OnInitializedAsync()
     {
         await LoadCurrentUser();
-        await LoadSighting();
+        await LoadSightingCommand.ExecuteAsync();
     }
 
     private async Task LoadCurrentUser()
@@ -286,15 +286,23 @@
     }
 
 
+    [RelayCommand]
     private async Task LoadSighting()
     {
-        _isLoading = true;
         _error = null;
 
         try
         {
             _sighting = await WildlifeHttpClient.GetSightingDetailAsync(Id);
             _isOwner = _sighting is not null && _currentUserId.HasValue && _sighting.ReportedByUserId == _currentUserId.Value;
+
+            // Initialize map after data loads
+            if (_sighting is not null && !_mapInitialized)
+            {
+                _mapInitialized = true;
+                await Task.Delay(50);
+                await InitializeMap();
+            }
         }
         catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Unauthorized)
         {
@@ -307,19 +315,6 @@
         catch (Exception ex)
         {
             _error = ex.Message;
-        }
-        finally
-        {
-            _isLoading = false;
-            StateHasChanged();
-
-            // Initialize map after render completes
-            if (_sighting is not null && !_mapInitialized)
-            {
-                _mapInitialized = true;
-                await Task.Delay(50);
-                await InitializeMap();
-            }
         }
     }
 
@@ -341,23 +336,29 @@
             return;
         }
 
-        _isUploadingPhoto = true;
-        StateHasChanged();
+        _pendingPhoto = file;
+        await UploadPhotoCommand.ExecuteAsync();
+    }
+
+    [RelayCommand]
+    private async Task UploadPhoto()
+    {
+        if (_pendingPhoto is null) return;
 
         try
         {
-            using var stream = file.OpenReadStream(MaxFileSizeBytes);
+            using var stream = _pendingPhoto.OpenReadStream(MaxFileSizeBytes);
             using var memoryStream = new MemoryStream();
             await stream.CopyToAsync(memoryStream);
             var photoData = memoryStream.ToArray();
 
-            var success = await WildlifeHttpClient.UploadSightingPhotoAsync(Id, photoData, file.ContentType);
+            var success = await WildlifeHttpClient.UploadSightingPhotoAsync(Id, photoData, _pendingPhoto.ContentType);
 
             if (success)
             {
                 Snackbar.Add(L["SightingDetail_PhotoUploaded"], Severity.Success);
                 _photoVersion++;
-                await LoadSighting();
+                await LoadSightingCommand.ExecuteAsync();
             }
             else
             {
@@ -370,8 +371,7 @@
         }
         finally
         {
-            _isUploadingPhoto = false;
-            StateHasChanged();
+            _pendingPhoto = null;
         }
     }
 

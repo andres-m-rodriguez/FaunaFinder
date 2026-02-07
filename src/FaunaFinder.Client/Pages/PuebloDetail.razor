@@ -18,7 +18,7 @@
     </MudButton>
 
     @* Municipality Header Section *@
-    @if (isLoadingMunicipality)
+    @if (LoadMunicipalityCommand.IsLoading)
     {
         <MudPaper Elevation="2" Class="pa-4 mb-6">
             <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="40px" Width="50%" Class="mb-3 rounded" Style="border: 1px solid rgba(255,255,255,0.1);" />
@@ -45,11 +45,11 @@
     }
 
     @* Species List Section - only show if municipality loaded *@
-    @if (municipality != null || isLoadingMunicipality)
+    @if (municipality != null || LoadMunicipalityCommand.IsLoading)
     {
         <MudText Typo="Typo.h5" Color="Color.Primary" GutterBottom="true" Class="mb-4">@L["PuebloDetail_SpeciesInMunicipality"]</MudText>
 
-        @if (isLoadingSpecies)
+        @if (LoadSpeciesCommand.IsLoading)
         {
             @for (int i = 0; i < 6; i++)
             {
@@ -114,9 +114,6 @@
     private IReadOnlyList<SpeciesForListDto> species = [];
     private int? expandedSpeciesId;
 
-    private bool isLoadingMunicipality = true;
-    private bool isLoadingSpecies = true;
-
     // Filter state
     private string searchText = string.Empty;
     private string? selectedNrcsPractice;
@@ -169,26 +166,22 @@
     protected override async Task OnInitializedAsync()
     {
         // Load both in parallel
-        var municipalityTask = LoadMunicipalityAsync();
-        var speciesTask = LoadSpeciesAsync();
+        var municipalityTask = LoadMunicipalityCommand.ExecuteAsync();
+        var speciesTask = LoadSpeciesCommand.ExecuteAsync();
 
         await Task.WhenAll(municipalityTask, speciesTask);
     }
 
-    private async Task LoadMunicipalityAsync()
+    [RelayCommand]
+    private async Task LoadMunicipality()
     {
-        isLoadingMunicipality = true;
         municipality = await MunicipalityHttpClient.GetMunicipalityDetailAsync(Id);
-        isLoadingMunicipality = false;
-        StateHasChanged();
     }
 
-    private async Task LoadSpeciesAsync()
+    [RelayCommand]
+    private async Task LoadSpecies()
     {
-        isLoadingSpecies = true;
         species = await SpeciesHttpClient.GetSpeciesByMunicipalityAsync(Id);
-        isLoadingSpecies = false;
-        StateHasChanged();
     }
 
     private void OnSearchTextChanged(string value)
