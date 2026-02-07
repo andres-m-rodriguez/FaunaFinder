@@ -1,4 +1,5 @@
 @page "/dashboard"
+@using BlazingSingularity.Commands
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
 @using FaunaFinder.Wildlife.Contracts
@@ -17,7 +18,7 @@
     @* Review Queue Content *@
     <MudText Typo="Typo.h5" Class="mb-3">@L["ReviewQueue_Title"]</MudText>
 
-    @if (_isLoading)
+    @if (LoadSightingsCommand.IsLoading)
     {
         <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
     }
@@ -74,7 +75,7 @@
                                            Color="Color.Success"
                                            StartIcon="@Icons.Material.Filled.Check"
                                            OnClick="() => OpenReviewDialog(sighting, true)"
-                                           Disabled="_isReviewing"
+                                           Disabled="SubmitReviewCommand.IsLoading"
                                            Class="flex-grow-1">
                                     @L["ReviewQueue_Approve"]
                                 </MudButton>
@@ -82,7 +83,7 @@
                                            Color="Color.Error"
                                            StartIcon="@Icons.Material.Filled.Close"
                                            OnClick="() => OpenReviewDialog(sighting, false)"
-                                           Disabled="_isReviewing"
+                                           Disabled="SubmitReviewCommand.IsLoading"
                                            Class="flex-grow-1">
                                     @L["ReviewQueue_Reject"]
                                 </MudButton>
@@ -186,14 +187,14 @@
                       FullWidth="true" />
     </DialogContent>
     <DialogActions>
-        <MudButton Variant="Variant.Text" OnClick="CloseReviewDialog" Disabled="_isReviewing">
+        <MudButton Variant="Variant.Text" OnClick="CloseReviewDialog" Disabled="SubmitReviewCommand.IsLoading">
             @L["Back"]
         </MudButton>
         <MudButton Variant="Variant.Filled"
                    Color="@(_isApproving ? Color.Success : Color.Error)"
                    OnClick="SubmitReview"
-                   Disabled="_isReviewing">
-            @if (_isReviewing)
+                   Disabled="SubmitReviewCommand.IsLoading">
+            @if (SubmitReviewCommand.IsLoading)
             {
                 <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
             }
@@ -288,8 +289,6 @@
     private int _currentPage = 1;
     private int _totalPages;
     private const int PageSize = 12;
-    private bool _isLoading = true;
-    private bool _isReviewing;
     private string? _error;
 
     // Review dialog state
@@ -318,12 +317,12 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadSightings();
+        await LoadSightingsCommand.ExecuteAsync();
     }
 
+    [RelayCommand]
     private async Task LoadSightings()
     {
-        _isLoading = true;
         _error = null;
 
         try
@@ -341,16 +340,12 @@
         {
             _error = ex.Message;
         }
-        finally
-        {
-            _isLoading = false;
-        }
     }
 
     private async Task OnPageChanged(int page)
     {
         _currentPage = page;
-        await LoadSightings();
+        await LoadSightingsCommand.ExecuteAsync();
     }
 
     private void OpenReviewDialog(SightingListItem sighting, bool approve)
@@ -380,11 +375,10 @@
         _detailsSighting = null;
     }
 
+    [RelayCommand]
     private async Task SubmitReview()
     {
         if (_selectedSighting is null) return;
-
-        _isReviewing = true;
 
         try
         {
@@ -401,7 +395,7 @@
                     _isApproving ? Severity.Success : Severity.Info);
 
                 CloseReviewDialog();
-                await LoadSightings();
+                await LoadSightingsCommand.ExecuteAsync();
             }
             else
             {
@@ -411,10 +405,6 @@
         catch (Exception)
         {
             Snackbar.Add(L["ReviewQueue_ReviewError"], Severity.Error);
-        }
-        finally
-        {
-            _isReviewing = false;
         }
     }
 

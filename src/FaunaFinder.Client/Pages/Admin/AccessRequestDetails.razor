@@ -1,4 +1,5 @@
 @page "/admin/access-requests/{Id:int}"
+@using BlazingSingularity.Commands
 @using Microsoft.AspNetCore.Authorization
 @using FaunaFinder.Identity.Application.Client
 @using FaunaFinder.Identity.Contracts.Requests
@@ -20,7 +21,7 @@
         @L["Back"]
     </MudButton>
 
-    @if (_isLoading)
+    @if (LoadAccessRequestCommand.IsLoading)
     {
         <MudPaper Elevation="2" Class="pa-4">
             <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="40px" Class="mb-3 rounded" />
@@ -101,8 +102,8 @@
                                    Color="Color.Success"
                                    StartIcon="@Icons.Material.Filled.Check"
                                    OnClick="@(() => UpdateStatus("Approved"))"
-                                   Disabled="_isUpdating">
-                            @if (_isUpdating)
+                                   Disabled="UpdateStatusInternalCommand.IsLoading">
+                            @if (UpdateStatusInternalCommand.IsLoading)
                             {
                                 <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
                             }
@@ -112,7 +113,7 @@
                                    Color="Color.Error"
                                    StartIcon="@Icons.Material.Filled.Close"
                                    OnClick="@(() => UpdateStatus("Rejected"))"
-                                   Disabled="_isUpdating">
+                                   Disabled="UpdateStatusInternalCommand.IsLoading">
                             @L["Admin_Reject"]
                         </MudButton>
                     </div>
@@ -130,18 +131,17 @@
     [Parameter] public int Id { get; set; }
 
     private AccessRequestInfo? _request;
-    private bool _isLoading = true;
-    private bool _isUpdating;
     private string? _error;
+    private string? _pendingStatus;
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadAccessRequest();
+        await LoadAccessRequestCommand.ExecuteAsync();
     }
 
+    [RelayCommand]
     private async Task LoadAccessRequest()
     {
-        _isLoading = true;
         _error = null;
 
         try
@@ -158,24 +158,27 @@
         {
             _error = ex.Message;
         }
-        finally
-        {
-            _isLoading = false;
-        }
     }
 
     private async Task UpdateStatus(string status)
     {
-        _isUpdating = true;
+        _pendingStatus = status;
+        await UpdateStatusInternalCommand.ExecuteAsync();
+    }
+
+    [RelayCommand]
+    private async Task UpdateStatusInternal()
+    {
+        if (_pendingStatus is null) return;
 
         try
         {
-            var result = await IdentityClient.UpdateAccessRequestStatusAsync(Id, new UpdateAccessRequestStatusRequest(status));
+            var result = await IdentityClient.UpdateAccessRequestStatusAsync(Id, new UpdateAccessRequestStatusRequest(_pendingStatus));
             result.Switch(
                 updated =>
                 {
                     _request = updated;
-                    Snackbar.Add(status == "Approved" ? L["Admin_Approve"] : L["Admin_Reject"], Severity.Success);
+                    Snackbar.Add(_pendingStatus == "Approved" ? L["Admin_Approve"] : L["Admin_Reject"], Severity.Success);
                 },
                 notFound => Snackbar.Add(notFound.Message, Severity.Error),
                 forbidden => Snackbar.Add(L["Admin_AccessDeniedMessage"], Severity.Error),
@@ -186,10 +189,6 @@
         catch (Exception)
         {
             Snackbar.Add(L["Admin_AccessDeniedMessage"], Severity.Error);
-        }
-        finally
-        {
-            _isUpdating = false;
         }
     }
 

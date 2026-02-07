@@ -1,4 +1,5 @@
 @page "/register"
+@using BlazingSingularity.Commands
 @using FaunaFinder.Client.Services.Auth
 @inject CookieAuthenticationStateProvider AuthStateProvider
 @inject NavigationManager NavigationManager
@@ -104,9 +105,9 @@
                                        Color="Color.Primary"
                                        Size="Size.Large"
                                        FullWidth="true"
-                                       Disabled="_isLoading"
+                                       Disabled="HandleRegisterCommand.IsLoading"
                                        Class="mb-4">
-                                @if (_isLoading)
+                                @if (HandleRegisterCommand.IsLoading)
                                 {
                                     <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
                                 }
@@ -127,10 +128,10 @@
 
 @code {
     private RegisterModel _model = new();
-    private bool _isLoading;
     private string? _error;
     private bool _success;
 
+    [RelayCommand]
     private async Task HandleRegister()
     {
         if (_model.Password != _model.ConfirmPassword)
@@ -139,9 +140,7 @@
             return;
         }
 
-        _isLoading = true;
         _error = null;
-        StateHasChanged();
 
         var message = string.IsNullOrWhiteSpace(_model.Message) ? null : _model.Message.Trim();
         var result = await AuthStateProvider.RegisterAsync(_model.Email, _model.Password, _model.DisplayName, message);
@@ -152,8 +151,6 @@
             registrationFailed => _error = registrationFailed.Message,
             validationError => _error = validationError.Message,
             unexpected => _error = unexpected.Message);
-
-        _isLoading = false;
     }
 
     private class RegisterModel
