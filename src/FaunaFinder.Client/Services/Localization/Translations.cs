@@ -61,6 +61,7 @@ public static class Translations
         ["SpeciesDetail_ConservationLinksTitle"] = "Conservation Links",
         ["SpeciesDetail_NoConservationLinks"] = "No conservation links available for this species.",
         ["SpeciesDetail_ViewLocations"] = "View Locations",
+        ["SpeciesDetail_ImageSource"] = "Image source",
 
         // Pueblos Page
         ["Pueblos_Title"] = "Municipalities of Puerto Rico",
@@ -385,6 +386,7 @@ public static class Translations
         ["SpeciesDetail_ConservationLinksTitle"] = "Enlaces de conservación",
         ["SpeciesDetail_NoConservationLinks"] = "No hay enlaces de conservación disponibles para esta especie.",
         ["SpeciesDetail_ViewLocations"] = "Ver ubicaciones",
+        ["SpeciesDetail_ImageSource"] = "Fuente de imagen",
 
         // Pueblos Page
         ["Pueblos_Title"] = "Pueblos de Puerto Rico",
