@@ -1,4 +1,5 @@
 @page "/sightings"
+@using BlazingSingularity.Commands
 @using Microsoft.AspNetCore.Authorization
 @using FaunaFinder.Wildlife.Contracts
 @inject IWildlifeHttpClient WildlifeHttpClient
@@ -17,7 +18,7 @@
         </MudButton>
     </div>
 
-    @if (_isLoading)
+    @if (LoadSightingsCommand.IsLoading)
     {
         <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
     }
@@ -73,8 +74,8 @@
         @if (_totalCount > _sightings.Count)
         {
             <div class="d-flex justify-center mt-4">
-                <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="LoadMore" Disabled="_isLoadingMore">
-                    @if (_isLoadingMore)
+                <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="@(() => LoadMoreCommand.ExecuteAsync())" Disabled="LoadMoreCommand.IsLoading">
+                    @if (LoadMoreCommand.IsLoading)
                     {
                         <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
                     }
@@ -90,58 +91,28 @@
     private int _totalCount;
     private int _page = 1;
     private const int PageSize = 12;
-    private bool _isLoading = true;
-    private bool _isLoadingMore;
     private string? _error;
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadSightings();
+        await LoadSightingsCommand.ExecuteAsync();
     }
 
+    [RelayCommand]
     private async Task LoadSightings()
     {
-        _isLoading = true;
         _error = null;
-
-        try
-        {
-            var response = await WildlifeHttpClient.GetMySightingsAsync(_page, PageSize);
-            _sightings = response.Items;
-            _totalCount = response.TotalCount;
-        }
-        catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-        {
-            _error = L["Sightings_Unauthorized"];
-        }
-        catch (Exception ex)
-        {
-            _error = ex.Message;
-        }
-        finally
-        {
-            _isLoading = false;
-        }
+        var response = await WildlifeHttpClient.GetMySightingsAsync(_page, PageSize);
+        _sightings = response.Items;
+        _totalCount = response.TotalCount;
     }
 
+    [RelayCommand]
     private async Task LoadMore()
     {
-        _isLoadingMore = true;
         _page++;
-
-        try
-        {
-            var response = await WildlifeHttpClient.GetMySightingsAsync(_page, PageSize);
-            _sightings?.AddRange(response.Items);
-        }
-        catch
-        {
-            _page--;
-        }
-        finally
-        {
-            _isLoadingMore = false;
-        }
+        var response = await WildlifeHttpClient.GetMySightingsAsync(_page, PageSize);
+        _sightings?.AddRange(response.Items);
     }
 
     private void ViewSighting(int id)
