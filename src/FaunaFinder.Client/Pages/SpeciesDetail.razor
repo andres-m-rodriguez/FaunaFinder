@@ -60,6 +60,15 @@
                                   ObjectFit="ObjectFit.Cover"
                                   Class="rounded-lg species-image"
                                   Style="width: 100%; max-height: 200px;" />
+                        @if (!string.IsNullOrEmpty(species.ImageSourceUrl))
+                        {
+                            <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-1">
+                                @L["SpeciesDetail_ImageSource"]:
+                                <MudLink Href="@species.ImageSourceUrl" Target="_blank" Color="Color.Primary">
+                                    @GetImageSourceHostname()
+                                </MudLink>
+                            </MudText>
+                        }
                     </MudItem>
                 }
                 <MudItem xs="12" sm="@(species.HasProfileImage ? 8 : 12)" md="@(species.HasProfileImage ? 9 : 12)">
@@ -374,5 +383,21 @@
     private string GetProfileImageUrl()
     {
         return species != null ? $"api/species/{species.Id}/image" : string.Empty;
+    }
+
+    private string GetImageSourceHostname()
+    {
+        if (species?.ImageSourceUrl is null)
+            return string.Empty;
+
+        try
+        {
+            var uri = new Uri(species.ImageSourceUrl);
+            return uri.Host;
+        }
+        catch
+        {
+            return species.ImageSourceUrl;
+        }
     }
 }

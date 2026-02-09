@@ -119,7 +119,8 @@ public sealed class SpeciesRepository(IDbContextFactory<WildlifeDbContext> conte
                         l.Description
                     ))
                     .ToList(),
-                s.ProfileImageData != null
+                s.ProfileImageData != null,
+                s.ImageSourceUrl
             ))
             .FirstOrDefaultAsync(cancellationToken);
     }
