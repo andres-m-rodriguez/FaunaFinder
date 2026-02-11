@@ -177,6 +177,12 @@ public static class DatabaseSeeder
                     species.ProfileImageData = Convert.FromBase64String(dto.ImageBase64);
                     species.ProfileImageContentType = dto.ImageContentType;
                 }
+
+                // Update image source URL if we have one and the existing doesn't
+                if (species.ImageSourceUrl is null && !string.IsNullOrEmpty(dto.ImageSourceUrl))
+                {
+                    species.ImageSourceUrl = dto.ImageSourceUrl;
+                }
             }
             else
             {
@@ -193,7 +199,8 @@ public static class DatabaseSeeder
                     ProfileImageData = string.IsNullOrEmpty(dto.ImageBase64)
                         ? null
                         : Convert.FromBase64String(dto.ImageBase64),
-                    ProfileImageContentType = dto.ImageContentType
+                    ProfileImageContentType = dto.ImageContentType,
+                    ImageSourceUrl = dto.ImageSourceUrl
                 };
                 context.Species.Add(species);
                 await context.SaveChangesAsync(cancellationToken);
@@ -372,6 +379,9 @@ public static class DatabaseSeeder
 
         [JsonPropertyName("imageContentType")]
         public string? ImageContentType { get; init; }
+
+        [JsonPropertyName("imageSourceUrl")]
+        public string? ImageSourceUrl { get; init; }
     }
 
     private sealed class LocationDto
