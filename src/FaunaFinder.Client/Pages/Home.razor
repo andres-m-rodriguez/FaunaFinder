@@ -620,7 +620,6 @@
             StateHasChanged();
         }
     }
-
     private async Task ExportToCsv()
     {
         if (selectedMunicipality == null || species.Count == 0 || isExporting) return;
@@ -657,7 +656,7 @@
     {
         NavigationManager.NavigateTo($"/species/{speciesId}?returnUrl=/");
     }
-
+    
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
