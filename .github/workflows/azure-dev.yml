@@ -60,9 +60,19 @@ jobs:
           ACR_NAME=$(az acr list --resource-group rg-${{ vars.AZURE_ENV_NAME }} --query "[0].name" -o tsv)
           ACR_ID=$(az acr show --name $ACR_NAME --query id -o tsv)
 
-          # Ensure the service principal has AcrPull
+          # Ensure the service principal has AcrPull (for pushing images)
           az role assignment create \
             --assignee ${{ vars.AZURE_CLIENT_ID }} \
+            --role AcrPull \
+            --scope $ACR_ID 2>/dev/null || true
+
+          # Get the Container App's managed identity
+          MI_NAME=$(az identity list --resource-group rg-${{ vars.AZURE_ENV_NAME }} --query "[0].name" -o tsv)
+          MI_PRINCIPAL_ID=$(az identity show --name $MI_NAME --resource-group rg-${{ vars.AZURE_ENV_NAME }} --query principalId -o tsv)
+
+          # Grant AcrPull to the managed identity (for pulling images)
+          az role assignment create \
+            --assignee $MI_PRINCIPAL_ID \
             --role AcrPull \
             --scope $ACR_ID 2>/dev/null || true
         shell: bash
