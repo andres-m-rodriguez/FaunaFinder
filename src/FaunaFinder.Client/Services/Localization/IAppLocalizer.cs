@@ -13,9 +13,9 @@ public interface IAppLocalizer
 
     /// <summary>
     /// Signal that notifies subscribers when the language changes.
-    /// Components can subscribe via LanguageChangedSignal.OnChange(StateHasChanged)
+    /// Components can subscribe via LanguageSignal.OnChange(StateHasChanged)
     /// </summary>
-    Signal<string> LanguageChangedSignal { get; }
+    Signal<string> LanguageSignal { get; }
 
     /// <summary>
     /// Gets the localized value based on the current language setting.

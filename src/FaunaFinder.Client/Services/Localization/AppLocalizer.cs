@@ -12,7 +12,7 @@ public sealed class AppLocalizer : IAppLocalizer
 
     public bool IsSpanish => CurrentLanguage.StartsWith("es");
 
-    public Signal<string> LanguageChangedSignal => _languageChangedSignal;
+    public Signal<string> LanguageSignal => _languageChangedSignal;
 
     public string this[string key] =>
         _currentTranslations.TryGetValue(key, out var value) ? value : key;

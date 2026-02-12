@@ -12,7 +12,7 @@
 
     protected override void OnInitialized()
     {
-        Localizer.LanguageChangedSignal.OnChange(async () =>
+        Localizer.LanguageSignal.OnChange(async () =>
         {
             _refreshToken++;
             await InvokeAsync(StateHasChanged);
