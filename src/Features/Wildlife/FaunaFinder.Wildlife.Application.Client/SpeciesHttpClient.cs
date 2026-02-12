@@ -5,20 +5,13 @@ using FaunaFinder.Pagination.Contracts;
 
 namespace FaunaFinder.Wildlife.Application.Client;
 
-public sealed class SpeciesHttpClient : ISpeciesHttpClient
+public sealed class SpeciesHttpClient(HttpClient httpClient) : ISpeciesHttpClient
 {
-    private readonly HttpClient _httpClient;
-
-    public SpeciesHttpClient(HttpClient httpClient)
-    {
-        _httpClient = httpClient;
-    }
-
     public async Task<IReadOnlyList<SpeciesForListDto>> GetSpeciesByMunicipalityAsync(
         int municipalityId,
         CancellationToken cancellationToken = default)
     {
-        var result = await _httpClient.GetFromJsonAsync<IReadOnlyList<SpeciesForListDto>>(
+        var result = await httpClient.GetFromJsonAsync<IReadOnlyList<SpeciesForListDto>>(
             $"api/species/by-municipality/{municipalityId}",
             cancellationToken);
         return result ?? [];
@@ -28,7 +21,7 @@ public sealed class SpeciesHttpClient : ISpeciesHttpClient
         int speciesId,
         CancellationToken cancellationToken = default)
     {
-        return await _httpClient.GetFromJsonAsync<SpeciesForDetailDto>(
+        return await httpClient.GetFromJsonAsync<SpeciesForDetailDto>(
             $"api/species/{speciesId}",
             cancellationToken);
     }
@@ -38,7 +31,7 @@ public sealed class SpeciesHttpClient : ISpeciesHttpClient
         CancellationToken cancellationToken = default)
     {
         var queryString = BuildSpeciesQueryString(parameters);
-        var result = await _httpClient.GetFromJsonAsync<IReadOnlyList<SpeciesForSearchDto>>(
+        var result = await httpClient.GetFromJsonAsync<IReadOnlyList<SpeciesForSearchDto>>(
             $"api/species{queryString}",
             cancellationToken);
         return result ?? [];
@@ -49,7 +42,7 @@ public sealed class SpeciesHttpClient : ISpeciesHttpClient
         CancellationToken cancellationToken = default)
     {
         var queryString = string.IsNullOrEmpty(search) ? "" : $"?search={Uri.EscapeDataString(search)}";
-        return await _httpClient.GetFromJsonAsync<int>(
+        return await httpClient.GetFromJsonAsync<int>(
             $"api/species/count{queryString}",
             cancellationToken);
     }
@@ -60,7 +53,7 @@ public sealed class SpeciesHttpClient : ISpeciesHttpClient
         double radiusMeters,
         CancellationToken cancellationToken = default)
     {
-        var result = await _httpClient.GetFromJsonAsync<IReadOnlyList<SpeciesNearbyDto>>(
+        var result = await httpClient.GetFromJsonAsync<IReadOnlyList<SpeciesNearbyDto>>(
             $"api/species/nearby?latitude={latitude}&longitude={longitude}&radiusMeters={radiusMeters}",
             cancellationToken);
         return result ?? [];
@@ -92,7 +85,7 @@ public sealed class SpeciesHttpClient : ISpeciesHttpClient
         CancellationToken cancellationToken = default)
     {
         var queryString = BuildCursorQueryString(request);
-        var result = await _httpClient.GetFromJsonAsync<CursorPage<SpeciesForSearchDto>>(
+        var result = await httpClient.GetFromJsonAsync<CursorPage<SpeciesForSearchDto>>(
             $"api/species/cursor{queryString}",
             cancellationToken);
         return result ?? new CursorPage<SpeciesForSearchDto>([], null, false);

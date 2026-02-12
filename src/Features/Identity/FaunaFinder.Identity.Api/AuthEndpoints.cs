@@ -5,6 +5,7 @@ using FaunaFinder.Pagination.Contracts;
 using FluentValidation;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 
 namespace FaunaFinder.Identity.Api;
@@ -16,25 +17,21 @@ public static class AuthEndpoints
         var group = app.MapGroup("/auth")
             .WithTags("Authentication");
 
-        group.MapPost("/register", Register);
-        group.MapPost("/login", Login);
-        group.MapPost("/logout", Logout).RequireAuthorization();
-        group.MapGet("/me", GetCurrentUser);
+        // Public endpoints
+        group.MapPost("/register", Register).WithName("Register");
+        group.MapPost("/login", Login).WithName("Login");
+        group.MapGet("/me", GetCurrentUser).WithName("GetCurrentUser");
 
-        group.MapGet("/users", GetAllUsers)
-            .RequireAuthorization(policy => policy.RequireRole("Admin"));
+        // Authenticated endpoints
+        group.MapPost("/logout", Logout).RequireAuthorization().WithName("Logout");
 
-        group.MapGet("/users/search", GetUsersCursorPage)
-            .RequireAuthorization(policy => policy.RequireRole("Admin"));
-
-        group.MapGet("/access-requests/pending", GetPendingAccessRequests)
-            .RequireAuthorization(policy => policy.RequireRole("Admin"));
-        group.MapGet("/access-requests/search", GetAccessRequestsCursorPage)
-            .RequireAuthorization(policy => policy.RequireRole("Admin"));
-        group.MapGet("/access-requests/{id}", GetAccessRequestById)
-            .RequireAuthorization(policy => policy.RequireRole("Admin"));
-        group.MapPut("/access-requests/{id}/status", UpdateAccessRequestStatus)
-            .RequireAuthorization(policy => policy.RequireRole("Admin"));
+        // Admin endpoints
+        group.MapGet("/users", GetAllUsers).RequireAuthorization(policy => policy.RequireRole("Admin")).WithName("GetAllUsers");
+        group.MapGet("/users/search", GetUsersCursorPage).RequireAuthorization(policy => policy.RequireRole("Admin")).WithName("GetUsersCursorPage");
+        group.MapGet("/access-requests/pending", GetPendingAccessRequests).RequireAuthorization(policy => policy.RequireRole("Admin")).WithName("GetPendingAccessRequests");
+        group.MapGet("/access-requests/search", GetAccessRequestsCursorPage).RequireAuthorization(policy => policy.RequireRole("Admin")).WithName("GetAccessRequestsCursorPage");
+        group.MapGet("/access-requests/{id}", GetAccessRequestById).RequireAuthorization(policy => policy.RequireRole("Admin")).WithName("GetAccessRequestById");
+        group.MapPut("/access-requests/{id}/status", UpdateAccessRequestStatus).RequireAuthorization(policy => policy.RequireRole("Admin")).WithName("UpdateAccessRequestStatus");
 
         return app;
     }
@@ -145,14 +142,11 @@ public static class AuthEndpoints
     }
 
     private static async Task<IResult> GetUsersCursorPage(
-        string? cursor,
-        int? pageSize,
-        string? search,
+        [AsParameters] CursorPageParameter parameters,
         IAuthService authService,
         CancellationToken cancellationToken)
     {
-        var request = new CursorPageParameter(cursor, pageSize ?? 20, search);
-        var result = await authService.GetUsersCursorPageAsync(request, cancellationToken);
+        var result = await authService.GetUsersCursorPageAsync(parameters, cancellationToken);
 
         return result.Match<IResult>(
             page => Results.Ok(page),
@@ -162,15 +156,11 @@ public static class AuthEndpoints
     }
 
     private static async Task<IResult> GetAccessRequestsCursorPage(
-        string? cursor,
-        int? pageSize,
-        string? search,
-        string? status,
+        [AsParameters] AccessRequestPageParameter parameters,
         IAuthService authService,
         CancellationToken cancellationToken)
     {
-        var request = new AccessRequestPageParameter(cursor, pageSize ?? 20, search, status);
-        var result = await authService.GetAccessRequestsCursorPageAsync(request, cancellationToken);
+        var result = await authService.GetAccessRequestsCursorPageAsync(parameters, cancellationToken);
 
         return result.Match<IResult>(
             page => Results.Ok(page),

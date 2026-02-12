@@ -1,6 +1,9 @@
 using FaunaFinder.Pagination.Contracts;
+using FaunaFinder.Wildlife.Contracts.Dtos;
 using FaunaFinder.Wildlife.Contracts.Parameters;
 using FaunaFinder.Wildlife.DataAccess.Interfaces;
+using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
 
 namespace FaunaFinder.Server.Endpoints;
 
@@ -11,61 +14,65 @@ public static class SpeciesEndpoints
         var group = app.MapGroup("/species")
             .WithTags("Species");
 
-        group.MapGet("/", async (
-            int pageSize,
-            int page,
-            string? search,
-            int? municipalityId,
-            ISpeciesRepository repository,
-            CancellationToken ct) =>
-        {
-            var parameters = new SpeciesParameters(pageSize, page, search, municipalityId);
-            var species = await repository.GetSpeciesAsync(parameters, ct);
-            return Results.Ok(species);
-        }).WithName("GetSpecies");
+        group.MapGet("/", GetSpecies).WithName("GetSpecies");
+        group.MapGet("/{id:int}", GetSpeciesDetail).WithName("GetSpeciesDetail");
+        group.MapGet("/by-municipality/{municipalityId:int}", GetSpeciesByMunicipality).WithName("GetSpeciesByMunicipality");
+        group.MapGet("/count", GetSpeciesCount).WithName("GetSpeciesCount");
+        group.MapGet("/nearby", GetSpeciesNearby).WithName("GetSpeciesNearby");
+        group.MapGet("/cursor", GetSpeciesCursor).WithName("GetSpeciesCursor");
+    }
 
-        group.MapGet("/{id:int}", async (int id, ISpeciesRepository repository, CancellationToken ct) =>
-        {
-            var species = await repository.GetSpeciesDetailAsync(id, ct);
-            return species is not null ? Results.Ok(species) : Results.NotFound();
-        }).WithName("GetSpeciesDetail");
+    private static async Task<Ok<IReadOnlyList<SpeciesForSearchDto>>> GetSpecies(
+        [AsParameters] SpeciesParameters parameters,
+        ISpeciesRepository repository,
+        CancellationToken ct)
+    {
+        var species = await repository.GetSpeciesAsync(parameters, ct);
+        return TypedResults.Ok(species);
+    }
 
-        group.MapGet("/by-municipality/{municipalityId:int}", async (
-            int municipalityId,
-            ISpeciesRepository repository,
-            CancellationToken ct) =>
-        {
-            var species = await repository.GetSpeciesByMunicipalityAsync(municipalityId, ct);
-            return Results.Ok(species);
-        }).WithName("GetSpeciesByMunicipality");
+    private static async Task<Results<Ok<SpeciesForDetailDto>, NotFound>> GetSpeciesDetail(
+        int id,
+        ISpeciesRepository repository,
+        CancellationToken ct)
+    {
+        var species = await repository.GetSpeciesDetailAsync(id, ct);
+        return species is not null ? TypedResults.Ok(species) : TypedResults.NotFound();
+    }
 
-        group.MapGet("/count", async (string? search, ISpeciesRepository repository, CancellationToken ct) =>
-        {
-            var count = await repository.GetTotalSpeciesCountAsync(search, ct);
-            return Results.Ok(count);
-        }).WithName("GetSpeciesCount");
+    private static async Task<Ok<IReadOnlyList<SpeciesForListDto>>> GetSpeciesByMunicipality(
+        int municipalityId,
+        ISpeciesRepository repository,
+        CancellationToken ct)
+    {
+        var species = await repository.GetSpeciesByMunicipalityAsync(municipalityId, ct);
+        return TypedResults.Ok(species);
+    }
 
-        group.MapGet("/nearby", async (
-            double latitude,
-            double longitude,
-            double radiusMeters,
-            ISpeciesRepository repository,
-            CancellationToken ct) =>
-        {
-            var species = await repository.GetSpeciesNearbyAsync(latitude, longitude, radiusMeters, ct);
-            return Results.Ok(species);
-        }).WithName("GetSpeciesNearby");
+    private static async Task<Ok<int>> GetSpeciesCount(
+        string? search,
+        ISpeciesRepository repository,
+        CancellationToken ct)
+    {
+        var count = await repository.GetTotalSpeciesCountAsync(search, ct);
+        return TypedResults.Ok(count);
+    }
 
-        group.MapGet("/cursor", async (
-            string? cursor,
-            int pageSize,
-            string? search,
-            ISpeciesRepository repository,
-            CancellationToken ct) =>
-        {
-            var request = new CursorPageParameter(cursor, pageSize, search);
-            var page = await repository.GetSpeciesCursorPageAsync(request, ct);
-            return Results.Ok(page);
-        }).WithName("GetSpeciesCursor");
+    private static async Task<Ok<IReadOnlyList<SpeciesNearbyDto>>> GetSpeciesNearby(
+        [AsParameters] NearbySpeciesParameters parameters,
+        ISpeciesRepository repository,
+        CancellationToken ct)
+    {
+        var species = await repository.GetSpeciesNearbyAsync(parameters.Latitude, parameters.Longitude, parameters.RadiusMeters, ct);
+        return TypedResults.Ok(species);
+    }
+
+    private static async Task<Ok<CursorPage<SpeciesForSearchDto>>> GetSpeciesCursor(
+        [AsParameters] CursorPageParameter parameters,
+        ISpeciesRepository repository,
+        CancellationToken ct)
+    {
+        var page = await repository.GetSpeciesCursorPageAsync(parameters, ct);
+        return TypedResults.Ok(page);
     }
 }

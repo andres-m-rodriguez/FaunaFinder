@@ -1,10 +1,14 @@
 using FluentValidation;
 using FaunaFinder.Wildlife.Contracts;
+using FaunaFinder.Wildlife.Contracts.Dtos;
 using FaunaFinder.Wildlife.Contracts.Parameters;
 using FaunaFinder.Wildlife.Contracts.Requests;
+using FaunaFinder.Wildlife.Contracts.Responses;
 using FaunaFinder.Wildlife.DataAccess.Interfaces;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using System.Security.Claims;
 
@@ -18,65 +22,40 @@ public static class WildlifeEndpoints
             .WithTags("Wildlife");
 
         // Public endpoints
-        group.MapGet("/species/search", SearchSpecies)
-            .WithName("SearchSpecies");
-
-        group.MapGet("/sightings/{id:int}/photo", GetSightingPhoto)
-            .WithName("GetSightingPhoto");
+        group.MapGet("/species/search", SearchSpecies).WithName("SearchSpecies");
+        group.MapGet("/sightings/{id:int}/photo", GetSightingPhoto).WithName("GetSightingPhoto");
 
         // Authenticated endpoints
-        group.MapPost("/sightings", CreateSighting)
-            .RequireAuthorization()
-            .WithName("CreateSighting");
-
-        group.MapGet("/sightings", GetSightings)
-            .RequireAuthorization()
-            .WithName("GetSightings");
-
-        group.MapGet("/sightings/{id:int}", GetSightingDetail)
-            .RequireAuthorization()
-            .WithName("GetSightingDetail");
-
-        group.MapPatch("/sightings/{id:int}/photo", UpdateSightingPhoto)
-            .RequireAuthorization()
-            .DisableAntiforgery()
-            .WithName("UpdateSightingPhoto");
-
-        group.MapGet("/my-sightings", GetMySightings)
-            .RequireAuthorization()
-            .WithName("GetMySightings");
+        group.MapPost("/sightings", CreateSighting).RequireAuthorization().WithName("CreateSighting");
+        group.MapGet("/sightings", GetSightings).RequireAuthorization().WithName("GetSightings");
+        group.MapGet("/sightings/{id:int}", GetSightingDetail).RequireAuthorization().WithName("GetSightingDetail");
+        group.MapPatch("/sightings/{id:int}/photo", UpdateSightingPhoto).RequireAuthorization().DisableAntiforgery().WithName("UpdateSightingPhoto");
+        group.MapGet("/my-sightings", GetMySightings).RequireAuthorization().WithName("GetMySightings");
 
         // Teacher/Admin endpoints
-        group.MapPost("/sightings/{id:int}/review", ReviewSighting)
-            .RequireAuthorization(policy => policy.RequireRole("Admin", "Teacher"))
-            .WithName("ReviewSighting");
-
-        group.MapGet("/review-queue", GetReviewQueue)
-            .RequireAuthorization(policy => policy.RequireRole("Admin", "Teacher"))
-            .WithName("GetReviewQueue");
+        group.MapPost("/sightings/{id:int}/review", ReviewSighting).RequireAuthorization(policy => policy.RequireRole("Admin", "Teacher")).WithName("ReviewSighting");
+        group.MapGet("/review-queue", GetReviewQueue).RequireAuthorization(policy => policy.RequireRole("Admin", "Teacher")).WithName("GetReviewQueue");
 
         return app;
     }
 
-    private static async Task<IResult> SearchSpecies(
-        string? query,
-        int limit,
+    private static async Task<Results<Ok<IReadOnlyList<SpeciesSearchResult>>, ValidationProblem>> SearchSpecies(
+        [AsParameters] SpeciesSearchParameters parameters,
         ISpeciesRepository speciesRepository,
         IValidator<SpeciesSearchParameters> validator,
         CancellationToken ct)
     {
-        var parameters = new SpeciesSearchParameters(query, limit);
         var validation = await validator.ValidateAsync(parameters, ct);
         if (!validation.IsValid)
         {
-            return Results.ValidationProblem(validation.ToDictionary());
+            return TypedResults.ValidationProblem(validation.ToDictionary());
         }
 
         var species = await speciesRepository.SearchSpeciesAsync(parameters, ct);
-        return Results.Ok(species);
+        return TypedResults.Ok(species);
     }
 
-    private static async Task<IResult> CreateSighting(
+    private static async Task<Results<Created<SightingCreatedResponse>, UnauthorizedHttpResult, ValidationProblem, BadRequest<string>>> CreateSighting(
         HttpContext context,
         ISightingRepository sightingRepository,
         ISpeciesRepository speciesRepository,
@@ -87,66 +66,57 @@ public static class WildlifeEndpoints
         var userIdClaim = context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
         {
-            return Results.Unauthorized();
+            return TypedResults.Unauthorized();
         }
 
         var validation = await validator.ValidateAsync(request, ct);
         if (!validation.IsValid)
         {
-            return Results.ValidationProblem(validation.ToDictionary());
+            return TypedResults.ValidationProblem(validation.ToDictionary());
         }
 
         // Verify species exists
         if (!await speciesRepository.ExistsAsync(request.SpeciesId, ct))
         {
-            return Results.BadRequest("Invalid species ID");
+            return TypedResults.BadRequest("Invalid species ID");
         }
 
         var response = await sightingRepository.CreateSightingAsync(request, userId, ct);
 
         if (!response.Success)
         {
-            return Results.BadRequest(response.Error);
+            return TypedResults.BadRequest(response.Error);
         }
 
-        return Results.Created($"/api/wildlife/sightings/{response.Id}", new { response.Id });
+        return TypedResults.Created($"/api/wildlife/sightings/{response.Id}", new SightingCreatedResponse(response.Id!.Value));
     }
 
-    private static async Task<IResult> GetSightings(
-        int page,
-        int pageSize,
-        string? status,
+    private static async Task<Results<Ok<SightingsPage>, ValidationProblem>> GetSightings(
+        [AsParameters] SightingsParameters parameters,
         ISightingRepository sightingRepository,
         IValidator<SightingsParameters> validator,
         CancellationToken ct)
     {
-        var parameters = new SightingsParameters(page, pageSize, status);
         var validation = await validator.ValidateAsync(parameters, ct);
         if (!validation.IsValid)
         {
-            return Results.ValidationProblem(validation.ToDictionary());
+            return TypedResults.ValidationProblem(validation.ToDictionary());
         }
 
         var result = await sightingRepository.GetSightingsAsync(parameters, ct);
-        return Results.Ok(result);
+        return TypedResults.Ok(result);
     }
 
-    private static async Task<IResult> GetSightingDetail(
+    private static async Task<Results<Ok<SightingDetailDto>, NotFound>> GetSightingDetail(
         int id,
         ISightingRepository sightingRepository,
         CancellationToken ct)
     {
         var sighting = await sightingRepository.GetSightingDetailAsync(id, ct);
-
-        if (sighting is null)
-        {
-            return Results.NotFound();
-        }
-
-        return Results.Ok(sighting);
+        return sighting is not null ? TypedResults.Ok(sighting) : TypedResults.NotFound();
     }
 
-    private static async Task<IResult> UpdateSightingPhoto(
+    private static async Task<Results<Ok<PhotoUpdateResponse>, UnauthorizedHttpResult, NotFound, ForbidHttpResult, BadRequest<string>>> UpdateSightingPhoto(
         int id,
         HttpContext context,
         ISightingRepository sightingRepository,
@@ -155,12 +125,12 @@ public static class WildlifeEndpoints
         var userIdClaim = context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
         {
-            return Results.Unauthorized();
+            return TypedResults.Unauthorized();
         }
 
         if (!context.Request.HasFormContentType)
         {
-            return Results.BadRequest("Request must be multipart/form-data");
+            return TypedResults.BadRequest("Request must be multipart/form-data");
         }
 
         var form = await context.Request.ReadFormAsync(ct);
@@ -168,14 +138,14 @@ public static class WildlifeEndpoints
 
         if (file is null || file.Length == 0)
         {
-            return Results.BadRequest("Photo file is required");
+            return TypedResults.BadRequest("Photo file is required");
         }
 
         // Validate content type
         var allowedTypes = new[] { "image/jpeg", "image/png", "image/gif", "image/webp" };
         if (!allowedTypes.Contains(file.ContentType.ToLowerInvariant()))
         {
-            return Results.BadRequest("Invalid file type. Only JPEG, PNG, GIF, and WebP images are allowed.");
+            return TypedResults.BadRequest("Invalid file type. Only JPEG, PNG, GIF, and WebP images are allowed.");
         }
 
         // Read file content
@@ -189,31 +159,25 @@ public static class WildlifeEndpoints
         {
             return error switch
             {
-                "Sighting not found" => Results.NotFound(),
-                "Not authorized" => Results.Forbid(),
-                _ => Results.BadRequest(error)
+                "Sighting not found" => TypedResults.NotFound(),
+                "Not authorized" => TypedResults.Forbid(),
+                _ => TypedResults.BadRequest(error)
             };
         }
 
-        return Results.Ok(new { Id = id, Message = "Photo updated successfully" });
+        return TypedResults.Ok(new PhotoUpdateResponse(id, "Photo updated successfully"));
     }
 
-    private static async Task<IResult> GetSightingPhoto(
+    private static async Task<Results<FileContentHttpResult, NotFound>> GetSightingPhoto(
         int id,
         ISightingRepository sightingRepository,
         CancellationToken ct)
     {
         var result = await sightingRepository.GetSightingPhotoAsync(id, ct);
-
-        if (result is null)
-        {
-            return Results.NotFound();
-        }
-
-        return Results.File(result.PhotoData, result.ContentType);
+        return result is not null ? TypedResults.File(result.PhotoData, result.ContentType) : TypedResults.NotFound();
     }
 
-    private static async Task<IResult> ReviewSighting(
+    private static async Task<Results<Ok<ReviewSightingResponse>, UnauthorizedHttpResult, NotFound, ValidationProblem, BadRequest<string>>> ReviewSighting(
         int id,
         HttpContext context,
         ISightingRepository sightingRepository,
@@ -224,66 +188,62 @@ public static class WildlifeEndpoints
         var userIdClaim = context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
         {
-            return Results.Unauthorized();
+            return TypedResults.Unauthorized();
         }
 
         var validation = await validator.ValidateAsync(request, ct);
         if (!validation.IsValid)
         {
-            return Results.ValidationProblem(validation.ToDictionary());
+            return TypedResults.ValidationProblem(validation.ToDictionary());
         }
 
         var (success, error) = await sightingRepository.ReviewSightingAsync(id, request, userId, ct);
 
         if (!success)
         {
-            return error == "Sighting not found" ? Results.NotFound() : Results.BadRequest(error);
+            return error == "Sighting not found" ? TypedResults.NotFound() : TypedResults.BadRequest(error);
         }
 
-        return Results.Ok(new { Id = id, request.Status });
+        return TypedResults.Ok(new ReviewSightingResponse(id, request.Status));
     }
 
-    private static async Task<IResult> GetReviewQueue(
-        HttpContext context,
+    private static async Task<Results<Ok<SightingsPage>, ValidationProblem>> GetReviewQueue(
+        [AsParameters] ReviewQueueParameters parameters,
         ISightingRepository sightingRepository,
         IValidator<ReviewQueueParameters> validator,
-        int page,
-        int pageSize,
         CancellationToken ct)
     {
-        var parameters = new ReviewQueueParameters(page, pageSize);
         var validation = await validator.ValidateAsync(parameters, ct);
         if (!validation.IsValid)
         {
-            return Results.ValidationProblem(validation.ToDictionary());
+            return TypedResults.ValidationProblem(validation.ToDictionary());
         }
 
         var result = await sightingRepository.GetReviewQueueAsync(parameters, ct);
-        return Results.Ok(result);
+        return TypedResults.Ok(result);
     }
 
-    private static async Task<IResult> GetMySightings(
+    private static async Task<Results<Ok<SightingsPage>, UnauthorizedHttpResult, ValidationProblem>> GetMySightings(
         HttpContext context,
+        [AsParameters] UserSightingsParameters parameters,
         ISightingRepository sightingRepository,
         IValidator<UserSightingsParameters> validator,
-        int page,
-        int pageSize,
         CancellationToken ct)
     {
         var userIdClaim = context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
         {
-            return Results.Unauthorized();
+            return TypedResults.Unauthorized();
         }
 
-        var parameters = new UserSightingsParameters(userId, page, pageSize);
-        var validation = await validator.ValidateAsync(parameters, ct);
+        var parametersWithUser = parameters with { UserId = userId };
+        var validation = await validator.ValidateAsync(parametersWithUser, ct);
         if (!validation.IsValid)
         {
-            return Results.ValidationProblem(validation.ToDictionary());
+            return TypedResults.ValidationProblem(validation.ToDictionary());
         }
 
-        var result = await sightingRepository.GetSightingsByUserAsync(parameters, ct);
-        return Results.Ok(result);
+        var result = await sightingRepository.GetSightingsByUserAsync(parametersWithUser, ct);
+        return TypedResults.Ok(result);
     }
 }

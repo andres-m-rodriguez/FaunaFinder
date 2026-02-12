@@ -1,14 +1,7 @@
 namespace FaunaFinder.Wildlife.Application.Client;
 
-public class ExportHttpClient : IExportHttpClient
+public sealed class ExportHttpClient(HttpClient httpClient) : IExportHttpClient
 {
-    private readonly HttpClient _httpClient;
-
-    public ExportHttpClient(HttpClient httpClient)
-    {
-        _httpClient = httpClient;
-    }
-
     public async Task<byte[]> ExportMunicipalityPdfAsync(
         int municipalityId,
         IEnumerable<int>? speciesIds = null,
@@ -20,7 +13,7 @@ public class ExportHttpClient : IExportHttpClient
             url += "?speciesIds=" + string.Join(",", speciesIds);
         }
 
-        var response = await _httpClient.GetAsync(url, cancellationToken);
+        var response = await httpClient.GetAsync(url, cancellationToken);
         response.EnsureSuccessStatusCode();
         return await response.Content.ReadAsByteArrayAsync(cancellationToken);
     }
@@ -36,7 +29,7 @@ public class ExportHttpClient : IExportHttpClient
             url += "?speciesIds=" + string.Join(",", speciesIds);
         }
 
-        var response = await _httpClient.GetAsync(url, cancellationToken);
+        var response = await httpClient.GetAsync(url, cancellationToken);
         response.EnsureSuccessStatusCode();
         return await response.Content.ReadAsByteArrayAsync(cancellationToken);
     }
