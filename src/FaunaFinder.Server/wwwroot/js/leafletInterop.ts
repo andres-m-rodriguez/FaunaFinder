@@ -148,10 +148,13 @@ interface LeafletInterop {
     lightTheme: ThemeColors;
     darkTheme: ThemeColors;
     speciesColorPalette: string[];
+    ariaLiveRegion: HTMLElement | null;
 
     setApiBaseUrl(url: string): void;
     initMap(dotNetHelper: DotNetHelper, apiBaseUrl?: string): void;
     createLocateControl(): void;
+    createAriaLiveRegion(): void;
+    announceToScreenReader(message: string): void;
     locateUser(): void;
     setLocateControlState(state: LocateControlState): void;
     showLocationError(errorType: LocationErrorType): void;
@@ -201,6 +204,7 @@ window.leafletInterop = {
     speciesLocationCircles: [],
     speciesColorMap: new Map<number, string>(),
     apiBaseUrl: '',
+    ariaLiveRegion: null,
     lightTileUrl: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
     darkTileUrl: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
     lightTheme: {
@@ -279,6 +283,29 @@ window.leafletInterop = {
             scrollWheelZoom: !this.isMobile
         });
 
+        // Add ARIA attributes to map container for accessibility
+        const mapContainer = this.map.getContainer();
+        mapContainer.setAttribute('role', 'application');
+        mapContainer.setAttribute('aria-label', 'Interactive map of Puerto Rico municipalities. Use mouse or touch to navigate.');
+        mapContainer.setAttribute('tabindex', '0');
+
+        // Create ARIA live region for announcements
+        this.createAriaLiveRegion();
+
+        // Add ARIA labels to zoom controls after a short delay to ensure they're rendered
+        setTimeout(() => {
+            const zoomIn = document.querySelector('.leaflet-control-zoom-in');
+            const zoomOut = document.querySelector('.leaflet-control-zoom-out');
+            if (zoomIn) {
+                zoomIn.setAttribute('aria-label', 'Zoom in');
+                zoomIn.setAttribute('role', 'button');
+            }
+            if (zoomOut) {
+                zoomOut.setAttribute('aria-label', 'Zoom out');
+                zoomOut.setAttribute('role', 'button');
+            }
+        }, 100);
+
         const tileUrl = this.isDarkMode ? this.darkTileUrl : this.lightTileUrl;
         const attribution = this.isDarkMode
             ? '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
@@ -330,6 +357,37 @@ window.leafletInterop = {
         new LocateControl().addTo(this.map!);
     },
 
+    createAriaLiveRegion(): void {
+        // Remove existing live region if present
+        const existing = document.getElementById('map-aria-live');
+        if (existing) {
+            existing.remove();
+        }
+
+        // Create ARIA live region for screen reader announcements
+        const liveRegion = document.createElement('div');
+        liveRegion.id = 'map-aria-live';
+        liveRegion.setAttribute('role', 'status');
+        liveRegion.setAttribute('aria-live', 'polite');
+        liveRegion.setAttribute('aria-atomic', 'true');
+        liveRegion.className = 'sr-only';
+        liveRegion.style.cssText = 'position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;';
+        document.body.appendChild(liveRegion);
+        this.ariaLiveRegion = liveRegion;
+    },
+
+    announceToScreenReader(message: string): void {
+        if (this.ariaLiveRegion) {
+            // Clear and set new message to trigger announcement
+            this.ariaLiveRegion.textContent = '';
+            setTimeout(() => {
+                if (this.ariaLiveRegion) {
+                    this.ariaLiveRegion.textContent = message;
+                }
+            }, 100);
+        }
+    },
+
     locateUser(): void {
         if (this.isLocating) return;
 
@@ -371,6 +429,9 @@ window.leafletInterop = {
                 self.map!.flyTo([lat, lng], 14, {
                     duration: 1.5
                 });
+
+                // Announce location found to screen readers
+                self.announceToScreenReader('Your location has been found. Map centered on your current position.');
 
                 self.dotNetHelper?.invokeMethodAsync('OnUserLocationFound', lat, lng);
             },
@@ -484,10 +545,22 @@ window.leafletInterop = {
                         className: 'municipality-tooltip'
                     });
 
+                    // Add ARIA attributes to the layer element for accessibility
+                    const layerElement = (layer as any).getElement?.();
+                    if (layerElement) {
+                        layerElement.setAttribute('role', 'button');
+                        layerElement.setAttribute('aria-label', `Municipality: ${name}. Click to view species.`);
+                        layerElement.setAttribute('tabindex', '0');
+                    }
+
                     layer.on({
                         mouseover: (e: L.LeafletMouseEvent) => self.highlightFeature(e),
                         mouseout: (e: L.LeafletMouseEvent) => self.resetHighlight(e),
-                        click: () => self.dotNetHelper?.invokeMethodAsync('OnMunicipalityClick', geoJsonId, name)
+                        click: () => {
+                            // Announce municipality selection to screen readers
+                            self.announceToScreenReader(`Selected ${name} municipality. Loading species information.`);
+                            self.dotNetHelper?.invokeMethodAsync('OnMunicipalityClick', geoJsonId, name);
+                        }
                     });
                 }
             }).addTo(self.map!);

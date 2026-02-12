@@ -628,3 +628,129 @@ body {
 .relative {
     position: relative;
 }
+
+/* ==========================================================================
+   Accessibility Improvements
+   ========================================================================== */
+
+/* Improved color contrast for secondary text - WCAG AA compliance */
+.mud-typography-caption,
+.mud-typography-subtitle2,
+.mud-input-label,
+.mud-input-helper-text {
+    color: var(--mud-palette-text-secondary);
+    /* Ensure minimum contrast ratio of 4.5:1 */
+}
+
+/* Override MudBlazor's secondary text color for better contrast */
+:root {
+    --accessible-text-secondary: rgba(0, 0, 0, 0.7);
+}
+
+.mud-theme-dark {
+    --accessible-text-secondary: rgba(255, 255, 255, 0.8);
+}
+
+/* Apply accessible secondary text color */
+.accessible-text {
+    color: var(--accessible-text-secondary) !important;
+}
+
+/* Focus indicators for keyboard navigation */
+.focus-visible-ring:focus-visible,
+*:focus-visible {
+    outline: 2px solid var(--mud-palette-primary);
+    outline-offset: 2px;
+}
+
+/* Remove default outline for mouse users, keep for keyboard */
+*:focus:not(:focus-visible) {
+    outline: none;
+}
+
+/* Map controls focus indicators */
+.leaflet-control-zoom a:focus-visible,
+.leaflet-control-locate-button:focus-visible {
+    outline: 3px solid var(--mud-palette-primary) !important;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px rgba(var(--mud-palette-primary-rgb), 0.25) !important;
+}
+
+/* Location list items focus state */
+.location-list-item:focus-visible,
+.nearby-species-item:focus-visible {
+    outline: 2px solid var(--mud-palette-primary);
+    outline-offset: -2px;
+    background-color: var(--mud-palette-action-default-hover);
+}
+
+/* Make focus visible on interactive cards */
+.mud-card:focus-visible,
+.mud-paper:focus-visible,
+.mud-list-item:focus-visible {
+    outline: 2px solid var(--mud-palette-primary);
+    outline-offset: 2px;
+}
+
+/* MudButton focus enhancement */
+.mud-button-root:focus-visible {
+    outline: 2px solid var(--mud-palette-primary);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px rgba(var(--mud-palette-primary-rgb), 0.2);
+}
+
+/* MudChip focus enhancement */
+.mud-chip:focus-visible {
+    outline: 2px solid var(--mud-palette-primary);
+    outline-offset: 1px;
+}
+
+/* Expansion panel focus */
+.mud-expand-panel:focus-visible {
+    outline: 2px solid var(--mud-palette-primary);
+    outline-offset: -2px;
+}
+
+/* Skip link for keyboard navigation */
+.skip-link {
+    position: absolute;
+    top: -100%;
+    left: 0;
+    padding: 8px 16px;
+    background: var(--mud-palette-primary);
+    color: var(--mud-palette-primary-text);
+    z-index: 9999;
+    transition: top 0.2s ease;
+}
+
+.skip-link:focus {
+    top: 0;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .mud-typography-caption,
+    .mud-typography-body2 {
+        color: var(--mud-palette-text-primary) !important;
+    }
+
+    .leaflet-control-locate-button,
+    .leaflet-control-zoom a {
+        border: 2px solid currentColor !important;
+    }
+
+    *:focus-visible {
+        outline-width: 3px !important;
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
