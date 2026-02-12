@@ -74,13 +74,11 @@
                         <MudImage Src="@($"/api/wildlife/sightings/{_sighting.Id}/photo?v={_photoVersion}")"
                                   Alt="@L["SightingDetail_PhotoAlt"]"
                                   ObjectFit="ObjectFit.Cover"
-                                  Class="rounded-lg"
-                                  Style="width: 100%; max-height: 400px;" />
+                                  Class="rounded-lg w-full max-h-400" />
                     }
                     else
                     {
-                        <div class="d-flex justify-center align-center rounded-lg"
-                             style="height: 200px; background-color: var(--mud-palette-background-grey);">
+                        <div class="d-flex justify-center align-center rounded-lg h-200" style="background-color: var(--mud-palette-background-grey);">
                             <MudStack AlignItems="AlignItems.Center">
                                 <MudIcon Icon="@Icons.Material.Filled.HideImage" Size="Size.Large" Color="Color.Secondary" />
                                 <MudText Color="Color.Secondary">@L["SightingDetail_NoPhoto"]</MudText>
@@ -123,7 +121,7 @@
                 @* Location Map *@
                 <MudPaper Elevation="2" Class="pa-4">
                     <MudText Typo="Typo.h6" Class="mb-3">@L["SightingDetail_Location"]</MudText>
-                    <div id="sighting-map" class="rounded-lg" style="height: 300px; width: 100%;"></div>
+                    <div id="sighting-map" class="rounded-lg h-300 w-full"></div>
                     <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-2">
                         @_sighting.Latitude.ToString("F6"), @_sighting.Longitude.ToString("F6")
                     </MudText>
@@ -196,7 +194,7 @@
                 {
                     <MudPaper Elevation="2" Class="pa-4 mb-4">
                         <MudText Typo="Typo.h6" Class="mb-2">@L["SightingDetail_Notes"]</MudText>
-                        <MudText Typo="Typo.body1" Style="white-space: pre-wrap;">@_sighting.Notes</MudText>
+                        <MudText Typo="Typo.body1" Class="whitespace-pre-wrap">@_sighting.Notes</MudText>
                     </MudPaper>
                 }
 
@@ -237,7 +235,7 @@
                             {
                                 <MudItem xs="12">
                                     <MudText Typo="Typo.caption" Color="Color.Secondary">@L["SightingDetail_ReviewNotes"]</MudText>
-                                    <MudText Typo="Typo.body1" Style="white-space: pre-wrap;">@_sighting.ReviewNotes</MudText>
+                                    <MudText Typo="Typo.body1" Class="whitespace-pre-wrap">@_sighting.ReviewNotes</MudText>
                                 </MudItem>
                             }
                         </MudGrid>
