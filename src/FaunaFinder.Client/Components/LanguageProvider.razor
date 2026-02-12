@@ -2,9 +2,7 @@
 @implements IDisposable
 
 <CascadingValue Value="@_refreshToken" Name="LanguageRefresh">
-    <div style="display:contents" @key="_refreshToken">
-        @ChildContent
-    </div>
+    @ChildContent
 </CascadingValue>
 
 @code {
