@@ -207,10 +207,8 @@ window.leafletInterop = {
         }
     },
     setDarkMode(isDark) {
-        console.log('setDarkMode called with:', isDark);
         this.isDarkMode = isDark;
         if (this.map) {
-            console.log('Map exists, updating tile layer');
             if (this.tileLayer) {
                 this.map.removeLayer(this.tileLayer);
             }
@@ -225,13 +223,9 @@ window.leafletInterop = {
                 maxZoom: 16
             }).addTo(this.map);
             this.tileLayer.bringToBack();
-            console.log('Tile layer updated to:', tileUrl);
-        } else {
-            console.log('Map does not exist');
         }
         if (this.geojsonLayer) {
             this.geojsonLayer.setStyle(this.getDefaultStyle());
-            console.log('GeoJSON style updated');
         }
     },
     loadGeoJson() {
