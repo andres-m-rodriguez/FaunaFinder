@@ -203,7 +203,48 @@ code {
     color: var(--mud-palette-text-primary);
     padding: 6px 12px !important;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    transition: transform 0.15s ease, opacity 0.15s ease;
+}
+
+/* Draw Mode Styles */
+.leaflet-container.draw-mode {
+    cursor: crosshair !important;
+}
+
+.leaflet-container.draw-mode * {
+    cursor: crosshair !important;
+}
+
+.leaflet-container.draw-mode .municipality-tooltip {
+    display: none !important;
+}
+
+.draw-mode-indicator {
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--mud-palette-primary);
+    color: var(--mud-palette-primary-text);
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 500;
+    z-index: 1000;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+    to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+/* Desktop FAB Container for Draw Circle */
+.desktop-fab-container {
+    position: absolute;
+    bottom: 30px;
+    right: 30px;
+    z-index: 999;
 }
 
 /* Leaflet Controls Dark Mode Support */
@@ -413,7 +454,6 @@ code {
     display: flex;
     align-items: center;
     padding: 12px 4px 12px 0;
-    padding-top: calc(env(safe-area-inset-top, 0px) + 64px); /* Safe area for notches + navbar (48px) + extra spacing */
     border-bottom: 1px solid var(--mud-palette-lines-default);
     position: sticky;
     top: 0;
