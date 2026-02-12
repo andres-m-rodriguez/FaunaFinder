@@ -1,10 +1,11 @@
 using FaunaFinder.Identity.Application.Services;
 using FaunaFinder.Identity.Contracts.Requests;
-using FaunaFinder.Identity.Contracts.Results;
+using FaunaFinder.Identity.Contracts.Responses;
 using FaunaFinder.Pagination.Contracts;
 using FluentValidation;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Routing;
 
 namespace FaunaFinder.Identity.Api;
@@ -16,25 +17,21 @@ public static class AuthEndpoints
         var group = app.MapGroup("/auth")
             .WithTags("Authentication");
 
-        group.MapPost("/register", Register);
-        group.MapPost("/login", Login);
-        group.MapPost("/logout", Logout).RequireAuthorization();
-        group.MapGet("/me", GetCurrentUser);
+        // Public endpoints
+        group.MapPost("/register", Register).WithName("Register");
+        group.MapPost("/login", Login).WithName("Login");
+        group.MapGet("/me", GetCurrentUser).WithName("GetCurrentUser");
 
-        group.MapGet("/users", GetAllUsers)
-            .RequireAuthorization(policy => policy.RequireRole("Admin"));
+        // Authenticated endpoints
+        group.MapPost("/logout", Logout).RequireAuthorization().WithName("Logout");
 
-        group.MapGet("/users/search", GetUsersCursorPage)
-            .RequireAuthorization(policy => policy.RequireRole("Admin"));
-
-        group.MapGet("/access-requests/pending", GetPendingAccessRequests)
-            .RequireAuthorization(policy => policy.RequireRole("Admin"));
-        group.MapGet("/access-requests/search", GetAccessRequestsCursorPage)
-            .RequireAuthorization(policy => policy.RequireRole("Admin"));
-        group.MapGet("/access-requests/{id}", GetAccessRequestById)
-            .RequireAuthorization(policy => policy.RequireRole("Admin"));
-        group.MapPut("/access-requests/{id}/status", UpdateAccessRequestStatus)
-            .RequireAuthorization(policy => policy.RequireRole("Admin"));
+        // Admin endpoints
+        group.MapGet("/users", GetAllUsers).RequireAuthorization(p => p.RequireRole("Admin")).WithName("GetAllUsers");
+        group.MapGet("/users/search", GetUsersCursorPage).RequireAuthorization(p => p.RequireRole("Admin")).WithName("GetUsersCursorPage");
+        group.MapGet("/access-requests/pending", GetPendingAccessRequests).RequireAuthorization(p => p.RequireRole("Admin")).WithName("GetPendingAccessRequests");
+        group.MapGet("/access-requests/search", GetAccessRequestsCursorPage).RequireAuthorization(p => p.RequireRole("Admin")).WithName("GetAccessRequestsCursorPage");
+        group.MapGet("/access-requests/{id:int}", GetAccessRequestById).RequireAuthorization(p => p.RequireRole("Admin")).WithName("GetAccessRequestById");
+        group.MapPut("/access-requests/{id:int}/status", UpdateAccessRequestStatus).RequireAuthorization(p => p.RequireRole("Admin")).WithName("UpdateAccessRequestStatus");
 
         return app;
     }
@@ -43,20 +40,20 @@ public static class AuthEndpoints
         RegisterRequest request,
         IValidator<RegisterRequest> validator,
         IAuthService authService,
-        CancellationToken cancellationToken)
+        CancellationToken ct)
     {
-        var validation = await validator.ValidateAsync(request, cancellationToken);
+        var validation = await validator.ValidateAsync(request, ct);
         if (!validation.IsValid)
-            return Results.ValidationProblem(validation.ToDictionary());
+            return TypedResults.ValidationProblem(validation.ToDictionary());
 
-        var result = await authService.RegisterAsync(request, cancellationToken);
+        var result = await authService.RegisterAsync(request, ct);
 
         return result.Match<IResult>(
-            success => Results.Ok(success),
-            emailExists => Results.Conflict(emailExists),
-            registrationFailed => Results.BadRequest(registrationFailed),
-            validationError => Results.BadRequest(validationError),
-            unexpected => Results.Problem(unexpected.Message, statusCode: StatusCodes.Status500InternalServerError)
+            success => TypedResults.Ok(success),
+            emailExists => TypedResults.Conflict(emailExists),
+            registrationFailed => TypedResults.BadRequest(registrationFailed),
+            validationError => TypedResults.BadRequest(validationError),
+            unexpected => TypedResults.Problem(unexpected.Message, statusCode: StatusCodes.Status500InternalServerError)
         );
     }
 
@@ -64,118 +61,111 @@ public static class AuthEndpoints
         LoginRequest request,
         IValidator<LoginRequest> validator,
         IAuthService authService,
-        CancellationToken cancellationToken)
+        CancellationToken ct)
     {
-        var validation = await validator.ValidateAsync(request, cancellationToken);
+        var validation = await validator.ValidateAsync(request, ct);
         if (!validation.IsValid)
-            return Results.ValidationProblem(validation.ToDictionary());
+            return TypedResults.ValidationProblem(validation.ToDictionary());
 
-        var result = await authService.LoginAsync(request, cancellationToken);
+        var result = await authService.LoginAsync(request, ct);
 
         return result.Match<IResult>(
-            userInfo => Results.Ok(userInfo),
-            invalidCredentials => Results.Unauthorized(),
-            accountLocked => Results.Problem(statusCode: StatusCodes.Status423Locked),
-            notApproved => Results.Problem(notApproved.Message, statusCode: StatusCodes.Status403Forbidden),
-            validationError => Results.BadRequest(validationError),
-            unexpected => Results.Problem(unexpected.Message, statusCode: StatusCodes.Status500InternalServerError)
+            userInfo => TypedResults.Ok(userInfo),
+            invalidCredentials => TypedResults.Unauthorized(),
+            accountLocked => TypedResults.Problem(statusCode: StatusCodes.Status423Locked),
+            notApproved => TypedResults.Problem(notApproved.Message, statusCode: StatusCodes.Status403Forbidden),
+            validationError => TypedResults.BadRequest(validationError),
+            unexpected => TypedResults.Problem(unexpected.Message, statusCode: StatusCodes.Status500InternalServerError)
         );
     }
 
-    private static async Task<IResult> Logout(
+    private static async Task<Ok> Logout(
         IAuthService authService,
-        CancellationToken cancellationToken)
+        CancellationToken ct)
     {
-        await authService.LogoutAsync(cancellationToken);
-        return Results.Ok();
+        await authService.LogoutAsync(ct);
+        return TypedResults.Ok();
     }
 
     private static async Task<IResult> GetCurrentUser(
         IAuthService authService,
-        CancellationToken cancellationToken)
+        CancellationToken ct)
     {
-        var result = await authService.GetCurrentUserAsync(cancellationToken);
+        var result = await authService.GetCurrentUserAsync(ct);
 
         return result.Match<IResult>(
-            userInfo => Results.Ok(userInfo),
-            unauthorized => Results.Unauthorized(),
-            unexpected => Results.Problem(unexpected.Message, statusCode: StatusCodes.Status500InternalServerError)
+            userInfo => TypedResults.Ok(userInfo),
+            unauthorized => TypedResults.Unauthorized(),
+            unexpected => TypedResults.Problem(unexpected.Message, statusCode: StatusCodes.Status500InternalServerError)
         );
     }
 
     private static async Task<IResult> GetAllUsers(
         IAuthService authService,
-        CancellationToken cancellationToken)
+        CancellationToken ct)
     {
-        var result = await authService.GetAllUsersAsync(cancellationToken);
+        var result = await authService.GetAllUsersAsync(ct);
 
         return result.Match<IResult>(
-            users => Results.Ok(users),
-            forbidden => Results.Forbid(),
-            unexpected => Results.Problem(unexpected.Message, statusCode: StatusCodes.Status500InternalServerError)
+            users => TypedResults.Ok(users),
+            forbidden => TypedResults.Forbid(),
+            unexpected => TypedResults.Problem(unexpected.Message, statusCode: StatusCodes.Status500InternalServerError)
         );
     }
 
     private static async Task<IResult> GetPendingAccessRequests(
         IAuthService authService,
-        CancellationToken cancellationToken)
+        CancellationToken ct)
     {
-        var result = await authService.GetPendingAccessRequestsAsync(cancellationToken);
+        var result = await authService.GetPendingAccessRequestsAsync(ct);
 
         return result.Match<IResult>(
-            requests => Results.Ok(requests),
-            forbidden => Results.Forbid(),
-            unexpected => Results.Problem(unexpected.Message, statusCode: StatusCodes.Status500InternalServerError)
+            requests => TypedResults.Ok(requests),
+            forbidden => TypedResults.Forbid(),
+            unexpected => TypedResults.Problem(unexpected.Message, statusCode: StatusCodes.Status500InternalServerError)
         );
     }
 
     private static async Task<IResult> GetAccessRequestById(
         int id,
         IAuthService authService,
-        CancellationToken cancellationToken)
+        CancellationToken ct)
     {
-        var result = await authService.GetAccessRequestByIdAsync(id, cancellationToken);
+        var result = await authService.GetAccessRequestByIdAsync(id, ct);
 
         return result.Match<IResult>(
-            accessRequest => Results.Ok(accessRequest),
-            notFound => Results.NotFound(notFound),
-            forbidden => Results.Forbid(),
-            unexpected => Results.Problem(unexpected.Message, statusCode: StatusCodes.Status500InternalServerError)
+            accessRequest => TypedResults.Ok(accessRequest),
+            notFound => TypedResults.NotFound(notFound),
+            forbidden => TypedResults.Forbid(),
+            unexpected => TypedResults.Problem(unexpected.Message, statusCode: StatusCodes.Status500InternalServerError)
         );
     }
 
     private static async Task<IResult> GetUsersCursorPage(
-        string? cursor,
-        int? pageSize,
-        string? search,
+        [AsParameters] CursorPageParameter parameters,
         IAuthService authService,
-        CancellationToken cancellationToken)
+        CancellationToken ct)
     {
-        var request = new CursorPageParameter(cursor, pageSize ?? 20, search);
-        var result = await authService.GetUsersCursorPageAsync(request, cancellationToken);
+        var result = await authService.GetUsersCursorPageAsync(parameters, ct);
 
         return result.Match<IResult>(
-            page => Results.Ok(page),
-            forbidden => Results.Forbid(),
-            unexpected => Results.Problem(unexpected.Message, statusCode: StatusCodes.Status500InternalServerError)
+            page => TypedResults.Ok(page),
+            forbidden => TypedResults.Forbid(),
+            unexpected => TypedResults.Problem(unexpected.Message, statusCode: StatusCodes.Status500InternalServerError)
         );
     }
 
     private static async Task<IResult> GetAccessRequestsCursorPage(
-        string? cursor,
-        int? pageSize,
-        string? search,
-        string? status,
+        [AsParameters] AccessRequestPageParameter parameters,
         IAuthService authService,
-        CancellationToken cancellationToken)
+        CancellationToken ct)
     {
-        var request = new AccessRequestPageParameter(cursor, pageSize ?? 20, search, status);
-        var result = await authService.GetAccessRequestsCursorPageAsync(request, cancellationToken);
+        var result = await authService.GetAccessRequestsCursorPageAsync(parameters, ct);
 
         return result.Match<IResult>(
-            page => Results.Ok(page),
-            forbidden => Results.Forbid(),
-            unexpected => Results.Problem(unexpected.Message, statusCode: StatusCodes.Status500InternalServerError)
+            page => TypedResults.Ok(page),
+            forbidden => TypedResults.Forbid(),
+            unexpected => TypedResults.Problem(unexpected.Message, statusCode: StatusCodes.Status500InternalServerError)
         );
     }
 
@@ -184,20 +174,20 @@ public static class AuthEndpoints
         UpdateAccessRequestStatusRequest request,
         IValidator<UpdateAccessRequestStatusRequest> validator,
         IAuthService authService,
-        CancellationToken cancellationToken)
+        CancellationToken ct)
     {
-        var validation = await validator.ValidateAsync(request, cancellationToken);
+        var validation = await validator.ValidateAsync(request, ct);
         if (!validation.IsValid)
-            return Results.ValidationProblem(validation.ToDictionary());
+            return TypedResults.ValidationProblem(validation.ToDictionary());
 
-        var result = await authService.UpdateAccessRequestStatusAsync(id, request, cancellationToken);
+        var result = await authService.UpdateAccessRequestStatusAsync(id, request, ct);
 
         return result.Match<IResult>(
-            accessRequest => Results.Ok(accessRequest),
-            notFound => Results.NotFound(notFound),
-            forbidden => Results.Forbid(),
-            validationError => Results.BadRequest(validationError),
-            unexpected => Results.Problem(unexpected.Message, statusCode: StatusCodes.Status500InternalServerError)
+            accessRequest => TypedResults.Ok(accessRequest),
+            notFound => TypedResults.NotFound(notFound),
+            forbidden => TypedResults.Forbid(),
+            validationError => TypedResults.BadRequest(validationError),
+            unexpected => TypedResults.Problem(unexpected.Message, statusCode: StatusCodes.Status500InternalServerError)
         );
     }
 }
