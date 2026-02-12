@@ -113,6 +113,14 @@ public static class Translations
         ["NearMe_ShowLocations"] = "Show Locations",
         ["NearMe_HideLocations"] = "Hide Locations",
 
+        // Draw Circle Search
+        ["DrawCircle_Title"] = "Search Area",
+        ["DrawCircle_Button"] = "Draw Area",
+        ["DrawCircle_Tooltip"] = "Draw a circle on the map to search for species",
+        ["DrawCircle_Instructions"] = "Click and drag to draw search area",
+        ["DrawCircle_Radius"] = "Search radius",
+        ["DrawCircle_Redraw"] = "Redraw",
+
         // Export
         ["Export_Button"] = "Export",
         ["Export_PDF"] = "Download PDF",
@@ -230,6 +238,14 @@ public static class Translations
         ["NearMe_UseLocateFirst"] = "Usa el boton de ubicacion en el mapa para habilitar la busqueda de especies cerca de tu ubicacion.",
         ["NearMe_ShowLocations"] = "Mostrar Ubicaciones",
         ["NearMe_HideLocations"] = "Ocultar Ubicaciones",
+
+        // Draw Circle Search
+        ["DrawCircle_Title"] = "Area de busqueda",
+        ["DrawCircle_Button"] = "Dibujar area",
+        ["DrawCircle_Tooltip"] = "Dibuja un circulo en el mapa para buscar especies",
+        ["DrawCircle_Instructions"] = "Haz clic y arrastra para dibujar el area de busqueda",
+        ["DrawCircle_Radius"] = "Radio de busqueda",
+        ["DrawCircle_Redraw"] = "Redibujar",
 
         // Export
         ["Export_Button"] = "Exportar",

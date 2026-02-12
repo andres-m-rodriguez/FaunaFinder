@@ -25,6 +25,11 @@ public interface IMapService
     Task SetSessionStorageAsync(string key, string value);
     Task<string?> GetSessionStorageAsync(string key);
     Task RemoveSessionStorageAsync(string key);
+
+    // Draw mode methods for custom area search
+    Task EnableDrawModeAsync();
+    Task DisableDrawModeAsync();
+    Task ClearDrawnCircleAsync();
 }
 
 public record SpeciesLocationData(
@@ -35,7 +40,7 @@ public record SpeciesLocationData(
 
 public record NearbySpeciesData(
     int Id,
-    IEnumerable<LocaleValue> CommonName,
+    string CommonName,
     string ScientificName,
     double DistanceMeters,
     double Latitude,
@@ -46,3 +51,20 @@ public record NearbySpeciesData(
 public record SpeciesColorEntry(
     [property: System.Text.Json.Serialization.JsonPropertyName("id")] int Id,
     [property: System.Text.Json.Serialization.JsonPropertyName("color")] string Color);
+
+// JS interop DTOs with camelCase JSON serialization
+public record JsSpeciesLocation(
+    [property: System.Text.Json.Serialization.JsonPropertyName("latitude")] double Latitude,
+    [property: System.Text.Json.Serialization.JsonPropertyName("longitude")] double Longitude,
+    [property: System.Text.Json.Serialization.JsonPropertyName("radiusMeters")] double RadiusMeters,
+    [property: System.Text.Json.Serialization.JsonPropertyName("description")] string? Description);
+
+public record JsNearbySpecies(
+    [property: System.Text.Json.Serialization.JsonPropertyName("id")] int Id,
+    [property: System.Text.Json.Serialization.JsonPropertyName("commonName")] string CommonName,
+    [property: System.Text.Json.Serialization.JsonPropertyName("scientificName")] string ScientificName,
+    [property: System.Text.Json.Serialization.JsonPropertyName("distanceMeters")] double DistanceMeters,
+    [property: System.Text.Json.Serialization.JsonPropertyName("latitude")] double Latitude,
+    [property: System.Text.Json.Serialization.JsonPropertyName("longitude")] double Longitude,
+    [property: System.Text.Json.Serialization.JsonPropertyName("radiusMeters")] double RadiusMeters,
+    [property: System.Text.Json.Serialization.JsonPropertyName("locationDescription")] string? LocationDescription);

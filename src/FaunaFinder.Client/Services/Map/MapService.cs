@@ -36,15 +36,11 @@ public sealed class MapService : IMapService
 
     public async Task ShowSpeciesLocationsAsync(string commonName, IEnumerable<SpeciesLocationData> locations)
     {
-        var jsLocations = locations.Select(l => new
-        {
-            latitude = l.Latitude,
-            longitude = l.Longitude,
-            radiusMeters = l.RadiusMeters,
-            description = l.Description
-        }).ToArray();
+        var jsLocations = locations
+            .Select(l => new JsSpeciesLocation(l.Latitude, l.Longitude, l.RadiusMeters, l.Description))
+            .ToArray();
 
-        await _js.InvokeVoidAsync("leafletInterop.showSpeciesLocations", commonName, jsLocations);
+        await _js.InvokeVoidAsync("leafletInterop.showSpeciesLocations", commonName, (object)jsLocations);
     }
 
     public async Task ClearSpeciesLocationsAsync()
@@ -64,19 +60,13 @@ public sealed class MapService : IMapService
 
     public async Task ShowNearbySpeciesAsync(IEnumerable<NearbySpeciesData> species)
     {
-        var jsSpecies = species.Select(s => new
-        {
-            id = s.Id,
-            commonName = s.CommonName,
-            scientificName = s.ScientificName,
-            distanceMeters = s.DistanceMeters,
-            latitude = s.Latitude,
-            longitude = s.Longitude,
-            radiusMeters = s.RadiusMeters,
-            locationDescription = s.LocationDescription
-        }).ToArray();
+        var jsSpecies = species
+            .Select(s => new JsNearbySpecies(
+                s.Id, s.CommonName, s.ScientificName, s.DistanceMeters,
+                s.Latitude, s.Longitude, s.RadiusMeters, s.LocationDescription))
+            .ToArray();
 
-        await _js.InvokeVoidAsync("leafletInterop.showNearbySpecies", jsSpecies);
+        await _js.InvokeVoidAsync("leafletInterop.showNearbySpecies", (object)jsSpecies);
     }
 
     public async Task FocusOnNearbySpeciesAsync(int index)
@@ -86,19 +76,13 @@ public sealed class MapService : IMapService
 
     public async Task ShowSpeciesLocationCirclesAsync(IEnumerable<NearbySpeciesData> species)
     {
-        var jsSpecies = species.Select(s => new
-        {
-            id = s.Id,
-            commonName = s.CommonName,
-            scientificName = s.ScientificName,
-            distanceMeters = s.DistanceMeters,
-            latitude = s.Latitude,
-            longitude = s.Longitude,
-            radiusMeters = s.RadiusMeters,
-            locationDescription = s.LocationDescription
-        }).ToArray();
+        var jsSpecies = species
+            .Select(s => new JsNearbySpecies(
+                s.Id, s.CommonName, s.ScientificName, s.DistanceMeters,
+                s.Latitude, s.Longitude, s.RadiusMeters, s.LocationDescription))
+            .ToArray();
 
-        await _js.InvokeVoidAsync("leafletInterop.showSpeciesLocationCircles", jsSpecies);
+        await _js.InvokeVoidAsync("leafletInterop.showSpeciesLocationCircles", (object)jsSpecies);
     }
 
     public async Task ClearSpeciesLocationCirclesAsync()
@@ -135,5 +119,20 @@ public sealed class MapService : IMapService
     public async Task RemoveSessionStorageAsync(string key)
     {
         await _js.InvokeVoidAsync("sessionStorage.removeItem", key);
+    }
+
+    public async Task EnableDrawModeAsync()
+    {
+        await _js.InvokeVoidAsync("leafletInterop.enableDrawMode");
+    }
+
+    public async Task DisableDrawModeAsync()
+    {
+        await _js.InvokeVoidAsync("leafletInterop.disableDrawMode");
+    }
+
+    public async Task ClearDrawnCircleAsync()
+    {
+        await _js.InvokeVoidAsync("leafletInterop.clearDrawnCircle");
     }
 }
