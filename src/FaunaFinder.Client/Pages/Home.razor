@@ -9,6 +9,8 @@
 @inject IJSRuntime JS
 @inject IAppLocalizer L
 @inject ISnackbar Snackbar
+@inject IDarkModeService DarkModeService
+@implements IDisposable
 
 <PageTitle>@L["PageTitle_Map"]</PageTitle>
 
@@ -490,6 +492,7 @@
 
     // Map loading state
     private bool isMapLoading = true;
+    private bool isMapInitialized = false;
 
     // Sort and Filter state
     private SortOption currentSort = SortOption.NameAZ;
@@ -664,6 +667,10 @@
         {
             municipalities = await MunicipalityHttpClient.GetAllMunicipalitiesAsync();
             await JS.InvokeVoidAsync("leafletInterop.initMap", DotNetObjectReference.Create(this), ApiConfig.BaseAddress);
+            isMapInitialized = true;
+
+            // Subscribe to dark mode changes after map is initialized
+            DarkModeService.OnDarkModeChanged += OnDarkModeChanged;
 
             // Check if we need to show species locations
             if (SpeciesId.HasValue)
@@ -675,6 +682,14 @@
             {
                 await RestoreNearbySpeciesState();
             }
+        }
+    }
+
+    private async void OnDarkModeChanged()
+    {
+        if (isMapInitialized)
+        {
+            await JS.InvokeVoidAsync("leafletInterop.setDarkMode", DarkModeService.IsDarkMode);
         }
     }
 
@@ -1024,4 +1039,9 @@
         [property: System.Text.Json.Serialization.JsonPropertyName("latitude")] double Latitude,
         [property: System.Text.Json.Serialization.JsonPropertyName("longitude")] double Longitude,
         [property: System.Text.Json.Serialization.JsonPropertyName("radiusKm")] int RadiusKm);
+
+    public void Dispose()
+    {
+        DarkModeService.OnDarkModeChanged -= OnDarkModeChanged;
+    }
 }
