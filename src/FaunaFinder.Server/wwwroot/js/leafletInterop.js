@@ -19,6 +19,8 @@ window.leafletInterop = {
     speciesLocationCircles: [],
     speciesColorMap: new Map(),
     apiBaseUrl: '',
+    loadingOverlay: null,
+    tilesLoading: 0,
     ariaLiveRegion: null,
     lightTileUrl: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
     darkTileUrl: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
@@ -122,6 +124,19 @@ window.leafletInterop = {
             minZoom: 7,
             maxZoom: 16
         }).addTo(this.map);
+        // Set up tile loading events for loading overlay
+        this.createLoadingOverlay();
+        this.showLoadingOverlay();
+        this.tileLayer.on('loading', () => {
+            this.tilesLoading++;
+            this.showLoadingOverlay();
+        });
+        this.tileLayer.on('load', () => {
+            this.tilesLoading = Math.max(0, this.tilesLoading - 1);
+            if (this.tilesLoading === 0) {
+                this.hideLoadingOverlay();
+            }
+        });
         this.loadGeoJson();
         this.createLocateControl();
         window.addEventListener('resize', () => {
@@ -152,6 +167,43 @@ window.leafletInterop = {
             }
         });
         new LocateControl().addTo(this.map);
+    },
+    createLoadingOverlay() {
+        const mapContainer = document.getElementById('map');
+        if (!mapContainer)
+            return;
+        // Remove existing overlay if present
+        const existing = document.getElementById('map-loading-overlay');
+        if (existing) {
+            existing.remove();
+        }
+        const overlay = document.createElement('div');
+        overlay.id = 'map-loading-overlay';
+        overlay.className = 'map-loading-overlay';
+        overlay.innerHTML = `
+            <div class="map-loading-content">
+                <div class="map-loading-spinner"></div>
+                <span class="map-loading-text">Loading map...</span>
+            </div>
+        `;
+        mapContainer.appendChild(overlay);
+        this.loadingOverlay = overlay;
+    },
+    showLoadingOverlay() {
+        if (this.loadingOverlay) {
+            this.loadingOverlay.classList.add('visible');
+        }
+    },
+    hideLoadingOverlay() {
+        if (this.loadingOverlay) {
+            this.loadingOverlay.classList.remove('visible');
+            // Remove after fade animation
+            setTimeout(() => {
+                if (this.loadingOverlay && !this.loadingOverlay.classList.contains('visible')) {
+                    this.loadingOverlay.style.display = 'none';
+                }
+            }, 300);
+        }
     },
     createAriaLiveRegion() {
         // Remove existing live region if present
@@ -275,6 +327,11 @@ window.leafletInterop = {
             if (this.tileLayer) {
                 this.map.removeLayer(this.tileLayer);
             }
+            // Show loading overlay while tiles load
+            if (this.loadingOverlay) {
+                this.loadingOverlay.style.display = '';
+                this.showLoadingOverlay();
+            }
             const tileUrl = isDark ? this.darkTileUrl : this.lightTileUrl;
             const attribution = isDark
                 ? '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
@@ -285,6 +342,17 @@ window.leafletInterop = {
                 minZoom: 7,
                 maxZoom: 16
             }).addTo(this.map);
+            // Set up tile loading events for the new layer
+            this.tileLayer.on('loading', () => {
+                this.tilesLoading++;
+                this.showLoadingOverlay();
+            });
+            this.tileLayer.on('load', () => {
+                this.tilesLoading = Math.max(0, this.tilesLoading - 1);
+                if (this.tilesLoading === 0) {
+                    this.hideLoadingOverlay();
+                }
+            });
             this.tileLayer.bringToBack();
         }
         if (this.geojsonLayer) {
@@ -451,7 +519,10 @@ window.leafletInterop = {
         });
         if (this.locationCircles.length > 0) {
             const group = L.featureGroup(this.locationCircles);
-            this.map.fitBounds(group.getBounds(), { padding: [50, 50] });
+            this.map.flyToBounds(group.getBounds(), {
+                padding: [50, 50],
+                duration: 0.8
+            });
         }
     },
     clearSpeciesLocations() {
@@ -464,14 +535,22 @@ window.leafletInterop = {
     focusOnLocation(index) {
         if (index >= 0 && index < this.locationCircles.length) {
             const circle = this.locationCircles[index];
-            this.map.fitBounds(circle.getBounds(), { padding: [50, 50], maxZoom: 14 });
-            circle.openPopup();
+            this.map.flyToBounds(circle.getBounds(), {
+                padding: [50, 50],
+                maxZoom: 14,
+                duration: 0.8
+            });
+            // Open popup after animation completes
+            setTimeout(() => circle.openPopup(), 800);
         }
     },
     focusAllLocations() {
         if (this.locationCircles.length > 0) {
             const group = L.featureGroup(this.locationCircles);
-            this.map.fitBounds(group.getBounds(), { padding: [50, 50] });
+            this.map.flyToBounds(group.getBounds(), {
+                padding: [50, 50],
+                duration: 0.8
+            });
             this.locationCircles.forEach((circle) => circle.closePopup());
         }
     },
@@ -489,7 +568,10 @@ window.leafletInterop = {
             fillOpacity: 0.1,
             dashArray: '5, 5'
         }).addTo(this.map);
-        this.map.fitBounds(this.searchRadiusCircle.getBounds(), { padding: [50, 50] });
+        this.map.flyToBounds(this.searchRadiusCircle.getBounds(), {
+            padding: [50, 50],
+            duration: 0.8
+        });
     },
     clearSearchRadius() {
         if (this.searchRadiusCircle && this.map) {
@@ -540,8 +622,13 @@ window.leafletInterop = {
     focusOnNearbySpecies(index) {
         if (index >= 0 && index < this.nearbySpeciesMarkers.length) {
             const circle = this.nearbySpeciesMarkers[index];
-            this.map.fitBounds(circle.getBounds(), { padding: [50, 50], maxZoom: 14 });
-            circle.openPopup();
+            this.map.flyToBounds(circle.getBounds(), {
+                padding: [50, 50],
+                maxZoom: 14,
+                duration: 0.8
+            });
+            // Open popup after animation completes
+            setTimeout(() => circle.openPopup(), 800);
         }
     },
     getSpeciesColor(speciesId, index) {

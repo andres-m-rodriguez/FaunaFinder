@@ -197,9 +197,13 @@ code {
 .municipality-tooltip {
     background: var(--mud-palette-surface);
     border: 1px solid var(--mud-palette-lines-default);
-    border-radius: 4px;
-    font-weight: 500;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 14px;
     color: var(--mud-palette-text-primary);
+    padding: 6px 12px !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transition: transform 0.15s ease, opacity 0.15s ease;
 }
 
 /* Leaflet Controls Dark Mode Support */
@@ -232,21 +236,35 @@ code {
     display: flex !important;
     align-items: center;
     justify-content: center;
-    width: 30px;
-    height: 30px;
-    line-height: 30px;
-    background-color: var(--mud-palette-surface) !important;
-    color: var(--mud-palette-text-primary) !important;
+    width: 40px;
+    height: 40px;
+    line-height: 40px;
+    background: linear-gradient(135deg, var(--mud-palette-primary) 0%, var(--mud-palette-primary-darken) 100%) !important;
+    color: var(--mud-palette-primary-text) !important;
     cursor: pointer;
-    transition: background-color 0.2s ease;
+    transition: all 0.25s ease;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .leaflet-control-locate-button:hover {
-    background-color: var(--mud-palette-background) !important;
+    background: linear-gradient(135deg, var(--mud-palette-primary-lighten) 0%, var(--mud-palette-primary) 100%) !important;
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+.leaflet-control-locate-button:active {
+    transform: scale(0.98);
 }
 
 .leaflet-control-locate-button svg {
     display: block;
+    width: 22px;
+    height: 22px;
+}
+
+.leaflet-control-locate-button.loading {
+    animation: pulse-glow 1.5s ease-in-out infinite;
 }
 
 .leaflet-control-locate-button.loading svg.spin {
@@ -256,6 +274,11 @@ code {
 @keyframes spin {
     from { transform: rotate(0deg); }
     to { transform: rotate(360deg); }
+}
+
+@keyframes pulse-glow {
+    0%, 100% { box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2); }
+    50% { box-shadow: 0 4px 20px var(--mud-palette-primary); }
 }
 
 /* User Location Marker */
@@ -305,6 +328,51 @@ code {
 .location-error-popup {
     padding: 4px;
     color: var(--mud-palette-text-primary);
+}
+
+/* Map Loading Overlay */
+.map-loading-overlay {
+    position: absolute;
+    inset: 0;
+    background: var(--mud-palette-background);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.map-loading-overlay.visible {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.map-loading-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+}
+
+.map-loading-spinner {
+    width: 48px;
+    height: 48px;
+    border: 4px solid var(--mud-palette-lines-default);
+    border-top-color: var(--mud-palette-primary);
+    border-radius: 50%;
+    animation: map-spinner 1s linear infinite;
+}
+
+.map-loading-text {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--mud-palette-text-secondary);
+}
+
+@keyframes map-spinner {
+    to { transform: rotate(360deg); }
 }
 
 /* Mobile Bottom Sheet */
