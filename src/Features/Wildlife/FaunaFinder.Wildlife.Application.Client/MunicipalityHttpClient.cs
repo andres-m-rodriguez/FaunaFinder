@@ -5,19 +5,12 @@ using FaunaFinder.Pagination.Contracts;
 
 namespace FaunaFinder.Wildlife.Application.Client;
 
-public sealed class MunicipalityHttpClient : IMunicipalityHttpClient
+public sealed class MunicipalityHttpClient(HttpClient httpClient) : IMunicipalityHttpClient
 {
-    private readonly HttpClient _httpClient;
-
-    public MunicipalityHttpClient(HttpClient httpClient)
-    {
-        _httpClient = httpClient;
-    }
-
     public async Task<IReadOnlyList<MunicipalityForListDto>> GetAllMunicipalitiesAsync(
         CancellationToken cancellationToken = default)
     {
-        var result = await _httpClient.GetFromJsonAsync<IReadOnlyList<MunicipalityForListDto>>(
+        var result = await httpClient.GetFromJsonAsync<IReadOnlyList<MunicipalityForListDto>>(
             "api/municipalities",
             cancellationToken);
         return result ?? [];
@@ -27,7 +20,7 @@ public sealed class MunicipalityHttpClient : IMunicipalityHttpClient
         int municipalityId,
         CancellationToken cancellationToken = default)
     {
-        return await _httpClient.GetFromJsonAsync<MunicipalityForDetailDto>(
+        return await httpClient.GetFromJsonAsync<MunicipalityForDetailDto>(
             $"api/municipalities/{municipalityId}",
             cancellationToken);
     }
@@ -37,7 +30,7 @@ public sealed class MunicipalityHttpClient : IMunicipalityHttpClient
         CancellationToken cancellationToken = default)
     {
         var queryString = BuildMunicipalityQueryString(parameters);
-        var result = await _httpClient.GetFromJsonAsync<IReadOnlyList<MunicipalityCardDto>>(
+        var result = await httpClient.GetFromJsonAsync<IReadOnlyList<MunicipalityCardDto>>(
             $"api/municipalities/cards{queryString}",
             cancellationToken);
         return result ?? [];
@@ -48,7 +41,7 @@ public sealed class MunicipalityHttpClient : IMunicipalityHttpClient
         CancellationToken cancellationToken = default)
     {
         var queryString = string.IsNullOrEmpty(search) ? "" : $"?search={Uri.EscapeDataString(search)}";
-        return await _httpClient.GetFromJsonAsync<int>(
+        return await httpClient.GetFromJsonAsync<int>(
             $"api/municipalities/count{queryString}",
             cancellationToken);
     }
@@ -74,7 +67,7 @@ public sealed class MunicipalityHttpClient : IMunicipalityHttpClient
         CancellationToken cancellationToken = default)
     {
         var queryString = BuildCursorQueryString(request);
-        var result = await _httpClient.GetFromJsonAsync<CursorPage<MunicipalityCardDto>>(
+        var result = await httpClient.GetFromJsonAsync<CursorPage<MunicipalityCardDto>>(
             $"api/municipalities/cursor{queryString}",
             cancellationToken);
         return result ?? new CursorPage<MunicipalityCardDto>([], null, false);

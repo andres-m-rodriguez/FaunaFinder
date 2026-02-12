@@ -10,62 +10,59 @@ public static class ExportEndpoints
         var group = app.MapGroup("/export")
             .WithTags("Export");
 
-        group.MapGet("/municipality/{municipalityId:int}/pdf", async (
-            int municipalityId,
-            string? speciesIds,
-            IMunicipalityRepository municipalityRepository,
-            ISpeciesRepository speciesRepository,
-            IMunicipalityReportService reportService,
-            CancellationToken ct) =>
+        group.MapGet("/municipality/{municipalityId:int}/pdf", ExportMunicipalityPdf).WithName("ExportMunicipalityPdf");
+        group.MapGet("/municipality/{municipalityId:int}/csv", ExportMunicipalityCsv).WithName("ExportMunicipalityCsv");
+    }
+
+    private static async Task<IResult> ExportMunicipalityPdf(
+        int municipalityId,
+        string? speciesIds,
+        IMunicipalityRepository municipalityRepository,
+        ISpeciesRepository speciesRepository,
+        IMunicipalityReportService reportService,
+        CancellationToken ct)
+    {
+        var municipality = await municipalityRepository.GetMunicipalityDetailAsync(municipalityId, ct);
+        if (municipality is null)
+            return Results.NotFound();
+
+        var species = await speciesRepository.GetSpeciesByMunicipalityAsync(municipalityId, ct);
+
+        if (!string.IsNullOrEmpty(speciesIds))
         {
-            var municipality = await municipalityRepository.GetMunicipalityDetailAsync(municipalityId, ct);
-            if (municipality is null)
-            {
-                return Results.NotFound();
-            }
+            var ids = speciesIds.Split(',').Select(int.Parse).ToHashSet();
+            species = species.Where(s => ids.Contains(s.Id)).ToList();
+        }
 
-            var species = await speciesRepository.GetSpeciesByMunicipalityAsync(municipalityId, ct);
+        var pdfBytes = reportService.GeneratePdfReport(municipality.Name, species.ToList());
+        var fileName = $"{municipality.Name.Replace(" ", "_")}_Species_Report.pdf";
 
-            // Filter by specific species IDs if provided
-            if (!string.IsNullOrEmpty(speciesIds))
-            {
-                var ids = speciesIds.Split(',').Select(int.Parse).ToHashSet();
-                species = species.Where(s => ids.Contains(s.Id)).ToList();
-            }
+        return Results.File(pdfBytes, "application/pdf", fileName);
+    }
 
-            var pdfBytes = reportService.GeneratePdfReport(municipality.Name, species.ToList());
-            var fileName = $"{municipality.Name.Replace(" ", "_")}_Species_Report.pdf";
+    private static async Task<IResult> ExportMunicipalityCsv(
+        int municipalityId,
+        string? speciesIds,
+        IMunicipalityRepository municipalityRepository,
+        ISpeciesRepository speciesRepository,
+        IMunicipalityReportService reportService,
+        CancellationToken ct)
+    {
+        var municipality = await municipalityRepository.GetMunicipalityDetailAsync(municipalityId, ct);
+        if (municipality is null)
+            return Results.NotFound();
 
-            return Results.File(pdfBytes, "application/pdf", fileName);
-        }).WithName("ExportMunicipalityPdf");
+        var species = await speciesRepository.GetSpeciesByMunicipalityAsync(municipalityId, ct);
 
-        group.MapGet("/municipality/{municipalityId:int}/csv", async (
-            int municipalityId,
-            string? speciesIds,
-            IMunicipalityRepository municipalityRepository,
-            ISpeciesRepository speciesRepository,
-            IMunicipalityReportService reportService,
-            CancellationToken ct) =>
+        if (!string.IsNullOrEmpty(speciesIds))
         {
-            var municipality = await municipalityRepository.GetMunicipalityDetailAsync(municipalityId, ct);
-            if (municipality is null)
-            {
-                return Results.NotFound();
-            }
+            var ids = speciesIds.Split(',').Select(int.Parse).ToHashSet();
+            species = species.Where(s => ids.Contains(s.Id)).ToList();
+        }
 
-            var species = await speciesRepository.GetSpeciesByMunicipalityAsync(municipalityId, ct);
+        var csvBytes = reportService.GenerateCsvReport(municipality.Name, species.ToList());
+        var fileName = $"{municipality.Name.Replace(" ", "_")}_Species_Report.csv";
 
-            // Filter by specific species IDs if provided
-            if (!string.IsNullOrEmpty(speciesIds))
-            {
-                var ids = speciesIds.Split(',').Select(int.Parse).ToHashSet();
-                species = species.Where(s => ids.Contains(s.Id)).ToList();
-            }
-
-            var csvBytes = reportService.GenerateCsvReport(municipality.Name, species.ToList());
-            var fileName = $"{municipality.Name.Replace(" ", "_")}_Species_Report.csv";
-
-            return Results.File(csvBytes, "text/csv", fileName);
-        }).WithName("ExportMunicipalityCsv");
+        return Results.File(csvBytes, "text/csv", fileName);
     }
 }
