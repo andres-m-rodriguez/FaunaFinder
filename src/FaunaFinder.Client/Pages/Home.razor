@@ -1,21 +1,22 @@
 @page "/"
 @using BlazingSingularity.Commands
 @using FaunaFinder.Client.Pages.MapComponents
+@using FaunaFinder.Client.Services.Map
 @inject IMunicipalityHttpClient MunicipalityHttpClient
 @inject ISpeciesHttpClient SpeciesHttpClient
 @inject IExportHttpClient ExportHttpClient
-@inject ApiConfiguration ApiConfig
 @inject NavigationManager NavigationManager
-@inject IJSRuntime JS
 @inject IAppLocalizer L
+@inject IMapService MapService
 @inject ISnackbar Snackbar
 @inject IDarkModeService DarkModeService
 @implements IDisposable
 
+
 <PageTitle>@L["PageTitle_Map"]</PageTitle>
 
 <div class="map-page">
-    <div class="map-container" style="position: relative;">
+    <div class="map-container relative">
         @if (isMapLoading)
         {
             <MudOverlay Visible="true" DarkBackground="false" Absolute="true" Class="map-loading-overlay" ZIndex="1000">
@@ -39,7 +40,7 @@
                     <div class="pa-3">
                         @for (int i = 0; i < 8; i++)
                         {
-                            <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="60px" Class="mb-3 rounded" Style="border: 1px solid rgba(255,255,255,0.1);" />
+                            <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="60px" Class="mb-3 rounded skeleton-border" />
                         }
                     </div>
                 }
@@ -54,7 +55,7 @@
                             <div class="d-flex align-center gap-2 flex-wrap">
                                 <MudSelect T="SortOption" Value="currentSort" ValueChanged="OnSortChanged"
                                            Dense="true" Margin="Margin.Dense" Variant="Variant.Outlined"
-                                           Style="max-width: 150px;" Label="@L["Filter_Sort"]">
+                                           Class="max-w-150" Label="@L["Filter_Sort"]">
                                     <MudSelectItem Value="SortOption.NameAZ">@L["Filter_NameAZ"]</MudSelectItem>
                                     <MudSelectItem Value="SortOption.NameZA">@L["Filter_NameZA"]</MudSelectItem>
                                     <MudSelectItem Value="SortOption.ScientificAZ">@L["Filter_ScientificAZ"]</MudSelectItem>
@@ -286,7 +287,7 @@
                         <div class="d-flex align-center gap-2">
                             <MudSelect T="SortOption" Value="currentSort" ValueChanged="OnSortChanged"
                                        Dense="true" Margin="Margin.Dense" Variant="Variant.Outlined"
-                                       Style="flex: 1;" Label="@L["Filter_Sort"]">
+                                       Class="flex-1" Label="@L["Filter_Sort"]">
                                 <MudSelectItem Value="SortOption.NameAZ">@L["Filter_NameAZ"]</MudSelectItem>
                                 <MudSelectItem Value="SortOption.NameZA">@L["Filter_NameZA"]</MudSelectItem>
                                 <MudSelectItem Value="SortOption.ScientificAZ">@L["Filter_ScientificAZ"]</MudSelectItem>
@@ -325,7 +326,7 @@
                     <div class="pa-3">
                         @for (int i = 0; i < 8; i++)
                         {
-                            <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="60px" Class="mb-3 rounded" Style="border: 1px solid rgba(255,255,255,0.1);" />
+                            <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="60px" Class="mb-3 rounded skeleton-border" />
                         }
                     </div>
                 }
@@ -647,8 +648,7 @@
 
     private async Task DownloadFile(byte[] fileBytes, string fileName, string contentType)
     {
-        var base64 = Convert.ToBase64String(fileBytes);
-        await JS.InvokeVoidAsync("downloadFile", base64, fileName, contentType);
+        await MapService.DownloadFileAsync(fileBytes, fileName, contentType);
     }
 
     private void ToggleSpecies(int speciesId, bool expanded)
@@ -666,7 +666,7 @@
         if (firstRender)
         {
             municipalities = await MunicipalityHttpClient.GetAllMunicipalitiesAsync();
-            await JS.InvokeVoidAsync("leafletInterop.initMap", DotNetObjectReference.Create(this), ApiConfig.BaseAddress);
+            await MapService.InitMapAsync(DotNetObjectReference.Create(this));
             isMapInitialized = true;
 
             // Subscribe to dark mode changes after map is initialized
@@ -693,7 +693,7 @@
             {
                 await InvokeAsync(async () =>
                 {
-                    await JS.InvokeVoidAsync("leafletInterop.setDarkMode", DarkModeService.IsDarkMode);
+                    await MapService.SetDarkModeAsync(DarkModeService.IsDarkMode);
                 });
             }
             catch (Exception ex)
@@ -709,25 +709,20 @@
         currentLocationIndex = 0;
         if (viewingSpeciesLocations?.Locations.Count > 0)
         {
-            var locations = viewingSpeciesLocations.Locations.Select(l => new
-            {
-                latitude = l.Latitude,
-                longitude = l.Longitude,
-                radiusMeters = l.RadiusMeters,
-                description = l.Description
-            }).ToArray();
+            var locations = viewingSpeciesLocations.Locations.Select(l =>
+                new SpeciesLocationData(l.Latitude, l.Longitude, l.RadiusMeters, l.Description));
 
-            await JS.InvokeVoidAsync("leafletInterop.showSpeciesLocations", L.GetLocalizedValue(viewingSpeciesLocations.CommonName), locations);
+            await MapService.ShowSpeciesLocationsAsync(L.GetLocalizedValue(viewingSpeciesLocations.CommonName), locations);
 
             // Focus on the first location
-            await JS.InvokeVoidAsync("leafletInterop.focusOnLocation", 0);
+            await MapService.FocusOnLocationAsync(0);
         }
         StateHasChanged();
     }
 
     private async Task ClearSpeciesLocations()
     {
-        await JS.InvokeVoidAsync("leafletInterop.clearSpeciesLocations");
+        await MapService.ClearSpeciesLocationsAsync();
         viewingSpeciesLocations = null;
         currentLocationIndex = 0;
         sheetOpen = false;
@@ -736,12 +731,12 @@
 
     private async Task FocusOnLocation(int index)
     {
-        await JS.InvokeVoidAsync("leafletInterop.focusOnLocation", index);
+        await MapService.FocusOnLocationAsync(index);
     }
 
     private async Task FocusAllLocations()
     {
-        await JS.InvokeVoidAsync("leafletInterop.focusAllLocations");
+        await MapService.FocusAllLocationsAsync();
     }
 
     private async Task PreviousLocation()
@@ -789,7 +784,7 @@
         sidebarOpen = true;
 
         // Clear nearby species search
-        await JS.InvokeVoidAsync("leafletInterop.clearSearchRadius");
+        await MapService.ClearSearchRadiusAsync();
 
         // Reset filters when switching municipalities
         ClearAllFilters();
@@ -852,7 +847,7 @@
         nearbySpecies = [];
         expandedSpeciesId = null;
         ClearAllFilters();
-        await JS.InvokeVoidAsync("leafletInterop.clearSearchRadius");
+        await MapService.ClearSearchRadiusAsync();
         StateHasChanged();
     }
 
@@ -884,8 +879,8 @@
         // Clear existing species location circles if shown
         if (showSpeciesLocationsOnMap)
         {
-            await JS.InvokeVoidAsync("leafletInterop.clearSpeciesLocationCircles");
-            await JS.InvokeVoidAsync("leafletInterop.resetSpeciesColors");
+            await MapService.ClearSpeciesLocationCirclesAsync();
+            await MapService.ResetSpeciesColorsAsync();
             showSpeciesLocationsOnMap = false;
             speciesColors.Clear();
         }
@@ -898,7 +893,7 @@
             var radiusMeters = selectedRadiusKm * 1000.0;
 
             // Show search radius on map
-            await JS.InvokeVoidAsync("leafletInterop.showSearchRadius", radiusMeters);
+            await MapService.ShowSearchRadiusAsync(radiusMeters);
 
             // Query nearby species
             nearbySpecies = await SpeciesHttpClient.GetSpeciesNearbyAsync(
@@ -907,19 +902,18 @@
                 radiusMeters);
 
             // Show nearby species on map
-            var speciesLocations = nearbySpecies.Select(s => new
-            {
-                id = s.Id,
-                commonName = s.CommonName,
-                scientificName = s.ScientificName,
-                distanceMeters = s.DistanceMeters,
-                latitude = s.Latitude,
-                longitude = s.Longitude,
-                radiusMeters = s.RadiusMeters,
-                locationDescription = s.LocationDescription
-            }).ToArray();
+            var speciesLocations = nearbySpecies.Select(s =>
+                new NearbySpeciesData(
+                    s.Id,
+                    s.CommonName,
+                    s.ScientificName,
+                    s.DistanceMeters,
+                    s.Latitude,
+                    s.Longitude,
+                    s.RadiusMeters,
+                    s.LocationDescription));
 
-            await JS.InvokeVoidAsync("leafletInterop.showNearbySpecies", speciesLocations);
+            await MapService.ShowNearbySpeciesAsync(speciesLocations);
         }
         finally
         {
@@ -942,15 +936,15 @@
         sheetOpen = false;
         showSpeciesLocationsOnMap = false;
         speciesColors.Clear();
-        await JS.InvokeVoidAsync("leafletInterop.clearSearchRadius");
-        await JS.InvokeVoidAsync("leafletInterop.clearSpeciesLocationCircles");
-        await JS.InvokeVoidAsync("leafletInterop.resetSpeciesColors");
+        await MapService.ClearSearchRadiusAsync();
+        await MapService.ClearSpeciesLocationCirclesAsync();
+        await MapService.ResetSpeciesColorsAsync();
         StateHasChanged();
     }
 
     private async Task FocusOnNearbySpecies(int index)
     {
-        await JS.InvokeVoidAsync("leafletInterop.focusOnNearbySpecies", index);
+        await MapService.FocusOnNearbySpeciesAsync(index);
     }
 
     private async Task ToggleSpeciesLocationsOnMap()
@@ -960,37 +954,32 @@
         if (showSpeciesLocationsOnMap)
         {
             // Show species location circles on the map
-            var speciesLocations = nearbySpecies.Select(s => new
-            {
-                id = s.Id,
-                commonName = s.CommonName,
-                scientificName = s.ScientificName,
-                distanceMeters = s.DistanceMeters,
-                latitude = s.Latitude,
-                longitude = s.Longitude,
-                radiusMeters = s.RadiusMeters,
-                locationDescription = s.LocationDescription
-            }).ToArray();
+            var speciesLocations = nearbySpecies.Select(s =>
+                new NearbySpeciesData(
+                    s.Id,
+                    s.CommonName,
+                    s.ScientificName,
+                    s.DistanceMeters,
+                    s.Latitude,
+                    s.Longitude,
+                    s.RadiusMeters,
+                    s.LocationDescription));
 
-            await JS.InvokeVoidAsync("leafletInterop.showSpeciesLocationCircles", speciesLocations);
+            await MapService.ShowSpeciesLocationCirclesAsync(speciesLocations);
 
             // Get colors assigned to each species
-            var colors = await JS.InvokeAsync<List<SpeciesColorEntry>>("leafletInterop.getSpeciesColors");
+            var colors = await MapService.GetSpeciesColorsAsync();
             speciesColors = colors.ToDictionary(c => c.Id, c => c.Color);
         }
         else
         {
             // Hide species location circles
-            await JS.InvokeVoidAsync("leafletInterop.clearSpeciesLocationCircles");
+            await MapService.ClearSpeciesLocationCirclesAsync();
             speciesColors.Clear();
         }
 
         StateHasChanged();
     }
-
-    private record SpeciesColorEntry(
-        [property: System.Text.Json.Serialization.JsonPropertyName("id")] int Id,
-        [property: System.Text.Json.Serialization.JsonPropertyName("color")] string Color);
 
     // State preservation for Species Near Me
     private async Task NavigateToSpeciesDetail(int speciesId)
@@ -1010,7 +999,7 @@
                 longitude = userLongitude.Value,
                 radiusKm = selectedRadiusKm
             };
-            await JS.InvokeVoidAsync("sessionStorage.setItem", "nearbySpeciesState", System.Text.Json.JsonSerializer.Serialize(state));
+            await MapService.SetSessionStorageAsync("nearbySpeciesState", System.Text.Json.JsonSerializer.Serialize(state));
         }
     }
 
@@ -1018,7 +1007,7 @@
     {
         try
         {
-            var stateJson = await JS.InvokeAsync<string?>("sessionStorage.getItem", "nearbySpeciesState");
+            var stateJson = await MapService.GetSessionStorageAsync("nearbySpeciesState");
             if (!string.IsNullOrEmpty(stateJson))
             {
                 var state = System.Text.Json.JsonSerializer.Deserialize<NearbySpeciesState>(stateJson);
@@ -1029,7 +1018,7 @@
                     selectedRadiusKm = state.RadiusKm;
 
                     // Clear the saved state
-                    await JS.InvokeVoidAsync("sessionStorage.removeItem", "nearbySpeciesState");
+                    await MapService.RemoveSessionStorageAsync("nearbySpeciesState");
 
                     // Clear the query parameter from URL
                     NavigationManager.NavigateTo("/", replace: true);

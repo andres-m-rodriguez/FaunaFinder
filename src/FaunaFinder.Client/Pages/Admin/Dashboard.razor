@@ -47,18 +47,18 @@
                         }
                         else
                         {
-                            <div class="d-flex justify-center align-center" style="height: 160px; background-color: var(--mud-palette-background-grey);">
+                            <div class="d-flex justify-center align-center h-160" style="background-color: var(--mud-palette-background-grey);">
                                 <MudIcon Icon="@Icons.Material.Filled.HideImage" Size="Size.Large" Color="Color.Secondary" />
                             </div>
                         }
                         <MudCardContent>
                             <MudText Typo="Typo.h6">@(sighting.SpeciesName ?? L["Sightings_UnknownSpecies"])</MudText>
                             <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-1">
-                                <MudIcon Icon="@Icons.Material.Filled.CalendarToday" Size="Size.Small" Class="mr-1" Style="vertical-align: middle;" />
+                                <MudIcon Icon="@Icons.Material.Filled.CalendarToday" Size="Size.Small" Class="mr-1 align-middle" />
                                 @sighting.ObservedAt.ToLocalTime().ToString("MMM dd, yyyy HH:mm")
                             </MudText>
                             <MudText Typo="Typo.body2" Color="Color.Secondary">
-                                <MudIcon Icon="@Icons.Material.Filled.LocationOn" Size="Size.Small" Class="mr-1" Style="vertical-align: middle;" />
+                                <MudIcon Icon="@Icons.Material.Filled.LocationOn" Size="Size.Small" Class="mr-1 align-middle" />
                                 @sighting.Latitude.ToString("F4"), @sighting.Longitude.ToString("F4")
                             </MudText>
                         </MudCardContent>
@@ -218,13 +218,11 @@
                         <MudImage Src="@($"/api/wildlife/sightings/{_detailsSighting.Id}/photo")"
                                   Alt="Sighting photo"
                                   ObjectFit="ObjectFit.Cover"
-                                  Class="rounded-lg mb-3"
-                                  Style="width: 100%; max-height: 300px;" />
+                                  Class="rounded-lg mb-3 w-full max-h-300" />
                     }
                     else
                     {
-                        <div class="d-flex justify-center align-center rounded-lg mb-3"
-                             style="height: 200px; background-color: var(--mud-palette-background-grey);">
+                        <div class="d-flex justify-center align-center rounded-lg mb-3 h-200" style="background-color: var(--mud-palette-background-grey);">
                             <MudStack AlignItems="AlignItems.Center">
                                 <MudIcon Icon="@Icons.Material.Filled.HideImage" Size="Size.Large" Color="Color.Secondary" />
                                 <MudText Color="Color.Secondary">@L["SightingDetail_NoPhoto"]</MudText>

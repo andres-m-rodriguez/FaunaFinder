@@ -19,26 +19,26 @@
     @if (LoadDataCommand.IsLoading)
     {
         <MudPaper Elevation="2" Class="pa-4 mb-6">
-            <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="40px" Class="mb-3 rounded" Style="border: 1px solid rgba(255,255,255,0.1);" />
-            <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="24px" Width="60%" Class="mb-3 rounded" Style="border: 1px solid rgba(255,255,255,0.1);" />
-            <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="20px" Width="40%" Class="mb-3 rounded" Style="border: 1px solid rgba(255,255,255,0.1);" />
-            <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="36px" Width="150px" Class="rounded" Style="border: 1px solid rgba(255,255,255,0.1);" />
+            <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="40px" Class="mb-3 rounded skeleton-border" />
+            <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="24px" Width="60%" Class="mb-3 rounded skeleton-border" />
+            <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="20px" Width="40%" Class="mb-3 rounded skeleton-border" />
+            <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="36px" Width="150px" Class="rounded skeleton-border" />
         </MudPaper>
 
-        <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="32px" Width="200px" Class="mb-4 rounded" Style="border: 1px solid rgba(255,255,255,0.1);" />
+        <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="32px" Width="200px" Class="mb-4 rounded skeleton-border" />
         <MudGrid Spacing="3" Class="mb-6">
             @for (int i = 0; i < 4; i++)
             {
                 <MudItem xs="6" sm="4" md="3">
-                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="50px" Class="rounded" Style="border: 1px solid rgba(255,255,255,0.1);" />
+                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="50px" Class="rounded skeleton-border" />
                 </MudItem>
             }
         </MudGrid>
 
-        <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="32px" Width="250px" Class="mb-4 rounded" Style="border: 1px solid rgba(255,255,255,0.1);" />
+        <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="32px" Width="250px" Class="mb-4 rounded skeleton-border" />
         @for (int i = 0; i < 2; i++)
         {
-            <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="120px" Class="mb-3 rounded" Style="border: 1px solid rgba(255,255,255,0.1);" />
+            <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="120px" Class="mb-3 rounded skeleton-border" />
         }
     }
     else if (species == null)
@@ -58,8 +58,7 @@
                         <MudImage Src="@GetProfileImageUrl()"
                                   Alt="@L.GetLocalizedValue(species.CommonName)"
                                   ObjectFit="ObjectFit.Cover"
-                                  Class="rounded-lg species-image"
-                                  Style="width: 100%; max-height: 200px;" />
+                                  Class="rounded-lg species-image w-full max-h-200" />
                         @if (!string.IsNullOrEmpty(species.ImageSourceUrl))
                         {
                             <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-1">
@@ -150,7 +149,7 @@
                                    Margin="Margin.Dense"
                                    Dense="true"
                                    Clearable="true"
-                                   Style="min-width: 150px;">
+                                   Class="min-w-150">
                             @foreach (var practice in AvailableNrcsPractices)
                             {
                                 <MudSelectItem Value="@practice">@practice</MudSelectItem>
@@ -164,7 +163,7 @@
                                    Margin="Margin.Dense"
                                    Dense="true"
                                    Clearable="true"
-                                   Style="min-width: 150px;">
+                                   Class="min-w-150">
                             @foreach (var action in AvailableFwsActions)
                             {
                                 <MudSelectItem Value="@action">@action</MudSelectItem>
