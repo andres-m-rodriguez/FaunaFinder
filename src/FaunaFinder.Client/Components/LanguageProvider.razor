@@ -1,5 +1,4 @@
 @inject IAppLocalizer Localizer
-@implements IDisposable
 
 <CascadingValue Value="@_refreshToken" Name="LanguageRefresh">
     @ChildContent
@@ -13,17 +12,10 @@
 
     protected override void OnInitialized()
     {
-        Localizer.OnLanguageChanged += OnLanguageChanged;
-    }
-
-    private void OnLanguageChanged()
-    {
-        _refreshToken++;
-        InvokeAsync(StateHasChanged);
-    }
-
-    public void Dispose()
-    {
-        Localizer.OnLanguageChanged -= OnLanguageChanged;
+        Localizer.LanguageChangedSignal.OnChange(async () =>
+        {
+            _refreshToken++;
+            await InvokeAsync(StateHasChanged);
+        });
     }
 }

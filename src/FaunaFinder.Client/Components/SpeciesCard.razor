@@ -19,9 +19,6 @@
 </MudCard>
 
 @code {
-    [CascadingParameter(Name = "LanguageRefresh")]
-    private int LanguageRefresh { get; set; }
-
     [Parameter, EditorRequired]
     public List<LocaleValue> CommonName { get; set; } = [];
 
@@ -36,4 +33,9 @@
 
     [Parameter]
     public EventCallback OnClick { get; set; }
+
+    protected override void OnInitialized()
+    {
+        L.LanguageChangedSignal.OnChange(async () => await InvokeAsync(StateHasChanged));
+    }
 }

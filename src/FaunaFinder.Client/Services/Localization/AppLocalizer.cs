@@ -1,3 +1,4 @@
+using BlazingSingularity.Signals;
 using FaunaFinder.i18n.Contracts;
 
 namespace FaunaFinder.Client.Services.Localization;
@@ -5,12 +6,13 @@ namespace FaunaFinder.Client.Services.Localization;
 public sealed class AppLocalizer : IAppLocalizer
 {
     private IReadOnlyDictionary<string, string> _currentTranslations = Translations.English;
+    private readonly Signal<string> _languageChangedSignal = new();
 
     public string CurrentLanguage { get; private set; } = "en-US";
 
     public bool IsSpanish => CurrentLanguage.StartsWith("es");
 
-    public event Action? OnLanguageChanged;
+    public Signal<string> LanguageChangedSignal => _languageChangedSignal;
 
     public string this[string key] =>
         _currentTranslations.TryGetValue(key, out var value) ? value : key;
@@ -27,7 +29,7 @@ public sealed class AppLocalizer : IAppLocalizer
             ? Translations.Spanish
             : Translations.English;
 
-        OnLanguageChanged?.Invoke();
+        _languageChangedSignal.Notify(languageCode);
     }
 
     public string GetLocalizedValue(IEnumerable<LocaleValue> values)
