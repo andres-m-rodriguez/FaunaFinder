@@ -1,6 +1,7 @@
 @inherits LayoutComponentBase
 @inject IAppLocalizer L
 @inject IDarkModeService DarkModeService
+@inject NavigationManager NavigationManager
 @implements IDisposable
 
 <MudThemeProvider Theme="_theme" IsDarkMode="_isDarkMode" />
@@ -128,6 +129,7 @@
     protected override void OnInitialized()
     {
         DarkModeService.OnDarkModeChanged += OnDarkModeChanged;
+        NavigationManager.LocationChanged += OnLocationChanged;
         _isDarkMode = DarkModeService.IsDarkMode;
     }
 
@@ -135,6 +137,15 @@
     {
         _isDarkMode = DarkModeService.IsDarkMode;
         InvokeAsync(StateHasChanged);
+    }
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        if (_drawerOpen)
+        {
+            _drawerOpen = false;
+            InvokeAsync(StateHasChanged);
+        }
     }
 
     private void ToggleDrawer()
@@ -155,5 +166,6 @@
     public void Dispose()
     {
         DarkModeService.OnDarkModeChanged -= OnDarkModeChanged;
+        NavigationManager.LocationChanged -= OnLocationChanged;
     }
 }
