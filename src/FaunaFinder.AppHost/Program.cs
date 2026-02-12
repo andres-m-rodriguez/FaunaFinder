@@ -28,17 +28,7 @@ var seeder = builder.AddProject<Projects.FaunaFinder_Seeder>("seeder")
     .WithReference(wildlifeDb)
     .WaitFor(mainDb)
     .WaitFor(identityDb)
-    .WaitFor(wildlifeDb)
-    .PublishAsAzureContainerAppJob((infra, job) =>
-    {
-        job.Configuration = new ContainerAppJobConfiguration
-        {
-            TriggerType = ContainerAppJobTriggerType.Manual,
-            ReplicaTimeout = 1800, // 30 min max runtime
-            ReplicaRetryLimit = 0  // no retries
-        };
-    })
-    .WithRoleAssignments(acr, ContainerRegistryBuiltInRole.AcrPull);
+    .WaitFor(wildlifeDb);
 
 // API + WASM Client
 builder.AddProject<Projects.FaunaFinder_Server>("server")
