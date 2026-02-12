@@ -101,7 +101,7 @@ public static class WildlifeEndpoints
         return sighting is not null ? TypedResults.Ok(sighting) : TypedResults.NotFound();
     }
 
-    private static async Task<IResult> UpdateSightingPhoto(
+    private static async Task<Results<Ok<PhotoUpdateResponse>, UnauthorizedHttpResult, NotFound, ForbidHttpResult, BadRequest<string>>> UpdateSightingPhoto(
         int id,
         HttpContext context,
         ISightingRepository sightingRepository,
@@ -154,7 +154,7 @@ public static class WildlifeEndpoints
             : TypedResults.NotFound();
     }
 
-    private static async Task<IResult> ReviewSighting(
+    private static async Task<Results<Ok<ReviewSightingResponse>, UnauthorizedHttpResult, NotFound, ValidationProblem, BadRequest<string>>> ReviewSighting(
         int id,
         HttpContext context,
         ISightingRepository sightingRepository,
@@ -192,24 +192,23 @@ public static class WildlifeEndpoints
         return TypedResults.Ok(result);
     }
 
-    private static async Task<IResult> GetMySightings(
+    private static async Task<Results<Ok<SightingsPage>, UnauthorizedHttpResult, ValidationProblem>> GetMySightings(
         HttpContext context,
+        [AsParameters] UserSightingsParameters parameters,
         ISightingRepository sightingRepository,
         IValidator<UserSightingsParameters> validator,
-        int page,
-        int pageSize,
         CancellationToken ct)
     {
         var userIdClaim = context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
             return TypedResults.Unauthorized();
 
-        var parameters = new UserSightingsParameters(userId, page, pageSize);
-        var validation = await validator.ValidateAsync(parameters, ct);
+        var parametersWithUser = parameters with { UserId = userId };
+        var validation = await validator.ValidateAsync(parametersWithUser, ct);
         if (!validation.IsValid)
             return TypedResults.ValidationProblem(validation.ToDictionary());
 
-        var result = await sightingRepository.GetSightingsByUserAsync(parameters, ct);
+        var result = await sightingRepository.GetSightingsByUserAsync(parametersWithUser, ct);
         return TypedResults.Ok(result);
     }
 }
