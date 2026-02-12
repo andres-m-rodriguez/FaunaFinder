@@ -130,6 +130,7 @@
     {
         DarkModeService.OnDarkModeChanged += OnDarkModeChanged;
         NavigationManager.LocationChanged += OnLocationChanged;
+        L.LanguageSignal.OnChange(async () => await InvokeAsync(StateHasChanged));
         _isDarkMode = DarkModeService.IsDarkMode;
     }
 

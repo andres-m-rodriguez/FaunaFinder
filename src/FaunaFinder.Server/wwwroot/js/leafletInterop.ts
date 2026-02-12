@@ -238,6 +238,20 @@ window.leafletInterop = {
     },
 
     initMap(dotNetHelper: DotNetHelper, apiBaseUrl?: string): void {
+        // Clean up existing map if re-initializing (e.g., after language change)
+        if (this.map) {
+            this.map.remove();
+            this.map = null;
+            this.tileLayer = null;
+            this.geojsonLayer = null;
+            this.locateControl = null;
+            this.userLocationMarker = null;
+            this.searchRadiusCircle = null;
+            this.locationCircles = [];
+            this.nearbySpeciesMarkers = [];
+            this.speciesLocationCircles = [];
+        }
+
         this.dotNetHelper = dotNetHelper;
         if (apiBaseUrl) {
             this.apiBaseUrl = apiBaseUrl.replace(/\/$/, '');

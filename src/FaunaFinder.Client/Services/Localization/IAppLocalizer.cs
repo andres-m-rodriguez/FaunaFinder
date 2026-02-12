@@ -1,3 +1,4 @@
+using BlazingSingularity.Signals;
 using FaunaFinder.i18n.Contracts;
 
 namespace FaunaFinder.Client.Services.Localization;
@@ -9,7 +10,12 @@ public interface IAppLocalizer
     string CurrentLanguage { get; }
     bool IsSpanish { get; }
     void SetLanguage(string languageCode);
-    event Action? OnLanguageChanged;
+
+    /// <summary>
+    /// Signal that notifies subscribers when the language changes.
+    /// Components can subscribe via LanguageSignal.OnChange(StateHasChanged)
+    /// </summary>
+    Signal<string> LanguageSignal { get; }
 
     /// <summary>
     /// Gets the localized value based on the current language setting.

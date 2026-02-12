@@ -37,6 +37,9 @@
 </div>
 
 @code {
+    [CascadingParameter(Name = "LanguageRefresh")]
+    private int LanguageRefresh { get; set; }
+
     [Parameter, EditorRequired] public SpeciesForDetailDto Species { get; set; } = null!;
     [Parameter] public int CurrentIndex { get; set; }
     [Parameter] public EventCallback OnClose { get; set; }
