@@ -1,4 +1,5 @@
 using Azure.Provisioning.AppContainers;
+using Azure.Provisioning.ContainerRegistry;
 
 var builder = DistributedApplication.CreateBuilder(args);
 
@@ -36,7 +37,8 @@ var seeder = builder.AddProject<Projects.FaunaFinder_Seeder>("seeder")
             ReplicaTimeout = 1800, // 30 min max runtime
             ReplicaRetryLimit = 0  // no retries
         };
-    });
+    })
+    .WithRoleAssignments(acr, ContainerRegistryBuiltInRole.AcrPull);
 
 // API + WASM Client
 builder.AddProject<Projects.FaunaFinder_Server>("server")
