@@ -11,10 +11,15 @@ public static class IdentitySeeder
     private const string AdminPassword = "Admin@123";
     private const string AdminDisplayName = "Administrator";
 
-    public static async Task SeedAsync(IdentityDbContext context, CancellationToken cancellationToken = default)
+    public static async Task SeedAsync(
+        IdentityDbContext context,
+        CancellationToken cancellationToken = default
+    )
     {
-        var existingAdmin = await context.Users
-            .FirstOrDefaultAsync(u => u.Email == AdminEmail, cancellationToken);
+        var existingAdmin = await context.Users.FirstOrDefaultAsync(
+            u => u.Email == AdminEmail,
+            cancellationToken
+        );
 
         if (existingAdmin is not null)
             return;
@@ -31,7 +36,7 @@ public static class IdentitySeeder
             SecurityStamp = Guid.NewGuid().ToString(),
             ConcurrencyStamp = Guid.NewGuid().ToString(),
             CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow
+            UpdatedAt = DateTime.UtcNow,
         };
 
         var passwordHasher = new PasswordHasher<User>();

@@ -12,4 +12,5 @@ public record SightingListItem(
     DateTime CreatedAt,
     double Latitude,
     double Longitude,
-    bool HasPhoto);
+    bool HasPhoto
+);

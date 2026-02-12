@@ -1,5 +1,5 @@
-using FluentValidation;
 using FaunaFinder.Wildlife.Contracts.Parameters;
+using FluentValidation;
 
 namespace FaunaFinder.Wildlife.Contracts.Validators;
 
@@ -7,8 +7,6 @@ public sealed class SpeciesSearchParametersValidator : AbstractValidator<Species
 {
     public SpeciesSearchParametersValidator()
     {
-        RuleFor(x => x.Limit)
-            .InclusiveBetween(1, 50)
-            .WithMessage("Limit must be between 1 and 50");
+        RuleFor(x => x.Limit).InclusiveBetween(1, 50).WithMessage("Limit must be between 1 and 50");
     }
 }

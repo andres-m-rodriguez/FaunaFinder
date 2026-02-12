@@ -1,6 +1,6 @@
-using FluentValidation;
 using FaunaFinder.Wildlife.Contracts.Validators;
 using FaunaFinder.Wildlife.DataAccess.Extensions;
+using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace FaunaFinder.Wildlife.Application.Extensions;

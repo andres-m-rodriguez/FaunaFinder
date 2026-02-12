@@ -1,18 +1,15 @@
 <Project Sdk="Microsoft.NET.Sdk.Worker">
-
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\Common\FaunaFinder.i18n.Contracts\FaunaFinder.i18n.Contracts.csproj" />
     <ProjectReference Include="..\FaunaFinder.ServiceDefaults\FaunaFinder.ServiceDefaults.csproj" />
     <ProjectReference Include="..\Features\Identity\FaunaFinder.Identity.Database\FaunaFinder.Identity.Database.csproj" />
     <ProjectReference Include="..\Features\Wildlife\FaunaFinder.Wildlife.Database\FaunaFinder.Wildlife.Database.csproj" />
   </ItemGroup>
-
   <ItemGroup>
     <EmbeddedResource Include="Data\pr-municipios.geojson" />
     <EmbeddedResource Include="Data\species.json" />
@@ -20,9 +17,7 @@
     <EmbeddedResource Include="Data\fws_actions.json" />
     <EmbeddedResource Include="Data\fws_links.json" />
   </ItemGroup>
-
   <ItemGroup>
     <PackageReference Include="NetTopologySuite.IO.GeoJSON4STJ" Version="4.0.0" />
   </ItemGroup>
-
 </Project>

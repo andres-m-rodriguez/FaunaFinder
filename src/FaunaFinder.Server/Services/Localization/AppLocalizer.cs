@@ -17,12 +17,12 @@ public sealed class AppLocalizer : IAppLocalizer
     public string this[string key] =>
         _currentTranslations.TryGetValue(key, out var value) ? value : key;
 
-    public string this[string key, params object[] args] =>
-        string.Format(this[key], args);
+    public string this[string key, params object[] args] => string.Format(this[key], args);
 
     public void SetLanguage(string languageCode)
     {
-        if (languageCode == CurrentLanguage) return;
+        if (languageCode == CurrentLanguage)
+            return;
 
         CurrentLanguage = languageCode;
         _currentTranslations = languageCode.StartsWith("es")

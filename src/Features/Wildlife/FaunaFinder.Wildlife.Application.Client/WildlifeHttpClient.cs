@@ -11,20 +11,25 @@ public sealed class WildlifeHttpClient(HttpClient httpClient) : IWildlifeHttpCli
     public async Task<IReadOnlyList<SpeciesSearchResult>> SearchSpeciesAsync(
         string query,
         int limit = 10,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         if (string.IsNullOrWhiteSpace(query) || query.Length < 2)
             return [];
 
         var url = $"/api/wildlife/species/search?query={Uri.EscapeDataString(query)}&limit={limit}";
-        var result = await httpClient.GetFromJsonAsync<List<SpeciesSearchResult>>(url, cancellationToken);
+        var result = await httpClient.GetFromJsonAsync<List<SpeciesSearchResult>>(
+            url,
+            cancellationToken
+        );
         return result ?? [];
     }
 
     public async Task<SightingsPage> GetMySightingsAsync(
         int page = 1,
         int pageSize = 12,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         var url = $"/api/wildlife/my-sightings?page={page}&pageSize={pageSize}";
         var result = await httpClient.GetFromJsonAsync<SightingsPage>(url, cancellationToken);
@@ -35,7 +40,8 @@ public sealed class WildlifeHttpClient(HttpClient httpClient) : IWildlifeHttpCli
         int page,
         int pageSize,
         string? status = null,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         var url = $"/api/wildlife/sightings?page={page}&pageSize={pageSize}";
         if (!string.IsNullOrWhiteSpace(status))
@@ -50,7 +56,8 @@ public sealed class WildlifeHttpClient(HttpClient httpClient) : IWildlifeHttpCli
     public async Task<SightingsPage> GetReviewQueueAsync(
         int page,
         int pageSize,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         var url = $"/api/wildlife/review-queue?page={page}&pageSize={pageSize}";
         var result = await httpClient.GetFromJsonAsync<SightingsPage>(url, cancellationToken);
@@ -59,13 +66,20 @@ public sealed class WildlifeHttpClient(HttpClient httpClient) : IWildlifeHttpCli
 
     public async Task<CreateSightingResponse> CreateSightingAsync(
         CreateSightingRequest request,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
-        var response = await httpClient.PostAsJsonAsync("/api/wildlife/sightings", request, cancellationToken);
+        var response = await httpClient.PostAsJsonAsync(
+            "/api/wildlife/sightings",
+            request,
+            cancellationToken
+        );
 
         if (response.IsSuccessStatusCode)
         {
-            var result = await response.Content.ReadFromJsonAsync<SightingCreatedResponse>(cancellationToken);
+            var result = await response.Content.ReadFromJsonAsync<SightingCreatedResponse>(
+                cancellationToken
+            );
             return new CreateSightingResponse(result?.Id, null, true);
         }
 
@@ -75,7 +89,8 @@ public sealed class WildlifeHttpClient(HttpClient httpClient) : IWildlifeHttpCli
 
     public async Task<SightingDetailDto?> GetSightingDetailAsync(
         int id,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         var url = $"/api/wildlife/sightings/{id}";
         return await httpClient.GetFromJsonAsync<SightingDetailDto>(url, cancellationToken);
@@ -85,11 +100,14 @@ public sealed class WildlifeHttpClient(HttpClient httpClient) : IWildlifeHttpCli
         int sightingId,
         byte[] photoData,
         string contentType,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         using var content = new MultipartFormDataContent();
         using var fileContent = new ByteArrayContent(photoData);
-        fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(contentType);
+        fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(
+            contentType
+        );
         content.Add(fileContent, "photo", "photo" + GetFileExtension(contentType));
 
         var url = $"/api/wildlife/sightings/{sightingId}/photo";
@@ -102,7 +120,8 @@ public sealed class WildlifeHttpClient(HttpClient httpClient) : IWildlifeHttpCli
         int sightingId,
         string status,
         string? reviewNotes,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         var request = new ReviewSightingRequest(status, reviewNotes);
         var url = $"/api/wildlife/sightings/{sightingId}/review";
@@ -111,13 +130,13 @@ public sealed class WildlifeHttpClient(HttpClient httpClient) : IWildlifeHttpCli
         return response.IsSuccessStatusCode;
     }
 
-    private static string GetFileExtension(string contentType) => contentType.ToLowerInvariant() switch
-    {
-        "image/jpeg" => ".jpg",
-        "image/png" => ".png",
-        "image/gif" => ".gif",
-        "image/webp" => ".webp",
-        _ => ".jpg"
-    };
-
+    private static string GetFileExtension(string contentType) =>
+        contentType.ToLowerInvariant() switch
+        {
+            "image/jpeg" => ".jpg",
+            "image/png" => ".png",
+            "image/gif" => ".gif",
+            "image/webp" => ".webp",
+            _ => ".jpg",
+        };
 }

@@ -20,26 +20,24 @@ public sealed class Municipality
             builder.ToTable("municipalities");
             builder.HasKey(static e => e.Id);
 
-            builder.Property(static e => e.Name)
-                .HasMaxLength(100)
-                .IsRequired();
+            builder.Property(static e => e.Name).HasMaxLength(100).IsRequired();
 
-            builder.Property(static e => e.GeoJsonId)
-                .HasMaxLength(50)
-                .IsRequired();
+            builder.Property(static e => e.GeoJsonId).HasMaxLength(50).IsRequired();
 
-            builder.HasIndex(static e => e.Name)
+            builder
+                .HasIndex(static e => e.Name)
                 .IsUnique()
                 .HasDatabaseName("municipalities_name_uidx");
 
-            builder.HasIndex(static e => e.GeoJsonId)
+            builder
+                .HasIndex(static e => e.GeoJsonId)
                 .IsUnique()
                 .HasDatabaseName("municipalities_geojson_id_uidx");
 
-            builder.Property(static e => e.Boundary)
-                .HasColumnType("geometry(Geometry, 4326)");
+            builder.Property(static e => e.Boundary).HasColumnType("geometry(Geometry, 4326)");
 
-            builder.HasIndex(static e => e.Boundary)
+            builder
+                .HasIndex(static e => e.Boundary)
                 .HasMethod("gist")
                 .HasDatabaseName("municipalities_boundary_gist_idx");
         }

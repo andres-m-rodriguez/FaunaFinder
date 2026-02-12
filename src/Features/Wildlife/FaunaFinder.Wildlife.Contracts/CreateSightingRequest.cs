@@ -13,4 +13,5 @@ public record CreateSightingRequest(
     string? Weather,
     string? Notes,
     byte[]? PhotoData,
-    string? PhotoContentType);
+    string? PhotoContentType
+);

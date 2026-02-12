@@ -17,11 +17,10 @@ public sealed class User : IdentityUser<int>
         {
             builder.ToTable("users");
 
-            builder.Property(static e => e.DisplayName)
-                .HasMaxLength(200)
-                .IsRequired();
+            builder.Property(static e => e.DisplayName).HasMaxLength(200).IsRequired();
 
-            builder.Property(static e => e.Role)
+            builder
+                .Property(static e => e.Role)
                 .HasConversion<string>()
                 .HasMaxLength(20)
                 .IsRequired();

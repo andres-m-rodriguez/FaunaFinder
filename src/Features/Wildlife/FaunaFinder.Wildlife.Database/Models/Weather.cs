@@ -8,5 +8,5 @@ public enum Weather
     Rainy = 3,
     Stormy = 4,
     Foggy = 5,
-    Windy = 6
+    Windy = 6,
 }

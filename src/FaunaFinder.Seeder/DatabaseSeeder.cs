@@ -14,10 +14,13 @@ public static class DatabaseSeeder
 {
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
-        PropertyNameCaseInsensitive = true
+        PropertyNameCaseInsensitive = true,
     };
 
-    public static async Task SeedAsync(WildlifeDbContext context, CancellationToken cancellationToken = default)
+    public static async Task SeedAsync(
+        WildlifeDbContext context,
+        CancellationToken cancellationToken = default
+    )
     {
         // Seed municipalities first (from GeoJSON - all 78 with boundaries)
         await SeedMunicipalitiesAsync(context, cancellationToken);
@@ -35,7 +38,10 @@ public static class DatabaseSeeder
         await SeedFwsLinksAsync(context, cancellationToken);
     }
 
-    private static async Task SeedMunicipalitiesAsync(WildlifeDbContext context, CancellationToken cancellationToken)
+    private static async Task SeedMunicipalitiesAsync(
+        WildlifeDbContext context,
+        CancellationToken cancellationToken
+    )
     {
         var assembly = Assembly.GetExecutingAssembly();
         const string resourceName = "FaunaFinder.Seeder.Data.pr-municipios.geojson";
@@ -49,15 +55,24 @@ public static class DatabaseSeeder
         var geoJsonOptions = new JsonSerializerOptions();
         geoJsonOptions.Converters.Add(new GeoJsonConverterFactory());
 
-        var featureCollection = await JsonSerializer.DeserializeAsync<FeatureCollection>(stream, geoJsonOptions, cancellationToken);
+        var featureCollection = await JsonSerializer.DeserializeAsync<FeatureCollection>(
+            stream,
+            geoJsonOptions,
+            cancellationToken
+        );
         if (featureCollection is null)
         {
-            throw new InvalidOperationException("Failed to deserialize GeoJSON feature collection.");
+            throw new InvalidOperationException(
+                "Failed to deserialize GeoJSON feature collection."
+            );
         }
 
         // Get existing municipalities by name (unique constraint is on name)
-        var existingMunicipalities = await context.Municipalities
-            .ToDictionaryAsync(m => m.Name, m => m, cancellationToken);
+        var existingMunicipalities = await context.Municipalities.ToDictionaryAsync(
+            m => m.Name,
+            m => m,
+            cancellationToken
+        );
 
         // Track municipalities we're adding in this batch by name
         var pendingMunicipalities = new Dictionary<string, Municipality>();
@@ -94,7 +109,7 @@ public static class DatabaseSeeder
                     Id = 0,
                     Name = name,
                     GeoJsonId = geoJsonId,
-                    Boundary = feature.Geometry
+                    Boundary = feature.Geometry,
                 };
                 context.Municipalities.Add(municipality);
                 pendingMunicipalities[name] = municipality;
@@ -104,64 +119,101 @@ public static class DatabaseSeeder
         await context.SaveChangesAsync(cancellationToken);
     }
 
-    private static async Task SeedNrcsPracticesAsync(WildlifeDbContext context, CancellationToken cancellationToken)
+    private static async Task SeedNrcsPracticesAsync(
+        WildlifeDbContext context,
+        CancellationToken cancellationToken
+    )
     {
-        var practices = await LoadJsonResourceAsync<List<NrcsPracticeDto>>("nrcs_practices.json", cancellationToken);
-        if (practices is null) return;
+        var practices = await LoadJsonResourceAsync<List<NrcsPracticeDto>>(
+            "nrcs_practices.json",
+            cancellationToken
+        );
+        if (practices is null)
+            return;
 
-        var existing = await context.NrcsPractices
-            .ToDictionaryAsync(p => p.Code, p => p, cancellationToken);
+        var existing = await context.NrcsPractices.ToDictionaryAsync(
+            p => p.Code,
+            p => p,
+            cancellationToken
+        );
 
         foreach (var dto in practices)
         {
             if (!existing.ContainsKey(dto.Code))
             {
-                context.NrcsPractices.Add(new NrcsPractice
-                {
-                    Id = 0,
-                    Code = dto.Code,
-                    Name = dto.Name
-                });
+                context.NrcsPractices.Add(
+                    new NrcsPractice
+                    {
+                        Id = 0,
+                        Code = dto.Code,
+                        Name = dto.Name,
+                    }
+                );
             }
         }
 
         await context.SaveChangesAsync(cancellationToken);
     }
 
-    private static async Task SeedFwsActionsAsync(WildlifeDbContext context, CancellationToken cancellationToken)
+    private static async Task SeedFwsActionsAsync(
+        WildlifeDbContext context,
+        CancellationToken cancellationToken
+    )
     {
-        var actions = await LoadJsonResourceAsync<List<FwsActionDto>>("fws_actions.json", cancellationToken);
-        if (actions is null) return;
+        var actions = await LoadJsonResourceAsync<List<FwsActionDto>>(
+            "fws_actions.json",
+            cancellationToken
+        );
+        if (actions is null)
+            return;
 
-        var existing = await context.FwsActions
-            .ToDictionaryAsync(a => a.Code, a => a, cancellationToken);
+        var existing = await context.FwsActions.ToDictionaryAsync(
+            a => a.Code,
+            a => a,
+            cancellationToken
+        );
 
         foreach (var dto in actions)
         {
             if (!existing.ContainsKey(dto.Code))
             {
-                context.FwsActions.Add(new FwsAction
-                {
-                    Id = 0,
-                    Code = dto.Code,
-                    Name = dto.Name
-                });
+                context.FwsActions.Add(
+                    new FwsAction
+                    {
+                        Id = 0,
+                        Code = dto.Code,
+                        Name = dto.Name,
+                    }
+                );
             }
         }
 
         await context.SaveChangesAsync(cancellationToken);
     }
 
-    private static async Task SeedSpeciesAsync(WildlifeDbContext context, CancellationToken cancellationToken)
+    private static async Task SeedSpeciesAsync(
+        WildlifeDbContext context,
+        CancellationToken cancellationToken
+    )
     {
-        var speciesList = await LoadJsonResourceAsync<List<SpeciesDto>>("species.json", cancellationToken);
-        if (speciesList is null) return;
+        var speciesList = await LoadJsonResourceAsync<List<SpeciesDto>>(
+            "species.json",
+            cancellationToken
+        );
+        if (speciesList is null)
+            return;
 
-        var existingSpecies = await context.Species
-            .ToDictionaryAsync(s => s.ScientificName, s => s, cancellationToken);
+        var existingSpecies = await context.Species.ToDictionaryAsync(
+            s => s.ScientificName,
+            s => s,
+            cancellationToken
+        );
 
-        var municipalities = await context.Municipalities
-            .ToDictionaryAsync(m => m.GeoJsonId, m => m, cancellationToken);
+        var municipalities = await context.Municipalities.ToDictionaryAsync(
+            m => m.GeoJsonId,
+            m => m,
+            cancellationToken
+        );
 
         foreach (var dto in speciesList)
         {
@@ -193,14 +245,14 @@ public static class DatabaseSeeder
                     CommonName =
                     [
                         new LocaleValue(SupportedLocales.English, dto.CommonNameEn),
-                        new LocaleValue(SupportedLocales.Spanish, dto.CommonNameEs)
+                        new LocaleValue(SupportedLocales.Spanish, dto.CommonNameEs),
                     ],
                     ScientificName = dto.ScientificName,
                     ProfileImageData = string.IsNullOrEmpty(dto.ImageBase64)
                         ? null
                         : Convert.FromBase64String(dto.ImageBase64),
                     ProfileImageContentType = dto.ImageContentType,
-                    ImageSourceUrl = dto.ImageSourceUrl
+                    ImageSourceUrl = dto.ImageSourceUrl,
                 };
                 context.Species.Add(species);
                 await context.SaveChangesAsync(cancellationToken);
@@ -210,22 +262,26 @@ public static class DatabaseSeeder
             // Link to municipalities
             if (dto.MunicipalityGeoJsonIds is { Count: > 0 })
             {
-                var existingLinks = await context.MunicipalitySpecies
-                    .Where(ms => ms.SpeciesId == species.Id)
+                var existingLinks = await context
+                    .MunicipalitySpecies.Where(ms => ms.SpeciesId == species.Id)
                     .Select(ms => ms.MunicipalityId)
                     .ToHashSetAsync(cancellationToken);
 
                 foreach (var geoJsonId in dto.MunicipalityGeoJsonIds)
                 {
-                    if (municipalities.TryGetValue(geoJsonId, out var municipality) &&
-                        !existingLinks.Contains(municipality.Id))
+                    if (
+                        municipalities.TryGetValue(geoJsonId, out var municipality)
+                        && !existingLinks.Contains(municipality.Id)
+                    )
                     {
-                        context.MunicipalitySpecies.Add(new MunicipalitySpecies
-                        {
-                            Id = 0,
-                            MunicipalityId = municipality.Id,
-                            SpeciesId = species.Id
-                        });
+                        context.MunicipalitySpecies.Add(
+                            new MunicipalitySpecies
+                            {
+                                Id = 0,
+                                MunicipalityId = municipality.Id,
+                                SpeciesId = species.Id,
+                            }
+                        );
                     }
                 }
             }
@@ -233,22 +289,26 @@ public static class DatabaseSeeder
             // Add locations
             if (dto.Locations is { Count: > 0 })
             {
-                var hasLocations = await context.SpeciesLocations
-                    .AnyAsync(sl => sl.SpeciesId == species.Id, cancellationToken);
+                var hasLocations = await context.SpeciesLocations.AnyAsync(
+                    sl => sl.SpeciesId == species.Id,
+                    cancellationToken
+                );
 
                 if (!hasLocations)
                 {
                     foreach (var loc in dto.Locations)
                     {
-                        context.SpeciesLocations.Add(new SpeciesLocation
-                        {
-                            Id = 0,
-                            SpeciesId = species.Id,
-                            Latitude = loc.Latitude,
-                            Longitude = loc.Longitude,
-                            RadiusMeters = loc.RadiusMeters,
-                            Description = loc.Description
-                        });
+                        context.SpeciesLocations.Add(
+                            new SpeciesLocation
+                            {
+                                Id = 0,
+                                SpeciesId = species.Id,
+                                Latitude = loc.Latitude,
+                                Longitude = loc.Longitude,
+                                RadiusMeters = loc.RadiusMeters,
+                                Description = loc.Description,
+                            }
+                        );
                     }
                 }
             }
@@ -257,22 +317,43 @@ public static class DatabaseSeeder
         }
     }
 
-    private static async Task SeedFwsLinksAsync(WildlifeDbContext context, CancellationToken cancellationToken)
+    private static async Task SeedFwsLinksAsync(
+        WildlifeDbContext context,
+        CancellationToken cancellationToken
+    )
     {
-        var links = await LoadJsonResourceAsync<List<FwsLinkDto>>("fws_links.json", cancellationToken);
-        if (links is null) return;
+        var links = await LoadJsonResourceAsync<List<FwsLinkDto>>(
+            "fws_links.json",
+            cancellationToken
+        );
+        if (links is null)
+            return;
 
-        var speciesMap = await context.Species
-            .ToDictionaryAsync(s => s.ScientificName, s => s.Id, cancellationToken);
+        var speciesMap = await context.Species.ToDictionaryAsync(
+            s => s.ScientificName,
+            s => s.Id,
+            cancellationToken
+        );
 
-        var practiceMap = await context.NrcsPractices
-            .ToDictionaryAsync(p => p.Code, p => p.Id, cancellationToken);
+        var practiceMap = await context.NrcsPractices.ToDictionaryAsync(
+            p => p.Code,
+            p => p.Id,
+            cancellationToken
+        );
 
-        var actionMap = await context.FwsActions
-            .ToDictionaryAsync(a => a.Code, a => a.Id, cancellationToken);
+        var actionMap = await context.FwsActions.ToDictionaryAsync(
+            a => a.Code,
+            a => a.Id,
+            cancellationToken
+        );
 
-        var existingLinks = await context.FwsLinks
-            .Select(l => new { l.SpeciesId, l.NrcsPracticeId, l.FwsActionId })
+        var existingLinks = await context
+            .FwsLinks.Select(l => new
+            {
+                l.SpeciesId,
+                l.NrcsPracticeId,
+                l.FwsActionId,
+            })
             .ToListAsync(cancellationToken);
 
         var existingLinkSet = existingLinks
@@ -295,14 +376,16 @@ public static class DatabaseSeeder
             if (existingLinkSet.Contains(linkKey))
                 continue;
 
-            context.FwsLinks.Add(new FwsLink
-            {
-                Id = 0,
-                SpeciesId = speciesId,
-                NrcsPracticeId = practiceId,
-                FwsActionId = actionId,
-                Justification = dto.Justification
-            });
+            context.FwsLinks.Add(
+                new FwsLink
+                {
+                    Id = 0,
+                    SpeciesId = speciesId,
+                    NrcsPracticeId = practiceId,
+                    FwsActionId = actionId,
+                    Justification = dto.Justification,
+                }
+            );
 
             existingLinkSet.Add(linkKey);
             batchCount++;
@@ -321,7 +404,10 @@ public static class DatabaseSeeder
         }
     }
 
-    private static async Task<T?> LoadJsonResourceAsync<T>(string resourceFileName, CancellationToken cancellationToken)
+    private static async Task<T?> LoadJsonResourceAsync<T>(
+        string resourceFileName,
+        CancellationToken cancellationToken
+    )
         where T : class
     {
         var assembly = Assembly.GetExecutingAssembly();

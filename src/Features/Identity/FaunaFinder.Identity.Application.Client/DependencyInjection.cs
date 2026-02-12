@@ -6,11 +6,17 @@ namespace FaunaFinder.Identity.Application.Client;
 
 public static class DependencyInjection
 {
-    public static IServiceCollection AddIdentityClient(this IServiceCollection services, Action<HttpClient>? configureClient = null)
+    public static IServiceCollection AddIdentityClient(
+        this IServiceCollection services,
+        Action<HttpClient>? configureClient = null
+    )
     {
         services.AddScoped<IValidator<LoginRequest>, LoginRequestValidator>();
         services.AddScoped<IValidator<RegisterRequest>, RegisterRequestValidator>();
-        services.AddScoped<IValidator<UpdateAccessRequestStatusRequest>, UpdateAccessRequestStatusRequestValidator>();
+        services.AddScoped<
+            IValidator<UpdateAccessRequestStatusRequest>,
+            UpdateAccessRequestStatusRequestValidator
+        >();
 
         services.AddHttpClient<IIdentityClient, IdentityClient>(client =>
         {
@@ -20,7 +26,10 @@ public static class DependencyInjection
         return services;
     }
 
-    public static IServiceCollection AddIdentityClient(this IServiceCollection services, Uri baseAddress)
+    public static IServiceCollection AddIdentityClient(
+        this IServiceCollection services,
+        Uri baseAddress
+    )
     {
         return services.AddIdentityClient(client => client.BaseAddress = baseAddress);
     }

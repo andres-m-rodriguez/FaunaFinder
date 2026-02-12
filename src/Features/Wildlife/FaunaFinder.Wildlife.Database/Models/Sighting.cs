@@ -61,64 +61,64 @@ public sealed class Sighting
             builder.ToTable("sightings");
             builder.HasKey(static e => e.Id);
 
-            builder.Property(static e => e.Mode)
+            builder
+                .Property(static e => e.Mode)
                 .HasConversion<string>()
                 .HasMaxLength(20)
                 .IsRequired();
 
-            builder.Property(static e => e.Confidence)
+            builder
+                .Property(static e => e.Confidence)
                 .HasConversion<string>()
                 .HasMaxLength(20)
                 .IsRequired();
 
-            builder.Property(static e => e.Count)
+            builder
+                .Property(static e => e.Count)
                 .HasConversion<string>()
                 .HasMaxLength(20)
                 .IsRequired();
 
-            builder.Property(static e => e.Behaviors)
-                .IsRequired();
+            builder.Property(static e => e.Behaviors).IsRequired();
 
-            builder.Property(static e => e.Evidence)
-                .IsRequired();
+            builder.Property(static e => e.Evidence).IsRequired();
 
-            builder.Property(static e => e.Weather)
-                .HasConversion<string>()
-                .HasMaxLength(20);
+            builder.Property(static e => e.Weather).HasConversion<string>().HasMaxLength(20);
 
-            builder.Property(static e => e.Notes)
-                .HasMaxLength(2000);
+            builder.Property(static e => e.Notes).HasMaxLength(2000);
 
-            builder.Property(static e => e.Location)
+            builder
+                .Property(static e => e.Location)
                 .HasColumnType("geometry(Point, 4326)")
                 .IsRequired();
 
-            builder.Property(static e => e.PhotoContentType)
-                .HasMaxLength(100);
+            builder.Property(static e => e.PhotoContentType).HasMaxLength(100);
 
-            builder.Property(static e => e.AudioContentType)
-                .HasMaxLength(100);
+            builder.Property(static e => e.AudioContentType).HasMaxLength(100);
 
-            builder.Property(static e => e.Status)
+            builder
+                .Property(static e => e.Status)
                 .HasConversion<string>()
                 .HasMaxLength(20)
                 .IsRequired();
 
-            builder.Property(static e => e.ReviewNotes)
-                .HasMaxLength(2000);
+            builder.Property(static e => e.ReviewNotes).HasMaxLength(2000);
 
             // Relationships within Wildlife feature
-            builder.HasOne(static e => e.Species)
+            builder
+                .HasOne(static e => e.Species)
                 .WithMany()
                 .HasForeignKey(static e => e.SpeciesId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            builder.HasOne(static e => e.UserSpecies)
+            builder
+                .HasOne(static e => e.UserSpecies)
                 .WithMany(static e => e.Sightings)
                 .HasForeignKey(static e => e.UserSpeciesId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            builder.HasOne(static e => e.Municipality)
+            builder
+                .HasOne(static e => e.Municipality)
                 .WithMany()
                 .HasForeignKey(static e => e.MunicipalityId)
                 .OnDelete(DeleteBehavior.SetNull);
@@ -126,26 +126,30 @@ public sealed class Sighting
             // Note: User references are by ID only - no navigation properties to Identity feature
 
             // Indexes
-            builder.HasIndex(static e => e.Location)
+            builder
+                .HasIndex(static e => e.Location)
                 .HasMethod("gist")
                 .HasDatabaseName("sightings_location_gist_idx");
 
-            builder.HasIndex(static e => e.ObservedAt)
-                .HasDatabaseName("sightings_observed_at_idx");
+            builder.HasIndex(static e => e.ObservedAt).HasDatabaseName("sightings_observed_at_idx");
 
-            builder.HasIndex(static e => e.Status)
-                .HasDatabaseName("sightings_status_idx");
+            builder.HasIndex(static e => e.Status).HasDatabaseName("sightings_status_idx");
 
-            builder.HasIndex(static e => e.ReportedByUserId)
+            builder
+                .HasIndex(static e => e.ReportedByUserId)
                 .HasDatabaseName("sightings_reported_by_user_id_idx");
 
-            builder.HasIndex(static e => e.IsFlaggedForReview)
+            builder
+                .HasIndex(static e => e.IsFlaggedForReview)
                 .HasDatabaseName("sightings_is_flagged_for_review_idx");
 
             // Check constraint: must have either SpeciesId or UserSpeciesId
-            builder.ToTable(static t => t.HasCheckConstraint(
-                "CK_sightings_species_reference",
-                "species_id IS NOT NULL OR user_species_id IS NOT NULL"));
+            builder.ToTable(static t =>
+                t.HasCheckConstraint(
+                    "CK_sightings_species_reference",
+                    "species_id IS NOT NULL OR user_species_id IS NOT NULL"
+                )
+            );
         }
     }
 }

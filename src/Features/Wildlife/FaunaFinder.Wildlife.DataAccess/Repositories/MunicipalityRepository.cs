@@ -1,40 +1,37 @@
 using FaunaFinder.Pagination.Contracts;
 using FaunaFinder.Wildlife.Contracts.Dtos;
 using FaunaFinder.Wildlife.Contracts.Parameters;
-using FaunaFinder.Wildlife.Database;
 using FaunaFinder.Wildlife.DataAccess.Interfaces;
+using FaunaFinder.Wildlife.Database;
 using Microsoft.EntityFrameworkCore;
 
 namespace FaunaFinder.Wildlife.DataAccess.Repositories;
 
-public sealed class MunicipalityRepository(
-    IDbContextFactory<WildlifeDbContext> contextFactory
-) : IMunicipalityRepository
+public sealed class MunicipalityRepository(IDbContextFactory<WildlifeDbContext> contextFactory)
+    : IMunicipalityRepository
 {
     public async Task<IReadOnlyList<MunicipalityForListDto>> GetAllMunicipalitiesAsync(
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
 
-        return await context.Municipalities
-            .AsNoTracking()
+        return await context
+            .Municipalities.AsNoTracking()
             .OrderBy(static m => m.Name)
-            .Select(static m => new MunicipalityForListDto(
-                m.Id,
-                m.Name,
-                m.GeoJsonId
-            ))
+            .Select(static m => new MunicipalityForListDto(m.Id, m.Name, m.GeoJsonId))
             .ToListAsync(cancellationToken);
     }
 
     public async Task<MunicipalityForDetailDto?> GetMunicipalityDetailAsync(
         int municipalityId,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
 
-        return await context.Municipalities
-            .AsNoTracking()
+        return await context
+            .Municipalities.AsNoTracking()
             .Where(m => m.Id == municipalityId)
             .Select(static m => new MunicipalityForDetailDto(
                 m.Id,
@@ -47,7 +44,8 @@ public sealed class MunicipalityRepository(
 
     public async Task<IReadOnlyList<MunicipalityCardDto>> GetMunicipalitiesWithSpeciesCountAsync(
         MunicipalityParameters parameters,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
 
@@ -63,17 +61,14 @@ public sealed class MunicipalityRepository(
             .OrderBy(static m => m.Name)
             .Skip(parameters.Page * parameters.PageSize)
             .Take(parameters.PageSize)
-            .Select(static m => new MunicipalityCardDto(
-                m.Id,
-                m.Name,
-                m.MunicipalitySpecies.Count
-            ))
+            .Select(static m => new MunicipalityCardDto(m.Id, m.Name, m.MunicipalitySpecies.Count))
             .ToListAsync(cancellationToken);
     }
 
     public async Task<int> GetTotalMunicipalitiesCountAsync(
         string? search = null,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
 
@@ -90,7 +85,8 @@ public sealed class MunicipalityRepository(
 
     public async Task<CursorPage<MunicipalityCardDto>> GetMunicipalitiesCursorPageAsync(
         CursorPageParameter request,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
 
@@ -113,11 +109,7 @@ public sealed class MunicipalityRepository(
         var items = await query
             .OrderBy(m => m.Id)
             .Take(request.PageSize + 1)
-            .Select(static m => new MunicipalityCardDto(
-                m.Id,
-                m.Name,
-                m.MunicipalitySpecies.Count
-            ))
+            .Select(static m => new MunicipalityCardDto(m.Id, m.Name, m.MunicipalitySpecies.Count))
             .ToListAsync(cancellationToken);
 
         var hasMore = items.Count > request.PageSize;
@@ -126,9 +118,7 @@ public sealed class MunicipalityRepository(
             items.RemoveAt(items.Count - 1);
         }
 
-        var nextCursor = hasMore && items.Count > 0
-            ? CursorHelper.Encode(items[^1].Id)
-            : null;
+        var nextCursor = hasMore && items.Count > 0 ? CursorHelper.Encode(items[^1].Id) : null;
 
         return new CursorPage<MunicipalityCardDto>(items, nextCursor, hasMore);
     }
