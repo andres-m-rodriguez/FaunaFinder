@@ -1,4 +1,3 @@
-"use strict";
 /// <reference types="leaflet" />
 // ============================================================================
 // Implementation
@@ -51,11 +50,12 @@ window.leafletInterop = {
         '#ff006e',
         '#06d6a0',
     ],
-    setApiBaseUrl(url) {
+    setApiBaseUrl: function (url) {
         this.apiBaseUrl = url.replace(/\/$/, '');
     },
-    initMap(dotNetHelper, apiBaseUrl) {
-        // Clean up existing map if re-initializing
+    initMap: function (dotNetHelper, apiBaseUrl) {
+        var _this = this;
+        // Clean up existing map if re-initializing (e.g., after language change)
         if (this.map) {
             this.map.remove();
             this.map = null;
@@ -73,18 +73,18 @@ window.leafletInterop = {
             this.apiBaseUrl = apiBaseUrl.replace(/\/$/, '');
         }
         this.isMobile = window.innerWidth < 640;
-        const savedDarkMode = localStorage.getItem('faunafinder-darkmode');
+        var savedDarkMode = localStorage.getItem('faunafinder-darkmode');
         if (savedDarkMode !== null) {
             this.isDarkMode = savedDarkMode === 'true';
         }
         else {
             this.isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
         }
-        const PR_BOUNDS = [
+        var PR_BOUNDS = [
             [17.1176, -67.9426],
             [19.42, -64.9007]
         ];
-        const zoom = this.isMobile ? 8 : 9;
+        var zoom = this.isMobile ? 8 : 9;
         this.map = L.map('map', {
             center: [18.15, -66.5],
             zoom: zoom,
@@ -92,8 +92,8 @@ window.leafletInterop = {
             maxBoundsViscosity: 1.0,
             scrollWheelZoom: !this.isMobile
         });
-        const tileUrl = this.isDarkMode ? this.darkTileUrl : this.lightTileUrl;
-        const attribution = this.isDarkMode
+        var tileUrl = this.isDarkMode ? this.darkTileUrl : this.lightTileUrl;
+        var attribution = this.isDarkMode
             ? '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
             : '&copy; OpenStreetMap';
         this.tileLayer = L.tileLayer(tileUrl, {
@@ -104,19 +104,19 @@ window.leafletInterop = {
         }).addTo(this.map);
         this.loadGeoJson();
         this.createLocateControl();
-        window.addEventListener('resize', () => {
-            this.isMobile = window.innerWidth < 640;
+        window.addEventListener('resize', function () {
+            _this.isMobile = window.innerWidth < 640;
         });
     },
-    createLocateControl() {
-        const self = this;
-        const LocateControl = L.Control.extend({
+    createLocateControl: function () {
+        var self = this;
+        var LocateControl = L.Control.extend({
             options: {
                 position: 'topleft'
             },
-            onAdd() {
-                const container = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-locate');
-                const button = L.DomUtil.create('a', 'leaflet-control-locate-button', container);
+            onAdd: function () {
+                var container = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-locate');
+                var button = L.DomUtil.create('a', 'leaflet-control-locate-button', container);
                 button.href = '#';
                 button.title = 'Locate me';
                 button.setAttribute('role', 'button');
@@ -133,10 +133,10 @@ window.leafletInterop = {
         });
         new LocateControl().addTo(this.map);
     },
-    locateUser() {
+    locateUser: function () {
         if (this.isLocating)
             return;
-        const self = this;
+        var self = this;
         if (!navigator.geolocation) {
             self.showLocationError('geolocation_unsupported');
             return;
@@ -144,15 +144,16 @@ window.leafletInterop = {
         this.isLocating = true;
         this.setLocateControlState('loading');
         navigator.geolocation.getCurrentPosition(function (position) {
+            var _a;
             self.isLocating = false;
             self.setLocateControlState('default');
-            const lat = position.coords.latitude;
-            const lng = position.coords.longitude;
+            var lat = position.coords.latitude;
+            var lng = position.coords.longitude;
             self.userLocation = { latitude: lat, longitude: lng };
             if (self.userLocationMarker) {
                 self.map.removeLayer(self.userLocationMarker);
             }
-            const userIcon = L.divIcon({
+            var userIcon = L.divIcon({
                 className: 'user-location-marker',
                 html: '<div class="user-location-pulse"></div><div class="user-location-dot"></div>',
                 iconSize: [24, 24],
@@ -164,7 +165,7 @@ window.leafletInterop = {
             self.map.flyTo([lat, lng], 14, {
                 duration: 1.5
             });
-            self.dotNetHelper?.invokeMethodAsync('OnUserLocationFound', lat, lng);
+            (_a = self.dotNetHelper) === null || _a === void 0 ? void 0 : _a.invokeMethodAsync('OnUserLocationFound', lat, lng);
         }, function (error) {
             self.isLocating = false;
             self.setLocateControlState('default');
@@ -188,10 +189,10 @@ window.leafletInterop = {
             maximumAge: 60000
         });
     },
-    setLocateControlState(state) {
+    setLocateControlState: function (state) {
         if (!this.locateControl)
             return;
-        const button = this.locateControl.querySelector('.leaflet-control-locate-button');
+        var button = this.locateControl.querySelector('.leaflet-control-locate-button');
         if (!button)
             return;
         if (state === 'loading') {
@@ -203,15 +204,15 @@ window.leafletInterop = {
             button.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3A8.994 8.994 0 0 0 13 3.06V1h-2v2.06A8.994 8.994 0 0 0 3.06 11H1v2h2.06A8.994 8.994 0 0 0 11 20.94V23h2v-2.06A8.994 8.994 0 0 0 20.94 13H23v-2h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/></svg>';
         }
     },
-    showLocationError(errorType) {
-        const messages = {
+    showLocationError: function (errorType) {
+        var messages = {
             'geolocation_unsupported': 'Geolocation is not supported by your browser.',
             'permission_denied': 'Location access was denied. Please enable location permissions.',
             'position_unavailable': 'Unable to determine your location.',
             'timeout': 'Location request timed out. Please try again.',
             'unknown': 'An unknown error occurred while getting your location.'
         };
-        const message = messages[errorType] || messages['unknown'];
+        var message = messages[errorType] || messages['unknown'];
         if (this.map) {
             L.popup()
                 .setLatLng(this.map.getCenter())
@@ -219,14 +220,14 @@ window.leafletInterop = {
                 .openOn(this.map);
         }
     },
-    setDarkMode(isDark) {
+    setDarkMode: function (isDark) {
         this.isDarkMode = isDark;
         if (this.map) {
             if (this.tileLayer) {
                 this.map.removeLayer(this.tileLayer);
             }
-            const tileUrl = isDark ? this.darkTileUrl : this.lightTileUrl;
-            const attribution = isDark
+            var tileUrl = isDark ? this.darkTileUrl : this.lightTileUrl;
+            var attribution = isDark
                 ? '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
                 : '&copy; OpenStreetMap';
             this.tileLayer = L.tileLayer(tileUrl, {
@@ -241,41 +242,42 @@ window.leafletInterop = {
             this.geojsonLayer.setStyle(this.getDefaultStyle());
         }
     },
-    loadGeoJson() {
-        const self = this;
-        const CACHE_KEY = 'pr-municipios-geojson';
-        const VERSION_KEY = 'pr-municipios-version';
-        const CURRENT_VERSION = 'v1';
-        const processGeoJson = (data) => {
+    loadGeoJson: function () {
+        var self = this;
+        var CACHE_KEY = 'pr-municipios-geojson';
+        var VERSION_KEY = 'pr-municipios-version';
+        var CURRENT_VERSION = 'v1';
+        var processGeoJson = function (data) {
+            var _a;
             self.geojsonLayer = L.geoJSON(data, {
-                style: () => self.getDefaultStyle(),
-                onEachFeature: (feature, layer) => {
-                    const props = feature.properties;
-                    const name = props.NAME;
-                    const state = props.STATE;
-                    const county = props.COUNTY;
-                    const geoJsonId = state + county;
+                style: function () { return self.getDefaultStyle(); },
+                onEachFeature: function (feature, layer) {
+                    var props = feature.properties;
+                    var name = props.NAME;
+                    var state = props.STATE;
+                    var county = props.COUNTY;
+                    var geoJsonId = state + county;
                     layer.bindTooltip(name, {
                         direction: 'center',
                         className: 'municipality-tooltip'
                     });
                     layer.on({
-                        mouseover: (e) => self.highlightFeature(e),
-                        mouseout: (e) => self.resetHighlight(e),
-                        click: () => self.dotNetHelper?.invokeMethodAsync('OnMunicipalityClick', geoJsonId, name)
+                        mouseover: function (e) { return self.highlightFeature(e); },
+                        mouseout: function (e) { return self.resetHighlight(e); },
+                        click: function () { var _a; return (_a = self.dotNetHelper) === null || _a === void 0 ? void 0 : _a.invokeMethodAsync('OnMunicipalityClick', geoJsonId, name); }
                     });
                 }
             }).addTo(self.map);
             console.log('GeoJSON loaded successfully with', data.features.length, 'features');
             // Notify Blazor that the map is fully loaded
-            self.dotNetHelper?.invokeMethodAsync('OnMapReady');
+            (_a = self.dotNetHelper) === null || _a === void 0 ? void 0 : _a.invokeMethodAsync('OnMapReady');
         };
         // Check localStorage cache first
-        const cached = localStorage.getItem(CACHE_KEY);
-        const cacheVersion = localStorage.getItem(VERSION_KEY);
+        var cached = localStorage.getItem(CACHE_KEY);
+        var cacheVersion = localStorage.getItem(VERSION_KEY);
         if (cached && cacheVersion === CURRENT_VERSION) {
             try {
-                const data = JSON.parse(cached);
+                var data = JSON.parse(cached);
                 if (data.features && data.features.length > 0) {
                     console.log('GeoJSON loaded from localStorage cache');
                     processGeoJson(data);
@@ -287,14 +289,14 @@ window.leafletInterop = {
             }
         }
         // Load from API endpoint
-        const apiUrl = this.apiBaseUrl ? this.apiBaseUrl + '/api/municipalities/geojson' : '/api/municipalities/geojson';
+        var apiUrl = this.apiBaseUrl ? this.apiBaseUrl + '/api/municipalities/geojson' : '/api/municipalities/geojson';
         fetch(apiUrl)
-            .then((r) => {
+            .then(function (r) {
             if (!r.ok)
                 throw new Error('API returned ' + r.status);
             return r.json();
         })
-            .then((data) => {
+            .then(function (data) {
             if (data.features && data.features.length > 0) {
                 // Store in localStorage for future use
                 try {
@@ -311,15 +313,15 @@ window.leafletInterop = {
                 throw new Error('No features in API response');
             }
         })
-            .catch((err) => {
+            .catch(function (err) {
             console.error('GeoJSON load error:', err);
             if (self.map) {
                 L.marker([18.15, -66.5]).addTo(self.map).bindPopup('GeoJSON error: ' + err.message).openPopup();
             }
         });
     },
-    getDefaultStyle() {
-        const theme = this.isDarkMode ? this.darkTheme : this.lightTheme;
+    getDefaultStyle: function () {
+        var theme = this.isDarkMode ? this.darkTheme : this.lightTheme;
         return {
             fillColor: theme.fillColor,
             weight: 1,
@@ -327,12 +329,12 @@ window.leafletInterop = {
             fillOpacity: 0.3
         };
     },
-    defaultStyle() {
+    defaultStyle: function () {
         return this.getDefaultStyle();
     },
-    highlightFeature(e) {
-        const theme = this.isDarkMode ? this.darkTheme : this.lightTheme;
-        const layer = e.target;
+    highlightFeature: function (e) {
+        var theme = this.isDarkMode ? this.darkTheme : this.lightTheme;
+        var layer = e.target;
         layer.setStyle({
             fillColor: theme.highlightFill,
             weight: 2,
@@ -340,21 +342,21 @@ window.leafletInterop = {
             fillOpacity: 0.6
         });
     },
-    resetHighlight(e) {
+    resetHighlight: function (e) {
         if (this.geojsonLayer) {
             this.geojsonLayer.resetStyle(e.target);
         }
     },
-    highlightMunicipality(county) {
+    highlightMunicipality: function (county) {
         if (!this.geojsonLayer)
             return;
-        const theme = this.isDarkMode ? this.darkTheme : this.lightTheme;
-        const self = this;
-        this.geojsonLayer.eachLayer((layer) => {
-            const geoLayer = layer;
-            const feature = geoLayer.feature;
+        var theme = this.isDarkMode ? this.darkTheme : this.lightTheme;
+        var self = this;
+        this.geojsonLayer.eachLayer(function (layer) {
+            var geoLayer = layer;
+            var feature = geoLayer.feature;
             if (feature && feature.properties) {
-                const props = feature.properties;
+                var props = feature.properties;
                 if (props.COUNTY === county) {
                     geoLayer.setStyle({
                         fillColor: theme.highlightFill,
@@ -369,52 +371,52 @@ window.leafletInterop = {
             }
         });
     },
-    showSpeciesLocations(speciesName, locations) {
+    showSpeciesLocations: function (speciesName, locations) {
         this.clearSpeciesLocations();
         if (!locations || locations.length === 0)
             return;
-        const self = this;
-        locations.forEach((loc) => {
-            const circle = L.circle([loc.latitude, loc.longitude], {
+        var self = this;
+        locations.forEach(function (loc) {
+            var circle = L.circle([loc.latitude, loc.longitude], {
                 radius: loc.radiusMeters,
                 fillColor: '#ef4444',
                 color: '#dc2626',
                 weight: 2,
                 fillOpacity: 0.35
             }).addTo(self.map);
-            const popupContent = loc.description
-                ? `<strong>${speciesName}</strong><br/>${loc.description}`
-                : `<strong>${speciesName}</strong>`;
+            var popupContent = loc.description
+                ? "<strong>".concat(speciesName, "</strong><br/>").concat(loc.description)
+                : "<strong>".concat(speciesName, "</strong>");
             circle.bindPopup(popupContent);
             self.locationCircles.push(circle);
         });
         if (this.locationCircles.length > 0) {
-            const group = L.featureGroup(this.locationCircles);
+            var group = L.featureGroup(this.locationCircles);
             this.map.fitBounds(group.getBounds(), { padding: [50, 50] });
         }
     },
-    clearSpeciesLocations() {
-        const self = this;
-        this.locationCircles.forEach((circle) => {
+    clearSpeciesLocations: function () {
+        var self = this;
+        this.locationCircles.forEach(function (circle) {
             self.map.removeLayer(circle);
         });
         this.locationCircles = [];
     },
-    focusOnLocation(index) {
+    focusOnLocation: function (index) {
         if (index >= 0 && index < this.locationCircles.length) {
-            const circle = this.locationCircles[index];
+            var circle = this.locationCircles[index];
             this.map.fitBounds(circle.getBounds(), { padding: [50, 50], maxZoom: 14 });
             circle.openPopup();
         }
     },
-    focusAllLocations() {
+    focusAllLocations: function () {
         if (this.locationCircles.length > 0) {
-            const group = L.featureGroup(this.locationCircles);
+            var group = L.featureGroup(this.locationCircles);
             this.map.fitBounds(group.getBounds(), { padding: [50, 50] });
-            this.locationCircles.forEach((circle) => circle.closePopup());
+            this.locationCircles.forEach(function (circle) { return circle.closePopup(); });
         }
     },
-    showSearchRadius(radiusMeters) {
+    showSearchRadius: function (radiusMeters) {
         if (!this.userLocation || !this.map)
             return;
         if (this.searchRadiusCircle) {
@@ -430,126 +432,109 @@ window.leafletInterop = {
         }).addTo(this.map);
         this.map.fitBounds(this.searchRadiusCircle.getBounds(), { padding: [50, 50] });
     },
-    clearSearchRadius() {
+    clearSearchRadius: function () {
         if (this.searchRadiusCircle && this.map) {
             this.map.removeLayer(this.searchRadiusCircle);
             this.searchRadiusCircle = null;
         }
         this.clearNearbySpeciesMarkers();
     },
-    showNearbySpecies(species) {
+    showNearbySpecies: function (species) {
         this.clearNearbySpeciesMarkers();
-        const speciesArray = Array.isArray(species) ? species : [];
+        var speciesArray = Array.isArray(species) ? species : [];
         if (speciesArray.length === 0 || !this.map)
             return;
-        const self = this;
-        speciesArray.forEach((s) => {
-            const circle = L.circle([s.latitude, s.longitude], {
+        var self = this;
+        speciesArray.forEach(function (s) {
+            var circle = L.circle([s.latitude, s.longitude], {
                 radius: s.radiusMeters,
                 fillColor: '#10b981',
                 color: '#059669',
                 weight: 2,
                 fillOpacity: 0.35
             }).addTo(self.map);
-            const distanceText = s.distanceMeters < 1000
-                ? `${Math.round(s.distanceMeters)}m away`
-                : `${(s.distanceMeters / 1000).toFixed(1)}km away`;
-            const popupContent = `
-                <div class="nearby-species-popup">
-                    <strong>${s.commonName}</strong><br/>
-                    <em>${s.scientificName}</em><br/>
-                    <span class="distance">${distanceText}</span>
-                    ${s.locationDescription ? `<br/><small>${s.locationDescription}</small>` : ''}
-                </div>
-            `;
+            var distanceText = s.distanceMeters < 1000
+                ? "".concat(Math.round(s.distanceMeters), "m away")
+                : "".concat((s.distanceMeters / 1000).toFixed(1), "km away");
+            var popupContent = "\n                <div class=\"nearby-species-popup\">\n                    <strong>".concat(s.commonName, "</strong><br/>\n                    <em>").concat(s.scientificName, "</em><br/>\n                    <span class=\"distance\">").concat(distanceText, "</span>\n                    ").concat(s.locationDescription ? "<br/><small>".concat(s.locationDescription, "</small>") : '', "\n                </div>\n            ");
             circle.bindPopup(popupContent);
             self.nearbySpeciesMarkers.push(circle);
         });
     },
-    clearNearbySpeciesMarkers() {
-        const self = this;
-        this.nearbySpeciesMarkers.forEach((marker) => {
+    clearNearbySpeciesMarkers: function () {
+        var self = this;
+        this.nearbySpeciesMarkers.forEach(function (marker) {
             self.map.removeLayer(marker);
         });
         this.nearbySpeciesMarkers = [];
     },
-    getUserLocation() {
+    getUserLocation: function () {
         return this.userLocation;
     },
-    focusOnNearbySpecies(index) {
+    focusOnNearbySpecies: function (index) {
         if (index >= 0 && index < this.nearbySpeciesMarkers.length) {
-            const circle = this.nearbySpeciesMarkers[index];
+            var circle = this.nearbySpeciesMarkers[index];
             this.map.fitBounds(circle.getBounds(), { padding: [50, 50], maxZoom: 14 });
             circle.openPopup();
         }
     },
-    getSpeciesColor(speciesId, index) {
+    getSpeciesColor: function (speciesId, index) {
         if (this.speciesColorMap.has(speciesId)) {
             return this.speciesColorMap.get(speciesId);
         }
-        const color = this.speciesColorPalette[index % this.speciesColorPalette.length];
+        var color = this.speciesColorPalette[index % this.speciesColorPalette.length];
         this.speciesColorMap.set(speciesId, color);
         return color;
     },
-    showSpeciesLocationCircles(species) {
+    showSpeciesLocationCircles: function (species) {
         this.clearSpeciesLocationCircles();
-        const speciesArray = Array.isArray(species) ? species : [];
+        var speciesArray = Array.isArray(species) ? species : [];
         if (speciesArray.length === 0 || !this.map)
             return;
-        const self = this;
-        const uniqueSpecies = new Map();
-        speciesArray.forEach((s) => {
+        var self = this;
+        var uniqueSpecies = new Map();
+        speciesArray.forEach(function (s) {
             if (!uniqueSpecies.has(s.id)) {
                 uniqueSpecies.set(s.id, uniqueSpecies.size);
             }
         });
-        speciesArray.forEach((s) => {
-            const colorIndex = uniqueSpecies.get(s.id) || 0;
-            const color = self.getSpeciesColor(s.id, colorIndex);
-            const circle = L.circle([s.latitude, s.longitude], {
+        speciesArray.forEach(function (s) {
+            var colorIndex = uniqueSpecies.get(s.id) || 0;
+            var color = self.getSpeciesColor(s.id, colorIndex);
+            var circle = L.circle([s.latitude, s.longitude], {
                 radius: s.radiusMeters,
                 fillColor: color,
                 color: color,
                 weight: 2,
                 fillOpacity: 0.35
             }).addTo(self.map);
-            const distanceText = s.distanceMeters < 1000
-                ? `${Math.round(s.distanceMeters)}m away`
-                : `${(s.distanceMeters / 1000).toFixed(1)}km away`;
-            const popupContent = `
-                <div class="nearby-species-popup">
-                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
-                        <span style="display: inline-block; width: 12px; height: 12px; border-radius: 50%; background-color: ${color};"></span>
-                        <strong>${s.commonName}</strong>
-                    </div>
-                    <em>${s.scientificName}</em><br/>
-                    <span class="distance">${distanceText}</span>
-                    ${s.locationDescription ? `<br/><small>${s.locationDescription}</small>` : ''}
-                </div>
-            `;
+            var distanceText = s.distanceMeters < 1000
+                ? "".concat(Math.round(s.distanceMeters), "m away")
+                : "".concat((s.distanceMeters / 1000).toFixed(1), "km away");
+            var popupContent = "\n                <div class=\"nearby-species-popup\">\n                    <div style=\"display: flex; align-items: center; gap: 8px; margin-bottom: 4px;\">\n                        <span style=\"display: inline-block; width: 12px; height: 12px; border-radius: 50%; background-color: ".concat(color, ";\"></span>\n                        <strong>").concat(s.commonName, "</strong>\n                    </div>\n                    <em>").concat(s.scientificName, "</em><br/>\n                    <span class=\"distance\">").concat(distanceText, "</span>\n                    ").concat(s.locationDescription ? "<br/><small>".concat(s.locationDescription, "</small>") : '', "\n                </div>\n            ");
             circle.bindPopup(popupContent);
             self.speciesLocationCircles.push(circle);
         });
     },
-    clearSpeciesLocationCircles() {
-        const self = this;
-        this.speciesLocationCircles.forEach((circle) => {
+    clearSpeciesLocationCircles: function () {
+        var self = this;
+        this.speciesLocationCircles.forEach(function (circle) {
             self.map.removeLayer(circle);
         });
         this.speciesLocationCircles = [];
     },
-    getSpeciesColors() {
-        const result = [];
-        this.speciesColorMap.forEach((color, id) => {
-            result.push({ id, color });
+    getSpeciesColors: function () {
+        var result = [];
+        this.speciesColorMap.forEach(function (color, id) {
+            result.push({ id: id, color: color });
         });
         return result;
     },
-    resetSpeciesColors() {
+    resetSpeciesColors: function () {
         this.speciesColorMap.clear();
     },
-    initSightingMap(containerId, latitude, longitude) {
-        const container = document.getElementById(containerId);
+    initSightingMap: function (containerId, latitude, longitude) {
+        var container = document.getElementById(containerId);
         if (!container) {
             console.error('Map container not found:', containerId);
             return;
@@ -558,17 +543,17 @@ window.leafletInterop = {
         if (container._leaflet_id) {
             return;
         }
-        const savedDarkMode = localStorage.getItem('faunafinder-darkmode');
-        const isDarkMode = savedDarkMode !== null
+        var savedDarkMode = localStorage.getItem('faunafinder-darkmode');
+        var isDarkMode = savedDarkMode !== null
             ? savedDarkMode === 'true'
             : window.matchMedia('(prefers-color-scheme: dark)').matches;
-        const tileUrl = isDarkMode
+        var tileUrl = isDarkMode
             ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
             : 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
-        const attribution = isDarkMode
+        var attribution = isDarkMode
             ? '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
             : '&copy; OpenStreetMap';
-        const map = L.map(containerId, {
+        var map = L.map(containerId, {
             center: [latitude, longitude],
             zoom: 14,
             scrollWheelZoom: true,
@@ -580,7 +565,7 @@ window.leafletInterop = {
             maxZoom: 18
         }).addTo(map);
         // Add a marker at the sighting location
-        const markerIcon = L.divIcon({
+        var markerIcon = L.divIcon({
             className: 'sighting-location-marker',
             html: '<div style="background-color: #ef4444; width: 16px; height: 16px; border-radius: 50%; border: 3px solid #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>',
             iconSize: [22, 22],
@@ -596,7 +581,7 @@ window.leafletInterop = {
             fillOpacity: 0.2
         }).addTo(map);
         // Invalidate size after a short delay to ensure tiles load properly
-        setTimeout(() => {
+        setTimeout(function () {
             map.invalidateSize();
         }, 100);
     }
@@ -608,14 +593,14 @@ window.leafletInterop = {
  * Download a file from base64 content
  */
 function downloadFile(base64, fileName, contentType) {
-    const byteCharacters = atob(base64);
-    const byteNumbers = new Array(byteCharacters.length);
-    for (let i = 0; i < byteCharacters.length; i++) {
+    var byteCharacters = atob(base64);
+    var byteNumbers = new Array(byteCharacters.length);
+    for (var i = 0; i < byteCharacters.length; i++) {
         byteNumbers[i] = byteCharacters.charCodeAt(i);
     }
-    const byteArray = new Uint8Array(byteNumbers);
-    const blob = new Blob([byteArray], { type: contentType });
-    const link = document.createElement('a');
+    var byteArray = new Uint8Array(byteNumbers);
+    var blob = new Blob([byteArray], { type: contentType });
+    var link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
     link.download = fileName;
     document.body.appendChild(link);

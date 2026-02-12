@@ -130,12 +130,18 @@
     {
         DarkModeService.OnDarkModeChanged += OnDarkModeChanged;
         NavigationManager.LocationChanged += OnLocationChanged;
+        L.OnLanguageChanged += OnLanguageChanged;
         _isDarkMode = DarkModeService.IsDarkMode;
     }
 
     private void OnDarkModeChanged()
     {
         _isDarkMode = DarkModeService.IsDarkMode;
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void OnLanguageChanged()
+    {
         InvokeAsync(StateHasChanged);
     }
 
@@ -167,5 +173,6 @@
     {
         DarkModeService.OnDarkModeChanged -= OnDarkModeChanged;
         NavigationManager.LocationChanged -= OnLocationChanged;
+        L.OnLanguageChanged -= OnLanguageChanged;
     }
 }
