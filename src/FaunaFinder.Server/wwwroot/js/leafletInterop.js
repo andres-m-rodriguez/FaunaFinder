@@ -511,6 +511,21 @@ window.leafletInterop = {
             }
         });
     },
+    focusOnMunicipality(county) {
+        if (!this.geojsonLayer)
+            return;
+        this.geojsonLayer.eachLayer((layer) => {
+            const geoLayer = layer;
+            const feature = geoLayer.feature;
+            if (feature && feature.properties && feature.properties.COUNTY === county) {
+                const bounds = geoLayer.getBounds();
+                this.map.flyToBounds(bounds, {
+                    padding: [50, 50],
+                    duration: 0.8
+                });
+            }
+        });
+    },
     showSpeciesLocations(speciesName, locations) {
         this.clearSpeciesLocations();
         if (!locations || locations.length === 0)

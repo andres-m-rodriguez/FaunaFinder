@@ -31,6 +31,10 @@ public interface IMapService
     Task EnableDrawModeAsync();
     Task DisableDrawModeAsync();
     Task ClearDrawnCircleAsync();
+
+    // Municipality highlight methods
+    Task HighlightMunicipalityAsync(string countyCode);
+    Task FocusOnMunicipalityAsync(string countyCode);
 }
 
 public record SpeciesLocationData(
