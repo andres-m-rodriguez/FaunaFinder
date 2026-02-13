@@ -47,4 +47,8 @@ public interface ISpeciesRepository
         CursorPageParameter request,
         CancellationToken cancellationToken = default
     );
+
+    Task<IReadOnlyList<SpeciesCategoryDto>> GetAllCategoriesAsync(
+        CancellationToken cancellationToken = default
+    );
 }

@@ -18,6 +18,7 @@ public static class SpeciesEndpoints
         group.MapGet("/count", GetSpeciesCount).WithName("GetSpeciesCount");
         group.MapGet("/nearby", GetSpeciesNearby).WithName("GetSpeciesNearby");
         group.MapGet("/cursor", GetSpeciesCursor).WithName("GetSpeciesCursor");
+        group.MapGet("/categories", GetCategories).WithName("GetCategories");
     }
 
     private static async Task<Ok<IReadOnlyList<SpeciesForSearchDto>>> GetSpecies(
@@ -76,5 +77,13 @@ public static class SpeciesEndpoints
     {
         var page = await repository.GetSpeciesCursorPageAsync(parameters, ct);
         return TypedResults.Ok(page);
+    }
+
+    private static async Task<Ok<IReadOnlyList<SpeciesCategoryDto>>> GetCategories(
+        ISpeciesRepository repository,
+        CancellationToken ct)
+    {
+        var categories = await repository.GetAllCategoriesAsync(ct);
+        return TypedResults.Ok(categories);
     }
 }

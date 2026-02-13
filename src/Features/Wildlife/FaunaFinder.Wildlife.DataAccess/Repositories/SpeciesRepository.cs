@@ -291,6 +291,24 @@ public sealed class SpeciesRepository(IDbContextFactory<WildlifeDbContext> conte
 
         var query = context.Species.AsNoTracking().AsQueryable();
 
+        // Apply category filter (comma-separated IDs)
+        if (!string.IsNullOrWhiteSpace(request.CategoryIds))
+        {
+            var categoryIds = request.CategoryIds
+                .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .Select(id => int.TryParse(id, out var parsed) ? parsed : (int?)null)
+                .Where(id => id.HasValue)
+                .Select(id => id!.Value)
+                .ToList();
+
+            if (categoryIds.Count > 0)
+            {
+                query = query.Where(s =>
+                    s.CategoryLinks.Any(cl => categoryIds.Contains(cl.CategoryId))
+                );
+            }
+        }
+
         // Apply search filter
         if (!string.IsNullOrWhiteSpace(request.Search))
         {
@@ -328,5 +346,18 @@ public sealed class SpeciesRepository(IDbContextFactory<WildlifeDbContext> conte
         var nextCursor = hasMore && items.Count > 0 ? CursorHelper.Encode(items[^1].Id) : null;
 
         return new CursorPage<SpeciesForSearchDto>(items, nextCursor, hasMore);
+    }
+
+    public async Task<IReadOnlyList<SpeciesCategoryDto>> GetAllCategoriesAsync(
+        CancellationToken cancellationToken = default
+    )
+    {
+        await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
+
+        return await context.SpeciesCategories
+            .AsNoTracking()
+            .OrderBy(c => c.Code)
+            .Select(c => new SpeciesCategoryDto(c.Id, c.Code, c.Name.ToList()))
+            .ToListAsync(cancellationToken);
     }
 }
