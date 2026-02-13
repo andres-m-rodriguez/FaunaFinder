@@ -1,5 +1,4 @@
 using FaunaFinder.Pagination.Contracts;
-using FaunaFinder.Wildlife.Contracts;
 using FaunaFinder.Wildlife.Contracts.Dtos;
 using FaunaFinder.Wildlife.Contracts.Parameters;
 
@@ -7,7 +6,6 @@ namespace FaunaFinder.Wildlife.DataAccess.Interfaces;
 
 public interface ISpeciesRepository
 {
-    Task<IReadOnlyList<SpeciesSearchResult>> SearchSpeciesAsync(SpeciesSearchParameters parameters, CancellationToken cancellationToken = default);
     Task<bool> ExistsAsync(int speciesId, CancellationToken cancellationToken = default);
 
     Task<IReadOnlyList<SpeciesForListDto>> GetSpeciesByMunicipalityAsync(

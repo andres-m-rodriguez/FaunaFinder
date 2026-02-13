@@ -80,7 +80,7 @@ api.MapSpeciesEndpoints();
 api.MapSpeciesImageEndpoints();
 api.MapExportEndpoints();
 api.MapIdentityEndpoints();
-app.MapWildlifeEndpoints();
+api.MapSightingsEndpoints();
 
 // Serve App.razor as the shell with WASM interactivity
 app.MapRazorComponents<App>()

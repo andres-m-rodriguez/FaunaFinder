@@ -1,5 +1,4 @@
 using FaunaFinder.Pagination.Contracts;
-using FaunaFinder.Wildlife.Contracts;
 using FaunaFinder.Wildlife.Contracts.Dtos;
 using FaunaFinder.Wildlife.Contracts.Parameters;
 using FaunaFinder.Wildlife.Database;
@@ -10,33 +9,6 @@ namespace FaunaFinder.Wildlife.DataAccess.Repositories;
 
 public sealed class SpeciesRepository(IDbContextFactory<WildlifeDbContext> contextFactory) : ISpeciesRepository
 {
-    public async Task<IReadOnlyList<SpeciesSearchResult>> SearchSpeciesAsync(SpeciesSearchParameters parameters, CancellationToken cancellationToken = default)
-    {
-        await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
-
-        var speciesQuery = context.Species.AsQueryable();
-
-        if (!string.IsNullOrWhiteSpace(parameters.Query))
-        {
-            var search = parameters.Query.ToLowerInvariant();
-            speciesQuery = speciesQuery.Where(s =>
-                s.CommonName.Any(cn => cn.Value.ToLower().Contains(search)) ||
-                s.ScientificName.ToLower().Contains(search));
-        }
-
-        var species = await speciesQuery
-            .OrderBy(s => s.ScientificName)
-            .Take(parameters.Limit)
-            .Select(s => new SpeciesSearchResult(
-                s.Id,
-                s.CommonName.ToList(),
-                s.ScientificName
-            ))
-            .ToListAsync(cancellationToken);
-
-        return species;
-    }
-
     public async Task<bool> ExistsAsync(int speciesId, CancellationToken cancellationToken = default)
     {
         await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);

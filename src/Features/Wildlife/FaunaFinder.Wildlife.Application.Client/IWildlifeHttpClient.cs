@@ -5,7 +5,7 @@ namespace FaunaFinder.Wildlife.Application.Client;
 
 public interface IWildlifeHttpClient
 {
-    Task<IReadOnlyList<SpeciesSearchResult>> SearchSpeciesAsync(
+    Task<IReadOnlyList<SpeciesForSearchDto>> SearchSpeciesAsync(
         string query,
         int limit = 10,
         CancellationToken cancellationToken = default);
@@ -19,11 +19,6 @@ public interface IWildlifeHttpClient
         int page,
         int pageSize,
         string? status = null,
-        CancellationToken cancellationToken = default);
-
-    Task<SightingsPage> GetReviewQueueAsync(
-        int page,
-        int pageSize,
         CancellationToken cancellationToken = default);
 
     Task<CreateSightingResponse> CreateSightingAsync(

@@ -1,6 +1,7 @@
 @page "/sightings/report"
 @using Microsoft.AspNetCore.Authorization
 @using FaunaFinder.Wildlife.Contracts
+@using FaunaFinder.Wildlife.Contracts.Dtos
 @inject IWildlifeHttpClient WildlifeHttpClient
 @inject NavigationManager Navigation
 @inject IJSRuntime JS
@@ -25,13 +26,13 @@
 
             @* Species Selection *@
             <MudText Typo="Typo.h6" Class="mb-2">@L["Sighting_Species"]</MudText>
-            <MudAutocomplete T="SpeciesSearchResult" Label="@L["Sighting_SearchSpecies"]"
+            <MudAutocomplete T="SpeciesForSearchDto" Label="@L["Sighting_SearchSpecies"]"
                              @bind-Value="_selectedSpecies"
                              SearchFunc="SearchSpecies"
                              ToStringFunc="@(s => s?.GetCommonName() ?? "")"
                              ShowProgressIndicator="true"
                              Placeholder="@L["Sighting_SearchPlaceholder"]"
-                             Validation="@(new Func<SpeciesSearchResult?, string?>(ValidateSpecies))">
+                             Validation="@(new Func<SpeciesForSearchDto?, string?>(ValidateSpecies))">
                 <ItemTemplate Context="item">
                     <MudText>@item.GetCommonName()</MudText>
                     <MudText Typo="Typo.caption" Class="mud-text-secondary">@item.ScientificName</MudText>
@@ -165,7 +166,7 @@
     private readonly ReportSightingForm _model = new();
     private readonly ReportSightingFormValidator _validator = new();
 
-    private SpeciesSearchResult? _selectedSpecies;
+    private SpeciesForSearchDto? _selectedSpecies;
 
     private bool _isSubmitting;
     private bool _isGettingLocation;
@@ -178,7 +179,7 @@
         await GetCurrentLocation();
     }
 
-    private async Task<IEnumerable<SpeciesSearchResult>> SearchSpecies(string value, CancellationToken token)
+    private async Task<IEnumerable<SpeciesForSearchDto>> SearchSpecies(string value, CancellationToken token)
     {
         if (string.IsNullOrWhiteSpace(value) || value.Length < 2)
             return [];
@@ -193,7 +194,7 @@
         }
     }
 
-    private string? ValidateSpecies(SpeciesSearchResult? species)
+    private string? ValidateSpecies(SpeciesForSearchDto? species)
     {
         _model.SpeciesId = species?.Id;
         _model.SpeciesName = species?.GetCommonName();
