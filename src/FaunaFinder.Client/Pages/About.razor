@@ -20,22 +20,57 @@
         </MudText>
     </MudPaper>
 
-    <MudPaper Elevation="0" Class="pa-4">
+    <MudPaper Elevation="0" Class="pa-4 mb-4">
         <MudText Typo="Typo.h6" Color="Color.Primary" GutterBottom="true">@L["About_DataSourcesTitle"]</MudText>
         <MudList T="string" Dense="true">
             <MudListItem Icon="@Icons.Material.Filled.Agriculture">
                 <MudText Typo="Typo.body1">
                     <strong>@L["About_NrcsPractices"]</strong> @L["About_NrcsPracticesDesc"]
                 </MudText>
+                <MudLink Href="https://www.nrcs.usda.gov/resources/guides-and-instructions/conservation-practice-standards"
+                         Target="_blank"
+                         Color="Color.Primary"
+                         Class="d-flex align-center gap-1 mt-1">
+                    @L["About_VisitNrcs"]
+                    <MudIcon Icon="@Icons.Material.Filled.OpenInNew" Size="Size.Small" />
+                </MudLink>
             </MudListItem>
             <MudListItem Icon="@Icons.Material.Filled.Pets">
                 <MudText Typo="Typo.body1">
                     <strong>@L["About_FwsActions"]</strong> @L["About_FwsActionsDesc"]
                 </MudText>
+                <MudLink Href="https://ecos.fws.gov/ecp/"
+                         Target="_blank"
+                         Color="Color.Primary"
+                         Class="d-flex align-center gap-1 mt-1">
+                    @L["About_VisitEcos"]
+                    <MudIcon Icon="@Icons.Material.Filled.OpenInNew" Size="Size.Small" />
+                </MudLink>
             </MudListItem>
             <MudListItem Icon="@Icons.Material.Filled.Map">
                 <MudText Typo="Typo.body1">
                     <strong>@L["About_SpeciesData"]</strong> @L["About_SpeciesDataDesc"]
+                </MudText>
+                <MudLink Href="https://www.fws.gov/caribbean"
+                         Target="_blank"
+                         Color="Color.Primary"
+                         Class="d-flex align-center gap-1 mt-1">
+                    @L["About_VisitFwsCaribbean"]
+                    <MudIcon Icon="@Icons.Material.Filled.OpenInNew" Size="Size.Small" />
+                </MudLink>
+            </MudListItem>
+        </MudList>
+    </MudPaper>
+
+    <MudPaper Elevation="0" Class="pa-4">
+        <MudText Typo="Typo.h6" Color="Color.Primary" GutterBottom="true">@L["About_AcknowledgmentsTitle"]</MudText>
+        <MudText Typo="Typo.body1" GutterBottom="true">
+            @L["About_AcknowledgmentsDesc"]
+        </MudText>
+        <MudList T="string" Dense="true">
+            <MudListItem Icon="@Icons.Material.Filled.PhotoLibrary">
+                <MudText Typo="Typo.body1">
+                    <strong>@L["About_SpeciesImages"]</strong> @L["About_SpeciesImagesDesc"]
                 </MudText>
             </MudListItem>
         </MudList>

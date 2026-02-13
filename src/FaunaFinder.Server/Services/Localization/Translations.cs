@@ -93,6 +93,15 @@ public static class Translations
             ["About_SpeciesData"] = "Species Data:",
             ["About_SpeciesDataDesc"] =
                 "Species occurrence and habitat information for Puerto Rico",
+            ["About_VisitNrcs"] = "Visit NRCS Practice Standards",
+            ["About_VisitEcos"] = "Visit ECOS Species Profiles",
+            ["About_VisitFwsCaribbean"] = "Visit FWS Caribbean",
+            ["About_AcknowledgmentsTitle"] = "Acknowledgments",
+            ["About_AcknowledgmentsDesc"] =
+                "FaunaFinder was built using publicly available conservation data and open-source technologies.",
+            ["About_SpeciesImages"] = "Species Images:",
+            ["About_SpeciesImagesDesc"] =
+                "Profile images are sourced from various public domain and Creative Commons sources, with attribution shown on each species detail page.",
 
             // Filter and Sort
             ["Filter_Sort"] = "Sort",
@@ -235,6 +244,15 @@ public static class Translations
             ["About_SpeciesData"] = "Datos de especies:",
             ["About_SpeciesDataDesc"] =
                 "Información sobre ocurrencia y hábitat de especies en Puerto Rico",
+            ["About_VisitNrcs"] = "Visitar Estándares de Prácticas NRCS",
+            ["About_VisitEcos"] = "Visitar Perfiles de Especies ECOS",
+            ["About_VisitFwsCaribbean"] = "Visitar FWS Caribe",
+            ["About_AcknowledgmentsTitle"] = "Agradecimientos",
+            ["About_AcknowledgmentsDesc"] =
+                "FaunaFinder fue construido utilizando datos de conservación disponibles públicamente y tecnologías de código abierto.",
+            ["About_SpeciesImages"] = "Imágenes de Especies:",
+            ["About_SpeciesImagesDesc"] =
+                "Las imágenes de perfil provienen de varias fuentes de dominio público y Creative Commons, con atribución mostrada en cada página de detalle de especies.",
 
             // Filter and Sort
             ["Filter_Sort"] = "Ordenar",
