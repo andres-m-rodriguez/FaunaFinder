@@ -3,10 +3,11 @@ using FaunaFinder.AppHost.Extensions;
 var builder = DistributedApplication.CreateBuilder(args);
 
 var postgres = builder
-    .AddPostgres("postgres")
-    .WithImage("postgis/postgis", "17-3.5")
-    .WithDataVolume("faunafinder-postgres-data")
-    .WithPgAdmin();
+    .AddAzurePostgresFlexibleServer("postgres")
+    .RunAsContainer(c => c
+        .WithImage("postgis/postgis", "17-3.5")
+        .WithDataVolume("faunafinder-postgres-data")
+        .WithPgAdmin());
 
 var identityDb = postgres.AddDatabase("faunafinder-identity").WithDropDatabaseCommand();
 var wildlifeDb = postgres.AddDatabase("faunafinder-wildlife").WithDropDatabaseCommand();
