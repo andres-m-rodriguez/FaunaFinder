@@ -2,18 +2,12 @@ using System.Net.Http.Json;
 using FaunaFinder.Wildlife.Contracts;
 using FaunaFinder.Wildlife.Contracts.Dtos;
 using FaunaFinder.Wildlife.Contracts.Requests;
+using FaunaFinder.Wildlife.Contracts.Responses;
 
 namespace FaunaFinder.Wildlife.Application.Client;
 
-public sealed class WildlifeHttpClient : IWildlifeHttpClient
+public sealed class WildlifeHttpClient(HttpClient httpClient) : IWildlifeHttpClient
 {
-    private readonly HttpClient _httpClient;
-
-    public WildlifeHttpClient(HttpClient httpClient)
-    {
-        _httpClient = httpClient;
-    }
-
     public async Task<IReadOnlyList<SpeciesSearchResult>> SearchSpeciesAsync(
         string query,
         int limit = 10,
@@ -23,7 +17,7 @@ public sealed class WildlifeHttpClient : IWildlifeHttpClient
             return [];
 
         var url = $"/api/wildlife/species/search?query={Uri.EscapeDataString(query)}&limit={limit}";
-        var result = await _httpClient.GetFromJsonAsync<List<SpeciesSearchResult>>(url, cancellationToken);
+        var result = await httpClient.GetFromJsonAsync<List<SpeciesSearchResult>>(url, cancellationToken);
         return result ?? [];
     }
 
@@ -33,7 +27,7 @@ public sealed class WildlifeHttpClient : IWildlifeHttpClient
         CancellationToken cancellationToken = default)
     {
         var url = $"/api/wildlife/my-sightings?page={page}&pageSize={pageSize}";
-        var result = await _httpClient.GetFromJsonAsync<SightingsPage>(url, cancellationToken);
+        var result = await httpClient.GetFromJsonAsync<SightingsPage>(url, cancellationToken);
         return result ?? new SightingsPage([], 0, page, pageSize);
     }
 
@@ -49,7 +43,7 @@ public sealed class WildlifeHttpClient : IWildlifeHttpClient
             url += $"&status={Uri.EscapeDataString(status)}";
         }
 
-        var result = await _httpClient.GetFromJsonAsync<SightingsPage>(url, cancellationToken);
+        var result = await httpClient.GetFromJsonAsync<SightingsPage>(url, cancellationToken);
         return result ?? new SightingsPage([], 0, page, pageSize);
     }
 
@@ -59,7 +53,7 @@ public sealed class WildlifeHttpClient : IWildlifeHttpClient
         CancellationToken cancellationToken = default)
     {
         var url = $"/api/wildlife/review-queue?page={page}&pageSize={pageSize}";
-        var result = await _httpClient.GetFromJsonAsync<SightingsPage>(url, cancellationToken);
+        var result = await httpClient.GetFromJsonAsync<SightingsPage>(url, cancellationToken);
         return result ?? new SightingsPage([], 0, page, pageSize);
     }
 
@@ -67,11 +61,11 @@ public sealed class WildlifeHttpClient : IWildlifeHttpClient
         CreateSightingRequest request,
         CancellationToken cancellationToken = default)
     {
-        var response = await _httpClient.PostAsJsonAsync("/api/wildlife/sightings", request, cancellationToken);
+        var response = await httpClient.PostAsJsonAsync("/api/wildlife/sightings", request, cancellationToken);
 
         if (response.IsSuccessStatusCode)
         {
-            var result = await response.Content.ReadFromJsonAsync<IdResponse>(cancellationToken);
+            var result = await response.Content.ReadFromJsonAsync<SightingCreatedResponse>(cancellationToken);
             return new CreateSightingResponse(result?.Id, null, true);
         }
 
@@ -84,7 +78,7 @@ public sealed class WildlifeHttpClient : IWildlifeHttpClient
         CancellationToken cancellationToken = default)
     {
         var url = $"/api/wildlife/sightings/{id}";
-        return await _httpClient.GetFromJsonAsync<SightingDetailDto>(url, cancellationToken);
+        return await httpClient.GetFromJsonAsync<SightingDetailDto>(url, cancellationToken);
     }
 
     public async Task<bool> UploadSightingPhotoAsync(
@@ -99,7 +93,7 @@ public sealed class WildlifeHttpClient : IWildlifeHttpClient
         content.Add(fileContent, "photo", "photo" + GetFileExtension(contentType));
 
         var url = $"/api/wildlife/sightings/{sightingId}/photo";
-        var response = await _httpClient.PatchAsync(url, content, cancellationToken);
+        var response = await httpClient.PatchAsync(url, content, cancellationToken);
 
         return response.IsSuccessStatusCode;
     }
@@ -112,7 +106,7 @@ public sealed class WildlifeHttpClient : IWildlifeHttpClient
     {
         var request = new ReviewSightingRequest(status, reviewNotes);
         var url = $"/api/wildlife/sightings/{sightingId}/review";
-        var response = await _httpClient.PostAsJsonAsync(url, request, cancellationToken);
+        var response = await httpClient.PostAsJsonAsync(url, request, cancellationToken);
 
         return response.IsSuccessStatusCode;
     }
@@ -125,6 +119,4 @@ public sealed class WildlifeHttpClient : IWildlifeHttpClient
         "image/webp" => ".webp",
         _ => ".jpg"
     };
-
-    private record IdResponse(int Id);
 }

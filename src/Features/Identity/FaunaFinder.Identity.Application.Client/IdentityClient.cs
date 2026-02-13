@@ -9,28 +9,15 @@ using FluentValidation;
 
 namespace FaunaFinder.Identity.Application.Client;
 
-public sealed class IdentityClient : IIdentityClient
+public sealed class IdentityClient(
+    HttpClient httpClient,
+    IValidator<LoginRequest> loginValidator,
+    IValidator<RegisterRequest> registerValidator,
+    IValidator<UpdateAccessRequestStatusRequest> updateAccessRequestStatusValidator) : IIdentityClient
 {
-    private readonly HttpClient _httpClient;
-    private readonly IValidator<LoginRequest> _loginValidator;
-    private readonly IValidator<RegisterRequest> _registerValidator;
-    private readonly IValidator<UpdateAccessRequestStatusRequest> _updateAccessRequestStatusValidator;
-
-    public IdentityClient(
-        HttpClient httpClient,
-        IValidator<LoginRequest> loginValidator,
-        IValidator<RegisterRequest> registerValidator,
-        IValidator<UpdateAccessRequestStatusRequest> updateAccessRequestStatusValidator)
-    {
-        _httpClient = httpClient;
-        _loginValidator = loginValidator;
-        _registerValidator = registerValidator;
-        _updateAccessRequestStatusValidator = updateAccessRequestStatusValidator;
-    }
-
     public async Task<LoginResult> LoginAsync(LoginRequest request, CancellationToken cancellationToken = default)
     {
-        var validationResult = await _loginValidator.ValidateAsync(request, cancellationToken);
+        var validationResult = await loginValidator.ValidateAsync(request, cancellationToken);
         if (!validationResult.IsValid)
         {
             return new ValidationError(
@@ -40,7 +27,7 @@ public sealed class IdentityClient : IIdentityClient
                     .ToDictionary(g => g.Key, g => g.Select(e => e.ErrorMessage).ToArray()));
         }
 
-        var response = await _httpClient.PostAsJsonAsync("api/auth/login", request, cancellationToken);
+        var response = await httpClient.PostAsJsonAsync("api/auth/login", request, cancellationToken);
 
         if (response.IsSuccessStatusCode)
         {
@@ -59,7 +46,7 @@ public sealed class IdentityClient : IIdentityClient
 
     public async Task<RegisterResult> RegisterAsync(RegisterRequest request, CancellationToken cancellationToken = default)
     {
-        var validationResult = await _registerValidator.ValidateAsync(request, cancellationToken);
+        var validationResult = await registerValidator.ValidateAsync(request, cancellationToken);
         if (!validationResult.IsValid)
         {
             return new ValidationError(
@@ -69,7 +56,7 @@ public sealed class IdentityClient : IIdentityClient
                     .ToDictionary(g => g.Key, g => g.Select(e => e.ErrorMessage).ToArray()));
         }
 
-        var response = await _httpClient.PostAsJsonAsync("api/auth/register", request, cancellationToken);
+        var response = await httpClient.PostAsJsonAsync("api/auth/register", request, cancellationToken);
 
         if (response.IsSuccessStatusCode)
         {
@@ -88,12 +75,12 @@ public sealed class IdentityClient : IIdentityClient
 
     public async Task LogoutAsync(CancellationToken cancellationToken = default)
     {
-        await _httpClient.PostAsync("api/auth/logout", null, cancellationToken);
+        await httpClient.PostAsync("api/auth/logout", null, cancellationToken);
     }
 
     public async Task<GetCurrentUserResult> GetCurrentUserAsync(CancellationToken cancellationToken = default)
     {
-        var response = await _httpClient.GetAsync("api/auth/me", cancellationToken);
+        var response = await httpClient.GetAsync("api/auth/me", cancellationToken);
 
         if (response.IsSuccessStatusCode)
         {
@@ -111,7 +98,7 @@ public sealed class IdentityClient : IIdentityClient
 
     public async Task<GetUsersResult> GetAllUsersAsync(CancellationToken cancellationToken = default)
     {
-        var response = await _httpClient.GetAsync("api/auth/users", cancellationToken);
+        var response = await httpClient.GetAsync("api/auth/users", cancellationToken);
 
         if (response.IsSuccessStatusCode)
         {
@@ -136,7 +123,7 @@ public sealed class IdentityClient : IIdentityClient
             queryParams.Add($"search={Uri.EscapeDataString(request.Search)}");
 
         var url = $"api/auth/users/search?{string.Join("&", queryParams)}";
-        var response = await _httpClient.GetAsync(url, cancellationToken);
+        var response = await httpClient.GetAsync(url, cancellationToken);
 
         if (response.IsSuccessStatusCode)
         {
@@ -164,7 +151,7 @@ public sealed class IdentityClient : IIdentityClient
             queryParams.Add($"status={Uri.EscapeDataString(request.Status)}");
 
         var url = $"api/auth/access-requests/search?{string.Join("&", queryParams)}";
-        var response = await _httpClient.GetAsync(url, cancellationToken);
+        var response = await httpClient.GetAsync(url, cancellationToken);
 
         if (response.IsSuccessStatusCode)
         {
@@ -180,7 +167,7 @@ public sealed class IdentityClient : IIdentityClient
 
     public async Task<GetAccessRequestByIdResult> GetAccessRequestByIdAsync(int id, CancellationToken cancellationToken = default)
     {
-        var response = await _httpClient.GetAsync($"api/auth/access-requests/{id}", cancellationToken);
+        var response = await httpClient.GetAsync($"api/auth/access-requests/{id}", cancellationToken);
 
         if (response.IsSuccessStatusCode)
         {
@@ -198,7 +185,7 @@ public sealed class IdentityClient : IIdentityClient
 
     public async Task<GetAccessRequestsResult> GetPendingAccessRequestsAsync(CancellationToken cancellationToken = default)
     {
-        var response = await _httpClient.GetAsync("api/auth/access-requests/pending", cancellationToken);
+        var response = await httpClient.GetAsync("api/auth/access-requests/pending", cancellationToken);
 
         if (response.IsSuccessStatusCode)
         {
@@ -214,7 +201,7 @@ public sealed class IdentityClient : IIdentityClient
 
     public async Task<UpdateAccessRequestStatusResult> UpdateAccessRequestStatusAsync(int id, UpdateAccessRequestStatusRequest request, CancellationToken cancellationToken = default)
     {
-        var validationResult = await _updateAccessRequestStatusValidator.ValidateAsync(request, cancellationToken);
+        var validationResult = await updateAccessRequestStatusValidator.ValidateAsync(request, cancellationToken);
         if (!validationResult.IsValid)
         {
             return new ValidationError(
@@ -224,7 +211,7 @@ public sealed class IdentityClient : IIdentityClient
                     .ToDictionary(g => g.Key, g => g.Select(e => e.ErrorMessage).ToArray()));
         }
 
-        var response = await _httpClient.PutAsJsonAsync($"api/auth/access-requests/{id}/status", request, cancellationToken);
+        var response = await httpClient.PutAsJsonAsync($"api/auth/access-requests/{id}/status", request, cancellationToken);
 
         if (response.IsSuccessStatusCode)
         {
