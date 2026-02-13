@@ -23,38 +23,51 @@ public class CookieAuthenticationStateProvider : AuthenticationStateProvider
         if (!_isInitialized)
         {
             var result = await _identityClient.GetCurrentUserAsync();
-            _cachedUser = result.Match<UserInfo?>(
-                user => user,
-                _ => null,
-                _ => null);
+            _cachedUser = result.Match<UserInfo?>(user => user, _ => null, _ => null);
             _isInitialized = true;
         }
 
         return CreateAuthenticationState(_cachedUser);
     }
 
-    public async Task<LoginResult> LoginAsync(string email, string password, bool rememberMe = false)
+    public async Task<LoginResult> LoginAsync(
+        string email,
+        string password,
+        bool rememberMe = false
+    )
     {
-        var result = await _identityClient.LoginAsync(new LoginRequest(email, password, rememberMe));
+        var result = await _identityClient.LoginAsync(
+            new LoginRequest(email, password, rememberMe)
+        );
 
         result.Switch(
             user =>
             {
                 _cachedUser = user;
-                NotifyAuthenticationStateChanged(Task.FromResult(CreateAuthenticationState(_cachedUser)));
+                NotifyAuthenticationStateChanged(
+                    Task.FromResult(CreateAuthenticationState(_cachedUser))
+                );
             },
             _ => { },
             _ => { },
             _ => { },
             _ => { },
-            _ => { });
+            _ => { }
+        );
 
         return result;
     }
 
-    public async Task<RegisterResult> RegisterAsync(string email, string password, string displayName, string? message = null)
+    public async Task<RegisterResult> RegisterAsync(
+        string email,
+        string password,
+        string displayName,
+        string? message = null
+    )
     {
-        return await _identityClient.RegisterAsync(new RegisterRequest(email, password, displayName, message));
+        return await _identityClient.RegisterAsync(
+            new RegisterRequest(email, password, displayName, message)
+        );
     }
 
     public async Task LogoutAsync()
@@ -78,7 +91,7 @@ public class CookieAuthenticationStateProvider : AuthenticationStateProvider
             new(ClaimTypes.NameIdentifier, user.Id.ToString()),
             new(ClaimTypes.Email, user.Email),
             new(ClaimTypes.Name, user.DisplayName),
-            new(ClaimTypes.Role, user.Role)
+            new(ClaimTypes.Role, user.Role),
         };
 
         var identity = new ClaimsIdentity(claims, "cookie");

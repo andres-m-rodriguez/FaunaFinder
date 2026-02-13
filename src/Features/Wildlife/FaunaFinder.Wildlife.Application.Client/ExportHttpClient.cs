@@ -5,7 +5,8 @@ public sealed class ExportHttpClient(HttpClient httpClient) : IExportHttpClient
     public async Task<byte[]> ExportMunicipalityPdfAsync(
         int municipalityId,
         IEnumerable<int>? speciesIds = null,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         var url = $"/api/export/municipality/{municipalityId}/pdf";
         if (speciesIds?.Any() == true)
@@ -21,7 +22,8 @@ public sealed class ExportHttpClient(HttpClient httpClient) : IExportHttpClient
     public async Task<byte[]> ExportMunicipalityCsvAsync(
         int municipalityId,
         IEnumerable<int>? speciesIds = null,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         var url = $"/api/export/municipality/{municipalityId}/csv";
         if (speciesIds?.Any() == true)

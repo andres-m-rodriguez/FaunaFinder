@@ -34,29 +34,27 @@ public sealed class UserSpecies
             builder.ToTable("user_species");
             builder.HasKey(static e => e.Id);
 
-            builder.Property(static e => e.CommonName)
-                .HasMaxLength(200)
-                .IsRequired();
+            builder.Property(static e => e.CommonName).HasMaxLength(200).IsRequired();
 
-            builder.Property(static e => e.ScientificName)
-                .HasMaxLength(200);
+            builder.Property(static e => e.ScientificName).HasMaxLength(200);
 
-            builder.Property(static e => e.Description)
-                .HasMaxLength(2000);
+            builder.Property(static e => e.Description).HasMaxLength(2000);
 
-            builder.Property(static e => e.PhotoContentType)
-                .HasMaxLength(100);
+            builder.Property(static e => e.PhotoContentType).HasMaxLength(100);
 
             // Note: User references are by ID only - no navigation properties to Identity feature
-            builder.HasOne(static e => e.ApprovedSpecies)
+            builder
+                .HasOne(static e => e.ApprovedSpecies)
                 .WithMany()
                 .HasForeignKey(static e => e.ApprovedSpeciesId)
                 .OnDelete(DeleteBehavior.SetNull);
 
-            builder.HasIndex(static e => e.CommonName)
+            builder
+                .HasIndex(static e => e.CommonName)
                 .HasDatabaseName("user_species_common_name_idx");
 
-            builder.HasIndex(static e => e.IsVerified)
+            builder
+                .HasIndex(static e => e.IsVerified)
                 .HasDatabaseName("user_species_is_verified_idx");
         }
     }

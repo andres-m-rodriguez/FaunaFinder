@@ -1,49 +1,57 @@
 using System.Net.Http.Json;
+using FaunaFinder.Pagination.Contracts;
 using FaunaFinder.Wildlife.Contracts.Dtos;
 using FaunaFinder.Wildlife.Contracts.Parameters;
-using FaunaFinder.Pagination.Contracts;
 
 namespace FaunaFinder.Wildlife.Application.Client;
 
 public sealed class MunicipalityHttpClient(HttpClient httpClient) : IMunicipalityHttpClient
 {
     public async Task<IReadOnlyList<MunicipalityForListDto>> GetAllMunicipalitiesAsync(
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         var result = await httpClient.GetFromJsonAsync<IReadOnlyList<MunicipalityForListDto>>(
             "api/municipalities",
-            cancellationToken);
+            cancellationToken
+        );
         return result ?? [];
     }
 
     public async Task<MunicipalityForDetailDto?> GetMunicipalityDetailAsync(
         int municipalityId,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         return await httpClient.GetFromJsonAsync<MunicipalityForDetailDto>(
             $"api/municipalities/{municipalityId}",
-            cancellationToken);
+            cancellationToken
+        );
     }
 
     public async Task<IReadOnlyList<MunicipalityCardDto>> GetMunicipalitiesWithSpeciesCountAsync(
         MunicipalityParameters parameters,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         var queryString = BuildMunicipalityQueryString(parameters);
         var result = await httpClient.GetFromJsonAsync<IReadOnlyList<MunicipalityCardDto>>(
             $"api/municipalities/cards{queryString}",
-            cancellationToken);
+            cancellationToken
+        );
         return result ?? [];
     }
 
     public async Task<int> GetTotalMunicipalitiesCountAsync(
         string? search = null,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         var queryString = string.IsNullOrEmpty(search) ? "" : $"?search={Uri.EscapeDataString(search)}";
         return await httpClient.GetFromJsonAsync<int>(
             $"api/municipalities/count{queryString}",
-            cancellationToken);
+            cancellationToken
+        );
     }
 
     private static string BuildMunicipalityQueryString(MunicipalityParameters parameters)
@@ -51,7 +59,7 @@ public sealed class MunicipalityHttpClient(HttpClient httpClient) : IMunicipalit
         var queryParams = new List<string>
         {
             $"pageSize={parameters.PageSize}",
-            $"page={parameters.Page}"
+            $"page={parameters.Page}",
         };
 
         if (!string.IsNullOrEmpty(parameters.Search))
@@ -64,21 +72,20 @@ public sealed class MunicipalityHttpClient(HttpClient httpClient) : IMunicipalit
 
     public async Task<CursorPage<MunicipalityCardDto>> GetMunicipalitiesCursorPageAsync(
         CursorPageParameter request,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         var queryString = BuildCursorQueryString(request);
         var result = await httpClient.GetFromJsonAsync<CursorPage<MunicipalityCardDto>>(
             $"api/municipalities/cursor{queryString}",
-            cancellationToken);
+            cancellationToken
+        );
         return result ?? new CursorPage<MunicipalityCardDto>([], null, false);
     }
 
     private static string BuildCursorQueryString(CursorPageParameter request)
     {
-        var queryParams = new List<string>
-        {
-            $"pageSize={request.PageSize}"
-        };
+        var queryParams = new List<string> { $"pageSize={request.PageSize}" };
 
         if (!string.IsNullOrEmpty(request.Cursor))
         {

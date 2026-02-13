@@ -8,8 +8,8 @@ builder.AddServiceDefaults();
 
 // Register all feature databases
 // Each feature gets its own isolated database with its own connection string
-builder.AddIdentityDatabase();         // Identity feature database (faunafinder-identity)
-builder.AddWildlifeDatabase();         // Wildlife feature database (faunafinder-wildlife)
+builder.AddIdentityDatabase(); // Identity feature database (faunafinder-identity)
+builder.AddWildlifeDatabase(); // Wildlife feature database (faunafinder-wildlife)
 
 builder.Services.AddHostedService<DatabaseSeederWorker>();
 

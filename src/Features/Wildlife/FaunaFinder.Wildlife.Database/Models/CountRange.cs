@@ -5,5 +5,5 @@ public enum CountRange
     One = 0,
     TwoToFive = 1,
     SixToTwenty = 2,
-    TwentyPlus = 3
+    TwentyPlus = 3,
 }

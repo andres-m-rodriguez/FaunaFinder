@@ -8,7 +8,8 @@ public sealed class DarkModeService : IDarkModeService
 
     public void SetDarkMode(bool isDark)
     {
-        if (isDark == IsDarkMode) return;
+        if (isDark == IsDarkMode)
+            return;
 
         IsDarkMode = isDark;
         OnDarkModeChanged?.Invoke();

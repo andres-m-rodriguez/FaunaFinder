@@ -2,23 +2,30 @@ using FaunaFinder.Wildlife.Contracts;
 using FaunaFinder.Wildlife.Contracts.Dtos;
 using FaunaFinder.Wildlife.Contracts.Parameters;
 using FaunaFinder.Wildlife.Contracts.Requests;
+using FaunaFinder.Wildlife.DataAccess.Interfaces;
 using FaunaFinder.Wildlife.Database;
 using FaunaFinder.Wildlife.Database.Models;
-using FaunaFinder.Wildlife.DataAccess.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using NetTopologySuite.Geometries;
 
 namespace FaunaFinder.Wildlife.DataAccess.Repositories;
 
-public sealed class SightingRepository(IDbContextFactory<WildlifeDbContext> contextFactory) : ISightingRepository
+public sealed class SightingRepository(IDbContextFactory<WildlifeDbContext> contextFactory)
+    : ISightingRepository
 {
-    public async Task<SightingsPage> GetSightingsAsync(SightingsParameters parameters, CancellationToken cancellationToken = default)
+    public async Task<SightingsPage> GetSightingsAsync(
+        SightingsParameters parameters,
+        CancellationToken cancellationToken = default
+    )
     {
         await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
 
         var query = context.Sightings.AsQueryable();
 
-        if (!string.IsNullOrWhiteSpace(parameters.Status) && Enum.TryParse<SightingStatus>(parameters.Status, true, out var statusFilter))
+        if (
+            !string.IsNullOrWhiteSpace(parameters.Status)
+            && Enum.TryParse<SightingStatus>(parameters.Status, true, out var statusFilter)
+        )
         {
             query = query.Where(s => s.Status == statusFilter);
         }
@@ -32,7 +39,12 @@ public sealed class SightingRepository(IDbContextFactory<WildlifeDbContext> cont
             .Select(s => new SightingListItem(
                 s.Id,
                 s.SpeciesId ?? 0,
-                s.Species != null ? (s.Species.CommonName.FirstOrDefault(c => c.Code == "en") ?? s.Species.CommonName.FirstOrDefault())!.Value : null,
+                s.Species != null
+                    ? (
+                        s.Species.CommonName.FirstOrDefault(c => c.Code == "en")
+                        ?? s.Species.CommonName.FirstOrDefault()
+                    )!.Value
+                    : null,
                 s.Mode.ToString(),
                 s.Confidence.ToString(),
                 s.Count.ToString(),
@@ -48,12 +60,14 @@ public sealed class SightingRepository(IDbContextFactory<WildlifeDbContext> cont
         return new SightingsPage(sightings, totalCount, parameters.Page, parameters.PageSize);
     }
 
-    public async Task<SightingsPage> GetSightingsByUserAsync(UserSightingsParameters parameters, CancellationToken cancellationToken = default)
+    public async Task<SightingsPage> GetSightingsByUserAsync(
+        UserSightingsParameters parameters,
+        CancellationToken cancellationToken = default
+    )
     {
         await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
 
-        var query = context.Sightings
-            .Where(s => s.ReportedByUserId == parameters.UserId);
+        var query = context.Sightings.Where(s => s.ReportedByUserId == parameters.UserId);
 
         var totalCount = await query.CountAsync(cancellationToken);
 
@@ -64,7 +78,12 @@ public sealed class SightingRepository(IDbContextFactory<WildlifeDbContext> cont
             .Select(s => new SightingListItem(
                 s.Id,
                 s.SpeciesId ?? 0,
-                s.Species != null ? (s.Species.CommonName.FirstOrDefault(c => c.Code == "en") ?? s.Species.CommonName.FirstOrDefault())!.Value : null,
+                s.Species != null
+                    ? (
+                        s.Species.CommonName.FirstOrDefault(c => c.Code == "en")
+                        ?? s.Species.CommonName.FirstOrDefault()
+                    )!.Value
+                    : null,
                 s.Mode.ToString(),
                 s.Confidence.ToString(),
                 s.Count.ToString(),
@@ -80,12 +99,14 @@ public sealed class SightingRepository(IDbContextFactory<WildlifeDbContext> cont
         return new SightingsPage(sightings, totalCount, parameters.Page, parameters.PageSize);
     }
 
-    public async Task<SightingsPage> GetReviewQueueAsync(ReviewQueueParameters parameters, CancellationToken cancellationToken = default)
+    public async Task<SightingsPage> GetReviewQueueAsync(
+        ReviewQueueParameters parameters,
+        CancellationToken cancellationToken = default
+    )
     {
         await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
 
-        var query = context.Sightings
-            .Where(s => s.Status == SightingStatus.Pending);
+        var query = context.Sightings.Where(s => s.Status == SightingStatus.Pending);
 
         var totalCount = await query.CountAsync(cancellationToken);
 
@@ -96,7 +117,12 @@ public sealed class SightingRepository(IDbContextFactory<WildlifeDbContext> cont
             .Select(s => new SightingListItem(
                 s.Id,
                 s.SpeciesId ?? 0,
-                s.Species != null ? (s.Species.CommonName.FirstOrDefault(c => c.Code == "en") ?? s.Species.CommonName.FirstOrDefault())!.Value : null,
+                s.Species != null
+                    ? (
+                        s.Species.CommonName.FirstOrDefault(c => c.Code == "en")
+                        ?? s.Species.CommonName.FirstOrDefault()
+                    )!.Value
+                    : null,
                 s.Mode.ToString(),
                 s.Confidence.ToString(),
                 s.Count.ToString(),
@@ -112,16 +138,24 @@ public sealed class SightingRepository(IDbContextFactory<WildlifeDbContext> cont
         return new SightingsPage(sightings, totalCount, parameters.Page, parameters.PageSize);
     }
 
-    public async Task<SightingListItem?> GetSightingAsync(int id, CancellationToken cancellationToken = default)
+    public async Task<SightingListItem?> GetSightingAsync(
+        int id,
+        CancellationToken cancellationToken = default
+    )
     {
         await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
 
-        return await context.Sightings
-            .Where(s => s.Id == id)
+        return await context
+            .Sightings.Where(s => s.Id == id)
             .Select(s => new SightingListItem(
                 s.Id,
                 s.SpeciesId ?? 0,
-                s.Species != null ? (s.Species.CommonName.FirstOrDefault(c => c.Code == "en") ?? s.Species.CommonName.FirstOrDefault())!.Value : null,
+                s.Species != null
+                    ? (
+                        s.Species.CommonName.FirstOrDefault(c => c.Code == "en")
+                        ?? s.Species.CommonName.FirstOrDefault()
+                    )!.Value
+                    : null,
                 s.Mode.ToString(),
                 s.Confidence.ToString(),
                 s.Count.ToString(),
@@ -135,16 +169,24 @@ public sealed class SightingRepository(IDbContextFactory<WildlifeDbContext> cont
             .FirstOrDefaultAsync(cancellationToken);
     }
 
-    public async Task<SightingDetailDto?> GetSightingDetailAsync(int sightingId, CancellationToken cancellationToken = default)
+    public async Task<SightingDetailDto?> GetSightingDetailAsync(
+        int sightingId,
+        CancellationToken cancellationToken = default
+    )
     {
         await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
 
-        return await context.Sightings
-            .Where(s => s.Id == sightingId)
+        return await context
+            .Sightings.Where(s => s.Id == sightingId)
             .Select(s => new SightingDetailDto(
                 s.Id,
                 s.SpeciesId ?? 0,
-                s.Species != null ? (s.Species.CommonName.FirstOrDefault(c => c.Code == "en") ?? s.Species.CommonName.FirstOrDefault())!.Value : null,
+                s.Species != null
+                    ? (
+                        s.Species.CommonName.FirstOrDefault(c => c.Code == "en")
+                        ?? s.Species.CommonName.FirstOrDefault()
+                    )!.Value
+                    : null,
                 s.Species != null ? s.Species.ScientificName : null,
                 s.Mode.ToString(),
                 s.Confidence.ToString(),
@@ -170,12 +212,15 @@ public sealed class SightingRepository(IDbContextFactory<WildlifeDbContext> cont
             .FirstOrDefaultAsync(cancellationToken);
     }
 
-    public async Task<SightingPhotoResult?> GetSightingPhotoAsync(int sightingId, CancellationToken cancellationToken = default)
+    public async Task<SightingPhotoResult?> GetSightingPhotoAsync(
+        int sightingId,
+        CancellationToken cancellationToken = default
+    )
     {
         await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
 
-        var result = await context.Sightings
-            .Where(s => s.Id == sightingId)
+        var result = await context
+            .Sightings.Where(s => s.Id == sightingId)
             .Select(s => new { s.PhotoData, s.PhotoContentType })
             .FirstOrDefaultAsync(cancellationToken);
 
@@ -187,7 +232,11 @@ public sealed class SightingRepository(IDbContextFactory<WildlifeDbContext> cont
         return new SightingPhotoResult(result.PhotoData, result.PhotoContentType);
     }
 
-    public async Task<CreateSightingResponse> CreateSightingAsync(CreateSightingRequest request, int userId, CancellationToken cancellationToken = default)
+    public async Task<CreateSightingResponse> CreateSightingAsync(
+        CreateSightingRequest request,
+        int userId,
+        CancellationToken cancellationToken = default
+    )
     {
         // Parse enums - validation should have already been performed by FluentValidation
         if (!Enum.TryParse<SightingMode>(request.Mode, true, out var sightingMode))
@@ -243,7 +292,7 @@ public sealed class SightingRepository(IDbContextFactory<WildlifeDbContext> cont
             ReviewNotes = null,
             ReviewedAt = null,
             ReviewedByUserId = null,
-            ReportedByUserId = userId
+            ReportedByUserId = userId,
         };
 
         context.Sightings.Add(sighting);
@@ -252,7 +301,12 @@ public sealed class SightingRepository(IDbContextFactory<WildlifeDbContext> cont
         return new CreateSightingResponse(sighting.Id, null, true);
     }
 
-    public async Task<(bool Success, string? Error)> ReviewSightingAsync(int sightingId, ReviewSightingRequest request, int reviewerUserId, CancellationToken cancellationToken = default)
+    public async Task<(bool Success, string? Error)> ReviewSightingAsync(
+        int sightingId,
+        ReviewSightingRequest request,
+        int reviewerUserId,
+        CancellationToken cancellationToken = default
+    )
     {
         if (!Enum.TryParse<SightingStatus>(request.Status, true, out var newStatus))
         {
@@ -261,8 +315,8 @@ public sealed class SightingRepository(IDbContextFactory<WildlifeDbContext> cont
 
         await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
 
-        var sighting = await context.Sightings
-            .AsTracking()
+        var sighting = await context
+            .Sightings.AsTracking()
             .FirstOrDefaultAsync(s => s.Id == sightingId, cancellationToken);
 
         if (sighting is null)
@@ -280,12 +334,18 @@ public sealed class SightingRepository(IDbContextFactory<WildlifeDbContext> cont
         return (true, null);
     }
 
-    public async Task<(bool Success, string? Error)> UpdateSightingPhotoAsync(int sightingId, int userId, byte[] photoData, string contentType, CancellationToken cancellationToken = default)
+    public async Task<(bool Success, string? Error)> UpdateSightingPhotoAsync(
+        int sightingId,
+        int userId,
+        byte[] photoData,
+        string contentType,
+        CancellationToken cancellationToken = default
+    )
     {
         await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
 
-        var sighting = await context.Sightings
-            .AsTracking()
+        var sighting = await context
+            .Sightings.AsTracking()
             .FirstOrDefaultAsync(s => s.Id == sightingId, cancellationToken);
 
         if (sighting is null)

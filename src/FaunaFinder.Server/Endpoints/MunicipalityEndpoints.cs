@@ -2,8 +2,8 @@ using System.Text.Json;
 using FaunaFinder.Pagination.Contracts;
 using FaunaFinder.Wildlife.Contracts.Dtos;
 using FaunaFinder.Wildlife.Contracts.Parameters;
-using FaunaFinder.Wildlife.Database;
 using FaunaFinder.Wildlife.DataAccess.Interfaces;
+using FaunaFinder.Wildlife.Database;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using NetTopologySuite.IO.Converters;
@@ -14,8 +14,7 @@ public static class MunicipalityEndpoints
 {
     public static void MapMunicipalityEndpoints(this IEndpointRouteBuilder app)
     {
-        var group = app.MapGroup("/municipalities")
-            .WithTags("Municipalities");
+        var group = app.MapGroup("/municipalities").WithTags("Municipalities");
 
         group.MapGet("/", GetAllMunicipalities).WithName("GetAllMunicipalities");
         group.MapGet("/{id:int}", GetMunicipalityDetail).WithName("GetMunicipalityDetail");

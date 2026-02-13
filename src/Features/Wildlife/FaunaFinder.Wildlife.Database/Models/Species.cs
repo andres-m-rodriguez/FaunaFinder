@@ -26,17 +26,14 @@ public sealed class Species
 
             builder.OwnsMany(static e => e.CommonName, b => b.ToJson());
 
-            builder.Property(static e => e.ScientificName)
-                .HasMaxLength(200)
-                .IsRequired();
+            builder.Property(static e => e.ScientificName).HasMaxLength(200).IsRequired();
 
-            builder.Property(static e => e.ProfileImageContentType)
-                .HasMaxLength(100);
+            builder.Property(static e => e.ProfileImageContentType).HasMaxLength(100);
 
-            builder.Property(static e => e.ImageSourceUrl)
-                .HasMaxLength(500);
+            builder.Property(static e => e.ImageSourceUrl).HasMaxLength(500);
 
-            builder.HasIndex(static e => e.ScientificName)
+            builder
+                .HasIndex(static e => e.ScientificName)
                 .IsUnique()
                 .HasDatabaseName("species_scientific_name_uidx");
         }

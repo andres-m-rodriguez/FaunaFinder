@@ -19,17 +19,20 @@ public sealed class MunicipalitySpecies
             builder.ToTable("municipality_species");
             builder.HasKey(static e => e.Id);
 
-            builder.HasOne(static e => e.Municipality)
+            builder
+                .HasOne(static e => e.Municipality)
                 .WithMany(static m => m.MunicipalitySpecies)
                 .HasForeignKey(static e => e.MunicipalityId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            builder.HasOne(static e => e.Species)
+            builder
+                .HasOne(static e => e.Species)
                 .WithMany(static s => s.MunicipalitySpecies)
                 .HasForeignKey(static e => e.SpeciesId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            builder.HasIndex(static e => new { e.MunicipalityId, e.SpeciesId })
+            builder
+                .HasIndex(static e => new { e.MunicipalityId, e.SpeciesId })
                 .IsUnique()
                 .HasDatabaseName("municipality_species_municipality_species_uidx");
         }

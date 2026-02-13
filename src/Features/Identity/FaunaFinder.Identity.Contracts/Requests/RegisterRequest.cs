@@ -4,4 +4,5 @@ public sealed record RegisterRequest(
     string Email,
     string Password,
     string DisplayName,
-    string? Message = null);
+    string? Message = null
+);

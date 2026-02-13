@@ -10,8 +10,7 @@ public static class SpeciesEndpoints
 {
     public static void MapSpeciesEndpoints(this IEndpointRouteBuilder app)
     {
-        var group = app.MapGroup("/species")
-            .WithTags("Species");
+        var group = app.MapGroup("/species").WithTags("Species");
 
         group.MapGet("/", GetSpecies).WithName("GetSpecies");
         group.MapGet("/{id:int}", GetSpeciesDetail).WithName("GetSpeciesDetail");

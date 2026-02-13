@@ -21,24 +21,22 @@ public sealed class SpeciesLocation
             builder.ToTable("species_locations");
             builder.HasKey(static e => e.Id);
 
-            builder.Property(static e => e.Latitude)
-                .IsRequired();
+            builder.Property(static e => e.Latitude).IsRequired();
 
-            builder.Property(static e => e.Longitude)
-                .IsRequired();
+            builder.Property(static e => e.Longitude).IsRequired();
 
-            builder.Property(static e => e.RadiusMeters)
-                .IsRequired();
+            builder.Property(static e => e.RadiusMeters).IsRequired();
 
-            builder.Property(static e => e.Description)
-                .HasMaxLength(500);
+            builder.Property(static e => e.Description).HasMaxLength(500);
 
-            builder.HasOne(static e => e.Species)
+            builder
+                .HasOne(static e => e.Species)
                 .WithMany(static e => e.Locations)
                 .HasForeignKey(static e => e.SpeciesId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            builder.HasIndex(static e => e.SpeciesId)
+            builder
+                .HasIndex(static e => e.SpeciesId)
                 .HasDatabaseName("species_locations_species_id_idx");
         }
     }

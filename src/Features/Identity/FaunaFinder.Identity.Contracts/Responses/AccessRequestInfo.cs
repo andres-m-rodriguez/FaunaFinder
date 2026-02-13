@@ -6,4 +6,5 @@ public sealed record AccessRequestInfo(
     string DisplayName,
     string? Message,
     string Status,
-    DateTime CreatedAt);
+    DateTime CreatedAt
+);

@@ -1,8 +1,8 @@
 @page "/dashboard"
 @using BlazingSingularity.Commands
+@using FaunaFinder.Wildlife.Contracts
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
-@using FaunaFinder.Wildlife.Contracts
 @inject IWildlifeHttpClient WildlifeHttpClient
 @inject IAppLocalizer L
 @inject ISnackbar Snackbar
@@ -43,7 +43,7 @@
                     <MudCard Elevation="2">
                         @if (sighting.HasPhoto)
                         {
-                            <MudCardMedia Image="@($"/api/wildlife/sightings/{sighting.Id}/photo")" Height="160" />
+                            <MudCardMedia Image="@($"/api/sightings/{sighting.Id}/photo")" Height="160" />
                         }
                         else
                         {
@@ -215,7 +215,7 @@
                 <MudItem xs="12" sm="6">
                     @if (_detailsSighting.HasPhoto)
                     {
-                        <MudImage Src="@($"/api/wildlife/sightings/{_detailsSighting.Id}/photo")"
+                        <MudImage Src="@($"/api/sightings/{_detailsSighting.Id}/photo")"
                                   Alt="Sighting photo"
                                   ObjectFit="ObjectFit.Cover"
                                   Class="rounded-lg mb-3 w-full max-h-300" />
@@ -322,7 +322,7 @@
     private async Task LoadSightings()
     {
         _error = null;
-        var response = await WildlifeHttpClient.GetReviewQueueAsync(_currentPage, PageSize);
+        var response = await WildlifeHttpClient.GetSightingsAsync(_currentPage, PageSize, "Pending");
         _sightings = response.Items;
         _totalPages = (int)Math.Ceiling((double)response.TotalCount / PageSize);
     }

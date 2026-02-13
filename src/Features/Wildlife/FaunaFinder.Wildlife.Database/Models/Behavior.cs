@@ -7,5 +7,5 @@ public enum Behavior
     Feeding = 1,
     Resting = 2,
     Moving = 4,
-    Calling = 8
+    Calling = 8,
 }

@@ -34,7 +34,10 @@ public sealed class DatabaseSeederWorker(
         }
     }
 
-    private async Task MigrateAndSeedWildlifeDatabaseAsync(IServiceProvider services, CancellationToken stoppingToken)
+    private async Task MigrateAndSeedWildlifeDatabaseAsync(
+        IServiceProvider services,
+        CancellationToken stoppingToken
+    )
     {
         var context = services.GetRequiredService<WildlifeDbContext>();
 
@@ -46,7 +49,10 @@ public sealed class DatabaseSeederWorker(
         logger.LogInformation("Wildlife database seeding completed.");
     }
 
-    private async Task MigrateAndSeedIdentityDatabaseAsync(IServiceProvider services, CancellationToken stoppingToken)
+    private async Task MigrateAndSeedIdentityDatabaseAsync(
+        IServiceProvider services,
+        CancellationToken stoppingToken
+    )
     {
         var context = services.GetRequiredService<IdentityDbContext>();
 

@@ -5,44 +5,46 @@ namespace FaunaFinder.Wildlife.Application.Client;
 
 public interface IWildlifeHttpClient
 {
-    Task<IReadOnlyList<SpeciesSearchResult>> SearchSpeciesAsync(
+    Task<IReadOnlyList<SpeciesForSearchDto>> SearchSpeciesAsync(
         string query,
         int limit = 10,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 
     Task<SightingsPage> GetMySightingsAsync(
         int page = 1,
         int pageSize = 12,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 
     Task<SightingsPage> GetSightingsAsync(
         int page,
         int pageSize,
         string? status = null,
-        CancellationToken cancellationToken = default);
-
-    Task<SightingsPage> GetReviewQueueAsync(
-        int page,
-        int pageSize,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 
     Task<CreateSightingResponse> CreateSightingAsync(
         CreateSightingRequest request,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 
     Task<SightingDetailDto?> GetSightingDetailAsync(
         int id,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 
     Task<bool> UploadSightingPhotoAsync(
         int sightingId,
         byte[] photoData,
         string contentType,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 
     Task<bool> ReviewSightingAsync(
         int sightingId,
         string status,
         string? reviewNotes,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 }

@@ -9,9 +9,11 @@ public static class IdentityDatabaseConfigurator
 {
     public static IHostApplicationBuilder AddIdentityDatabase(
         this IHostApplicationBuilder builder,
-        string connectionName = "faunafinder-identity")
+        string connectionName = "faunafinder-identity"
+    )
     {
-        var connectionString = builder.Configuration.GetConnectionString(connectionName)
+        var connectionString =
+            builder.Configuration.GetConnectionString(connectionName)
             ?? throw new ArgumentException($"Connection string '{connectionName}' not found");
 
         // Register DbContext pool
@@ -35,11 +37,14 @@ public static class IdentityDatabaseConfigurator
     private static void ConfigureDbContext(string connectionString, DbContextOptionsBuilder options)
     {
         options.EnableThreadSafetyChecks(false);
-        options.UseNpgsql(connectionString, npgsqlOptions =>
-        {
-            npgsqlOptions.MigrationsAssembly("FaunaFinder.Identity.Database");
-            npgsqlOptions.EnableRetryOnFailure(maxRetryCount: 5);
-        });
+        options.UseNpgsql(
+            connectionString,
+            npgsqlOptions =>
+            {
+                npgsqlOptions.MigrationsAssembly("FaunaFinder.Identity.Database");
+                npgsqlOptions.EnableRetryOnFailure(maxRetryCount: 5);
+            }
+        );
         options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
         options.UseSnakeCaseNamingConvention();
     }

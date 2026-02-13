@@ -7,8 +7,7 @@ public static class ExportEndpoints
 {
     public static void MapExportEndpoints(this IEndpointRouteBuilder app)
     {
-        var group = app.MapGroup("/export")
-            .WithTags("Export");
+        var group = app.MapGroup("/export").WithTags("Export");
 
         group.MapGet("/municipality/{municipalityId:int}/pdf", ExportMunicipalityPdf).WithName("ExportMunicipalityPdf");
         group.MapGet("/municipality/{municipalityId:int}/csv", ExportMunicipalityCsv).WithName("ExportMunicipalityCsv");

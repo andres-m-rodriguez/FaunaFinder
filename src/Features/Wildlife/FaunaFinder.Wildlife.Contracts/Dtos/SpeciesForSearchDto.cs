@@ -7,4 +7,10 @@ public sealed record SpeciesForSearchDto(
     List<LocaleValue> CommonName,
     string ScientificName,
     IReadOnlyList<string> MunicipalityNames
-);
+)
+{
+    public string GetCommonName(string locale = "en") =>
+        CommonName.FirstOrDefault(x => x.Code == locale)?.Value
+        ?? CommonName.FirstOrDefault()?.Value
+        ?? ScientificName;
+}
