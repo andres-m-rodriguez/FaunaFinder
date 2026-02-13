@@ -52,6 +52,7 @@ public class CookieAuthenticationStateProvider : AuthenticationStateProvider
             _ => { },
             _ => { },
             _ => { },
+            _ => { },
             _ => { }
         );
 

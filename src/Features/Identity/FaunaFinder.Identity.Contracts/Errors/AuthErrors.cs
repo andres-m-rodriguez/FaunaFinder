@@ -30,4 +30,7 @@ public sealed record AccessRequestNotFoundError(int RequestId)
 public sealed record ForbiddenError()
     : AuthError("You do not have permission to perform this action");
 
+public sealed record TooManyRequestsError(int? RetryAfterSeconds = null)
+    : AuthError("Too many requests. Please try again later.");
+
 public sealed record UnexpectedError(string Details) : AuthError("An unexpected error occurred");

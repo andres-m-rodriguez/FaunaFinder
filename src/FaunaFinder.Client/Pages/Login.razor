@@ -105,6 +105,7 @@
             accountLocked => _error = accountLocked.Message,
             accountNotApproved => _error = L["Login_PendingApproval"],
             validationError => _error = validationError.Message,
+            tooManyRequests => _error = tooManyRequests.Message,
             unexpected => _error = unexpected.Message);
     }
 

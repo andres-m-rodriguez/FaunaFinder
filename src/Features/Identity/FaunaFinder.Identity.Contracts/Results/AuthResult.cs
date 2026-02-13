@@ -15,6 +15,7 @@ public partial class LoginResult
         AccountLockedError,
         AccountNotApprovedError,
         ValidationError,
+        TooManyRequestsError,
         UnexpectedError
     >;
 
@@ -25,6 +26,7 @@ public partial class RegisterResult
         EmailAlreadyExistsError,
         RegistrationFailedError,
         ValidationError,
+        TooManyRequestsError,
         UnexpectedError
     >;
 

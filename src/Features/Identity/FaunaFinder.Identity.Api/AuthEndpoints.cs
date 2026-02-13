@@ -53,6 +53,7 @@ public static class AuthEndpoints
             emailExists => TypedResults.Conflict(emailExists),
             registrationFailed => TypedResults.BadRequest(registrationFailed),
             validationError => TypedResults.BadRequest(validationError),
+            tooManyRequests => TypedResults.Problem(statusCode: StatusCodes.Status429TooManyRequests),
             unexpected => TypedResults.Problem(unexpected.Message, statusCode: StatusCodes.Status500InternalServerError)
         );
     }
@@ -75,6 +76,7 @@ public static class AuthEndpoints
             accountLocked => TypedResults.Problem(statusCode: StatusCodes.Status423Locked),
             notApproved => TypedResults.Problem(notApproved.Message, statusCode: StatusCodes.Status403Forbidden),
             validationError => TypedResults.BadRequest(validationError),
+            tooManyRequests => TypedResults.Problem(statusCode: StatusCodes.Status429TooManyRequests),
             unexpected => TypedResults.Problem(unexpected.Message, statusCode: StatusCodes.Status500InternalServerError)
         );
     }
