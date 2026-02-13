@@ -1,3 +1,4 @@
+using FaunaFinder.i18n.Contracts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -7,7 +8,7 @@ public sealed class NrcsPractice
 {
     public required int Id { get; set; }
     public required string Code { get; set; }
-    public required string Name { get; set; }
+    public List<LocaleValue> Name { get; set; } = [];
 
     public ICollection<FwsLink> FwsLinks { get; set; } = [];
 
@@ -20,7 +21,7 @@ public sealed class NrcsPractice
 
             builder.Property(static e => e.Code).HasMaxLength(20).IsRequired();
 
-            builder.Property(static e => e.Name).HasMaxLength(500).IsRequired();
+            builder.OwnsMany(static e => e.Name, b => b.ToJson());
 
             builder
                 .HasIndex(static e => e.Code)

@@ -156,7 +156,7 @@ public class SpeciesReportService(IAppLocalizer localizer) : ISpeciesReportServi
                             .FontSize(9)
                             .Bold()
                             .FontColor(Colors.Blue.Darken2);
-                        row.RelativeItem().Text(link.NrcsPractice.Name).FontSize(10);
+                        row.RelativeItem().Text(_localizer.GetLocalizedValue(link.NrcsPractice.Name)).FontSize(10);
                     });
 
                 column
@@ -169,15 +169,15 @@ public class SpeciesReportService(IAppLocalizer localizer) : ISpeciesReportServi
                             .FontSize(9)
                             .Bold()
                             .FontColor(Colors.Orange.Darken2);
-                        row.RelativeItem().Text(link.FwsAction.Name).FontSize(10);
+                        row.RelativeItem().Text(_localizer.GetLocalizedValue(link.FwsAction.Name)).FontSize(10);
                     });
 
-                if (!string.IsNullOrEmpty(link.Justification))
+                if (link.Justification.Count > 0)
                 {
                     column
                         .Item()
                         .PaddingTop(6)
-                        .Text(link.Justification)
+                        .Text(_localizer.GetLocalizedValue(link.Justification))
                         .FontSize(9)
                         .FontColor(Colors.Grey.Darken1);
                 }

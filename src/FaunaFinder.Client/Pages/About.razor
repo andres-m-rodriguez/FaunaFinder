@@ -3,6 +3,13 @@
 
 <PageTitle>@L["PageTitle_About"]</PageTitle>
 
+@code {
+    protected override void OnInitialized()
+    {
+        L.LanguageSignal.OnChange(async () => await InvokeAsync(StateHasChanged));
+    }
+}
+
 <MudContainer MaxWidth="MaxWidth.Medium" Class="py-8">
     <MudText Typo="Typo.h4" Color="Color.Primary" GutterBottom="true">@L["About_Title"]</MudText>
 
