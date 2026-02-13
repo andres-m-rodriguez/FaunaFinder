@@ -1,5 +1,4 @@
 using System.Text.Json;
-using FaunaFinder.Pagination.Contracts;
 using FaunaFinder.Wildlife.Contracts.Dtos;
 using FaunaFinder.Wildlife.Contracts.Parameters;
 using FaunaFinder.Wildlife.DataAccess.Interfaces;
@@ -21,7 +20,6 @@ public static class MunicipalityEndpoints
         group.MapGet("/cards", GetMunicipalityCards).WithName("GetMunicipalityCards");
         group.MapGet("/count", GetMunicipalitiesCount).WithName("GetMunicipalitiesCount");
         group.MapGet("/geojson", GetMunicipalitiesGeoJson).WithName("GetMunicipalitiesGeoJson");
-        group.MapGet("/cursor", GetMunicipalitiesCursor).WithName("GetMunicipalitiesCursor");
     }
 
     private static async Task<Ok<IReadOnlyList<MunicipalityForListDto>>> GetAllMunicipalities(
@@ -41,13 +39,12 @@ public static class MunicipalityEndpoints
         return municipality is not null ? TypedResults.Ok(municipality) : TypedResults.NotFound();
     }
 
-    private static async Task<Ok<IReadOnlyList<MunicipalityCardDto>>> GetMunicipalityCards(
+    private static IAsyncEnumerable<MunicipalityCardDto> GetMunicipalityCards(
         [AsParameters] MunicipalityParameters parameters,
         IMunicipalityRepository repository,
         CancellationToken ct)
     {
-        var municipalities = await repository.GetMunicipalitiesWithSpeciesCountAsync(parameters, ct);
-        return TypedResults.Ok(municipalities);
+        return repository.GetMunicipalitiesWithSpeciesCountAsync(parameters, ct);
     }
 
     private static async Task<Ok<int>> GetMunicipalitiesCount(
@@ -88,14 +85,5 @@ public static class MunicipalityEndpoints
         jsonOptions.Converters.Add(new GeoJsonConverterFactory());
 
         return Results.Json(featureCollection, jsonOptions, contentType: "application/geo+json");
-    }
-
-    private static async Task<Ok<CursorPage<MunicipalityCardDto>>> GetMunicipalitiesCursor(
-        [AsParameters] CursorPageParameter parameters,
-        IMunicipalityRepository repository,
-        CancellationToken ct)
-    {
-        var page = await repository.GetMunicipalitiesCursorPageAsync(parameters, ct);
-        return TypedResults.Ok(page);
     }
 }

@@ -15,18 +15,13 @@ public interface IMunicipalityRepository
         CancellationToken cancellationToken = default
     );
 
-    Task<IReadOnlyList<MunicipalityCardDto>> GetMunicipalitiesWithSpeciesCountAsync(
+    IAsyncEnumerable<MunicipalityCardDto> GetMunicipalitiesWithSpeciesCountAsync(
         MunicipalityParameters parameters,
         CancellationToken cancellationToken = default
     );
 
     Task<int> GetTotalMunicipalitiesCountAsync(
         string? search = null,
-        CancellationToken cancellationToken = default
-    );
-
-    Task<CursorPage<MunicipalityCardDto>> GetMunicipalitiesCursorPageAsync(
-        CursorPageParameter request,
         CancellationToken cancellationToken = default
     );
 }

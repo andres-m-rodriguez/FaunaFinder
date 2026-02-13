@@ -18,7 +18,7 @@ public interface ISpeciesRepository
         CancellationToken cancellationToken = default
     );
 
-    Task<IReadOnlyList<SpeciesForSearchDto>> GetSpeciesAsync(
+    IAsyncEnumerable<SpeciesForSearchDto> GetSpeciesAsync(
         SpeciesParameters parameters,
         CancellationToken cancellationToken = default
     );
@@ -40,11 +40,6 @@ public interface ISpeciesRepository
         double latitude,
         double longitude,
         double radiusMeters,
-        CancellationToken cancellationToken = default
-    );
-
-    Task<CursorPage<SpeciesForSearchDto>> GetSpeciesCursorPageAsync(
-        CursorPageParameter request,
         CancellationToken cancellationToken = default
     );
 
