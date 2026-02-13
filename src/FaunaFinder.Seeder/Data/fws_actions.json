@@ -1,98 +1,170 @@
 [
   {
     "code": "1.1",
-    "name": "Site/Area Stewardship"
+    "name": [
+      { "code": "en", "value": "Site/Area Stewardship" },
+      { "code": "es", "value": "Administracion de Sitio/Area" }
+    ]
   },
   {
     "code": "1.2",
-    "name": "Ecosystem & Natural Process (Re)Creation"
+    "name": [
+      { "code": "en", "value": "Ecosystem & Natural Process (Re)Creation" },
+      { "code": "es", "value": "(Re)Creacion de Ecosistemas y Procesos Naturales" }
+    ]
   },
   {
     "code": "10.1",
-    "name": "Internal Organizational Management & Administration"
+    "name": [
+      { "code": "en", "value": "Internal Organizational Management & Administration" },
+      { "code": "es", "value": "Gestion y Administracion Organizacional Interna" }
+    ]
   },
   {
     "code": "10.2",
-    "name": "External Organizational Development & Support"
+    "name": [
+      { "code": "en", "value": "External Organizational Development & Support" },
+      { "code": "es", "value": "Desarrollo y Apoyo Organizacional Externo" }
+    ]
   },
   {
     "code": "10.3",
-    "name": "Alliance & Partnership Development"
+    "name": [
+      { "code": "en", "value": "Alliance & Partnership Development" },
+      { "code": "es", "value": "Desarrollo de Alianzas y Colaboraciones" }
+    ]
   },
   {
     "code": "10.4",
-    "name": "Financing Conservation"
+    "name": [
+      { "code": "en", "value": "Financing Conservation" },
+      { "code": "es", "value": "Financiamiento de la Conservacion" }
+    ]
   },
   {
     "code": "2.1",
-    "name": "Species Stewardship"
+    "name": [
+      { "code": "en", "value": "Species Stewardship" },
+      { "code": "es", "value": "Administracion de Especies" }
+    ]
   },
   {
     "code": "2.2",
-    "name": "Species Re-Introduction & Translocation"
+    "name": [
+      { "code": "en", "value": "Species Re-Introduction & Translocation" },
+      { "code": "es", "value": "Reintroduccion y Translocacion de Especies" }
+    ]
   },
   {
     "code": "3.1",
-    "name": "Outreach & Communications"
+    "name": [
+      { "code": "en", "value": "Outreach & Communications" },
+      { "code": "es", "value": "Divulgacion y Comunicaciones" }
+    ]
   },
   {
     "code": "4.1",
-    "name": "Detection & Arrest"
+    "name": [
+      { "code": "en", "value": "Detection & Arrest" },
+      { "code": "es", "value": "Deteccion y Arresto" }
+    ]
   },
   {
     "code": "4.2",
-    "name": "Criminal Prosecution & Conviction"
+    "name": [
+      { "code": "en", "value": "Criminal Prosecution & Conviction" },
+      { "code": "es", "value": "Procesamiento y Condena Criminal" }
+    ]
   },
   {
     "code": "4.3",
-    "name": "Non-Criminal Legal Action"
+    "name": [
+      { "code": "en", "value": "Non-Criminal Legal Action" },
+      { "code": "es", "value": "Accion Legal No Criminal" }
+    ]
   },
   {
     "code": "5.1",
-    "name": "Linked Enterprises & Alternative Livelihoods"
+    "name": [
+      { "code": "en", "value": "Linked Enterprises & Alternative Livelihoods" },
+      { "code": "es", "value": "Empresas Vinculadas y Medios de Vida Alternativos" }
+    ]
   },
   {
     "code": "6.1",
-    "name": "Protected Area Designation &/or Acquisition"
+    "name": [
+      { "code": "en", "value": "Protected Area Designation &/or Acquisition" },
+      { "code": "es", "value": "Designacion y/o Adquisicion de Areas Protegidas" }
+    ]
   },
   {
     "code": "6.2",
-    "name": "Easements & Resource Rights"
+    "name": [
+      { "code": "en", "value": "Easements & Resource Rights" },
+      { "code": "es", "value": "Servidumbres y Derechos sobre Recursos" }
+    ]
   },
   {
     "code": "6.3",
-    "name": "Land/Water Use Zoning & Designation"
+    "name": [
+      { "code": "en", "value": "Land/Water Use Zoning & Designation" },
+      { "code": "es", "value": "Zonificacion y Designacion del Uso de Tierra/Agua" }
+    ]
   },
   {
     "code": "6.4",
-    "name": "Conservation Planning"
+    "name": [
+      { "code": "en", "value": "Conservation Planning" },
+      { "code": "es", "value": "Planificacion de Conservacion" }
+    ]
   },
   {
     "code": "6.5",
-    "name": "Site Infrastructure"
+    "name": [
+      { "code": "en", "value": "Site Infrastructure" },
+      { "code": "es", "value": "Infraestructura del Sitio" }
+    ]
   },
   {
     "code": "7.1",
-    "name": "Laws, Regulations & Codes"
+    "name": [
+      { "code": "en", "value": "Laws, Regulations & Codes" },
+      { "code": "es", "value": "Leyes, Reglamentos y Codigos" }
+    ]
   },
   {
     "code": "7.2",
-    "name": "Policies & Guidelines"
+    "name": [
+      { "code": "en", "value": "Policies & Guidelines" },
+      { "code": "es", "value": "Politicas y Directrices" }
+    ]
   },
   {
     "code": "8.1",
-    "name": "Basic Research & Status Monitoring"
+    "name": [
+      { "code": "en", "value": "Basic Research & Status Monitoring" },
+      { "code": "es", "value": "Investigacion Basica y Monitoreo de Estado" }
+    ]
   },
   {
     "code": "8.2",
-    "name": "Evaluation, Effectiveness Measures & Learning"
+    "name": [
+      { "code": "en", "value": "Evaluation, Effectiveness Measures & Learning" },
+      { "code": "es", "value": "Evaluacion, Medidas de Efectividad y Aprendizaje" }
+    ]
   },
   {
     "code": "9.1",
-    "name": "Formal Education"
+    "name": [
+      { "code": "en", "value": "Formal Education" },
+      { "code": "es", "value": "Educacion Formal" }
+    ]
   },
   {
     "code": "9.2",
-    "name": "Training & Individual Capacity Development"
+    "name": [
+      { "code": "en", "value": "Training & Individual Capacity Development" },
+      { "code": "es", "value": "Capacitacion y Desarrollo de Capacidad Individual" }
+    ]
   }
 ]

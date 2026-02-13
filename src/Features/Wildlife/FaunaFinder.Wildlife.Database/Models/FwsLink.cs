@@ -1,3 +1,4 @@
+using FaunaFinder.i18n.Contracts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -9,7 +10,7 @@ public sealed class FwsLink
     public required int NrcsPracticeId { get; set; }
     public required int FwsActionId { get; set; }
     public required int SpeciesId { get; set; }
-    public string? Justification { get; set; }
+    public List<LocaleValue> Justification { get; set; } = [];
 
     public NrcsPractice NrcsPractice { get; set; } = null!;
     public FwsAction FwsAction { get; set; } = null!;
@@ -22,7 +23,7 @@ public sealed class FwsLink
             builder.ToTable("fws_links");
             builder.HasKey(static e => e.Id);
 
-            builder.Property(static e => e.Justification).HasMaxLength(2000);
+            builder.OwnsMany(static e => e.Justification, b => b.ToJson());
 
             builder
                 .HasOne(static e => e.NrcsPractice)

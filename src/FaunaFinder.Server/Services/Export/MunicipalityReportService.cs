@@ -160,7 +160,7 @@ public class MunicipalityReportService(IAppLocalizer localizer) : IMunicipalityR
                                             .FontSize(8)
                                             .Bold()
                                             .FontColor(Colors.Blue.Darken2);
-                                        row.RelativeItem().Text(link.NrcsPractice.Name).FontSize(9);
+                                        row.RelativeItem().Text(_localizer.GetLocalizedValue(link.NrcsPractice.Name)).FontSize(9);
                                     });
 
                                 linkCol
@@ -173,15 +173,15 @@ public class MunicipalityReportService(IAppLocalizer localizer) : IMunicipalityR
                                             .FontSize(8)
                                             .Bold()
                                             .FontColor(Colors.Orange.Darken2);
-                                        row.RelativeItem().Text(link.FwsAction.Name).FontSize(9);
+                                        row.RelativeItem().Text(_localizer.GetLocalizedValue(link.FwsAction.Name)).FontSize(9);
                                     });
 
-                                if (!string.IsNullOrEmpty(link.Justification))
+                                if (link.Justification.Count > 0)
                                 {
                                     linkCol
                                         .Item()
                                         .PaddingTop(4)
-                                        .Text(link.Justification)
+                                        .Text(_localizer.GetLocalizedValue(link.Justification))
                                         .FontSize(8)
                                         .FontColor(Colors.Grey.Darken1);
                                 }
@@ -243,7 +243,7 @@ public class MunicipalityReportService(IAppLocalizer localizer) : IMunicipalityR
                 foreach (var link in s.FwsLinks)
                 {
                     sb.AppendLine(
-                        $"{EscapeCsv(municipalityName)},{EscapeCsv(_localizer.GetLocalizedValue(s.CommonName))},{EscapeCsv(s.ScientificName)},{EscapeCsv(link.NrcsPractice.Code)},{EscapeCsv(link.NrcsPractice.Name)},{EscapeCsv(link.FwsAction.Code)},{EscapeCsv(link.FwsAction.Name)},{EscapeCsv(link.Justification ?? "")}"
+                        $"{EscapeCsv(municipalityName)},{EscapeCsv(_localizer.GetLocalizedValue(s.CommonName))},{EscapeCsv(s.ScientificName)},{EscapeCsv(link.NrcsPractice.Code)},{EscapeCsv(_localizer.GetLocalizedValue(link.NrcsPractice.Name))},{EscapeCsv(link.FwsAction.Code)},{EscapeCsv(_localizer.GetLocalizedValue(link.FwsAction.Name))},{EscapeCsv(_localizer.GetLocalizedValue(link.Justification))}"
                     );
                 }
             }

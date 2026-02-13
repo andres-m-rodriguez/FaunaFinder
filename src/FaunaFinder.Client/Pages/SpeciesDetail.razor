@@ -245,19 +245,19 @@
                                     <MudChip T="string" Size="Size.Small" Color="Color.Primary" Variant="Variant.Filled">
                                         NRCS @link.NrcsPractice.Code
                                     </MudChip>
-                                    <MudText Typo="Typo.body1">@link.NrcsPractice.Name</MudText>
+                                    <MudText Typo="Typo.body1">@L.GetLocalizedValue(link.NrcsPractice.Name)</MudText>
                                 </div>
                                 <div class="d-flex flex-wrap align-start gap-2 mb-2">
                                     <MudChip T="string" Size="Size.Small" Color="Color.Secondary" Variant="Variant.Filled">
                                         FWS @link.FwsAction.Code
                                     </MudChip>
-                                    <MudText Typo="Typo.body1">@link.FwsAction.Name</MudText>
+                                    <MudText Typo="Typo.body1">@L.GetLocalizedValue(link.FwsAction.Name)</MudText>
                                 </div>
-                                @if (!string.IsNullOrEmpty(link.Justification))
+                                @if (link.Justification.Count > 0)
                                 {
                                     <MudDivider Class="my-3" />
                                     <MudText Typo="Typo.body2" Color="Color.Secondary">
-                                        @link.Justification
+                                        @L.GetLocalizedValue(link.Justification)
                                     </MudText>
                                 }
                             </MudPaper>
@@ -311,13 +311,12 @@
             // Apply text search filter
             if (!string.IsNullOrWhiteSpace(searchText))
             {
-                var searchLower = searchText.ToLowerInvariant();
                 filtered = filtered.Where(l =>
-                    l.NrcsPractice.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+                    l.NrcsPractice.Name.Any(n => n.Value.Contains(searchText, StringComparison.OrdinalIgnoreCase)) ||
                     l.NrcsPractice.Code.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
-                    l.FwsAction.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+                    l.FwsAction.Name.Any(n => n.Value.Contains(searchText, StringComparison.OrdinalIgnoreCase)) ||
                     l.FwsAction.Code.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
-                    (l.Justification?.Contains(searchText, StringComparison.OrdinalIgnoreCase) ?? false));
+                    l.Justification.Any(j => j.Value.Contains(searchText, StringComparison.OrdinalIgnoreCase)));
             }
 
             // Apply NRCS Practice filter

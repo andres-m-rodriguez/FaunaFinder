@@ -149,7 +149,7 @@ public static class DatabaseSeeder
                     {
                         Id = 0,
                         Code = dto.Code,
-                        Name = dto.Name,
+                        Name = dto.Name.ToList(),
                     }
                 );
             }
@@ -185,7 +185,7 @@ public static class DatabaseSeeder
                     {
                         Id = 0,
                         Code = dto.Code,
-                        Name = dto.Name,
+                        Name = dto.Name.ToList(),
                     }
                 );
             }
@@ -463,7 +463,7 @@ public static class DatabaseSeeder
                     SpeciesId = speciesId,
                     NrcsPracticeId = practiceId,
                     FwsActionId = actionId,
-                    Justification = dto.Justification,
+                    Justification = dto.Justification.ToList(),
                 }
             );
 
@@ -511,7 +511,7 @@ public static class DatabaseSeeder
         public required string Code { get; init; }
 
         [JsonPropertyName("name")]
-        public required string Name { get; init; }
+        public required List<LocaleValue> Name { get; init; }
     }
 
     private sealed class FwsActionDto
@@ -520,7 +520,7 @@ public static class DatabaseSeeder
         public required string Code { get; init; }
 
         [JsonPropertyName("name")]
-        public required string Name { get; init; }
+        public required List<LocaleValue> Name { get; init; }
     }
 
     private sealed class SpeciesDto
@@ -583,7 +583,7 @@ public static class DatabaseSeeder
         public required string FwsActionCode { get; init; }
 
         [JsonPropertyName("justification")]
-        public string? Justification { get; init; }
+        public List<LocaleValue> Justification { get; init; } = [];
     }
 
     #endregion

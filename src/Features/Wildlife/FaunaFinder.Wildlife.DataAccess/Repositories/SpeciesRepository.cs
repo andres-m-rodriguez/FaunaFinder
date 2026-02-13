@@ -36,10 +36,10 @@ public sealed class SpeciesRepository(IDbContextFactory<WildlifeDbContext> conte
                         new NrcsPracticeDto(
                             fl.NrcsPractice.Id,
                             fl.NrcsPractice.Code,
-                            fl.NrcsPractice.Name
+                            fl.NrcsPractice.Name.ToList()
                         ),
-                        new FwsActionDto(fl.FwsAction.Id, fl.FwsAction.Code, fl.FwsAction.Name),
-                        fl.Justification
+                        new FwsActionDto(fl.FwsAction.Id, fl.FwsAction.Code, fl.FwsAction.Name.ToList()),
+                        fl.Justification.ToList()
                     ))
                     .ToList(),
                 ms.Species.IsFauna
@@ -67,10 +67,10 @@ public sealed class SpeciesRepository(IDbContextFactory<WildlifeDbContext> conte
                         new NrcsPracticeDto(
                             fl.NrcsPractice.Id,
                             fl.NrcsPractice.Code,
-                            fl.NrcsPractice.Name
+                            fl.NrcsPractice.Name.ToList()
                         ),
-                        new FwsActionDto(fl.FwsAction.Id, fl.FwsAction.Code, fl.FwsAction.Name),
-                        fl.Justification
+                        new FwsActionDto(fl.FwsAction.Id, fl.FwsAction.Code, fl.FwsAction.Name.ToList()),
+                        fl.Justification.ToList()
                     ))
                     .ToList(),
                 s.MunicipalitySpecies.OrderBy(ms => ms.Municipality.Name)
