@@ -13,6 +13,8 @@ public sealed class WildlifeDbContext(DbContextOptions<WildlifeDbContext> option
     // Species data
     public DbSet<Species> Species => Set<Species>();
     public DbSet<SpeciesLocation> SpeciesLocations => Set<SpeciesLocation>();
+    public DbSet<SpeciesCategory> SpeciesCategories => Set<SpeciesCategory>();
+    public DbSet<SpeciesCategoryLink> SpeciesCategoryLinks => Set<SpeciesCategoryLink>();
 
     // Conservation data
     public DbSet<FwsAction> FwsActions => Set<FwsAction>();
@@ -32,6 +34,8 @@ public sealed class WildlifeDbContext(DbContextOptions<WildlifeDbContext> option
         modelBuilder.ApplyConfiguration(new MunicipalitySpecies.EntityConfiguration());
         modelBuilder.ApplyConfiguration(new Species.EntityConfiguration());
         modelBuilder.ApplyConfiguration(new SpeciesLocation.EntityConfiguration());
+        modelBuilder.ApplyConfiguration(new SpeciesCategory.EntityConfiguration());
+        modelBuilder.ApplyConfiguration(new SpeciesCategoryLink.EntityConfiguration());
         modelBuilder.ApplyConfiguration(new FwsAction.EntityConfiguration());
         modelBuilder.ApplyConfiguration(new FwsLink.EntityConfiguration());
         modelBuilder.ApplyConfiguration(new NrcsPractice.EntityConfiguration());

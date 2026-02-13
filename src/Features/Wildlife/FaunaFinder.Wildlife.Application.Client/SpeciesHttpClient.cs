@@ -117,6 +117,22 @@ public sealed class SpeciesHttpClient(HttpClient httpClient) : ISpeciesHttpClien
             queryParams.Add($"search={Uri.EscapeDataString(request.Search)}");
         }
 
+        if (!string.IsNullOrEmpty(request.CategoryIds))
+        {
+            queryParams.Add($"categoryIds={Uri.EscapeDataString(request.CategoryIds)}");
+        }
+
         return "?" + string.Join("&", queryParams);
+    }
+
+    public async Task<IReadOnlyList<SpeciesCategoryDto>> GetCategoriesAsync(
+        CancellationToken cancellationToken = default
+    )
+    {
+        var result = await httpClient.GetFromJsonAsync<IReadOnlyList<SpeciesCategoryDto>>(
+            "api/species/categories",
+            cancellationToken
+        );
+        return result ?? [];
     }
 }

@@ -13,15 +13,37 @@
         @L["Species_Description"]
     </MudText>
 
-    <MudTextField @bind-Value="searchTerm"
-                  Placeholder="@L["Species_SearchPlaceholder"]"
-                  Adornment="Adornment.Start"
-                  AdornmentIcon="@Icons.Material.Filled.Search"
-                  Variant="Variant.Outlined"
-                  Immediate="true"
-                  DebounceInterval="300"
-                  OnDebounceIntervalElapsed="OnSearchChanged"
-                  Class="mb-4" />
+    @* Search and Filter Bar *@
+    <MudGrid Class="mb-4">
+        <MudItem xs="12" md="6">
+            <MudTextField @bind-Value="searchTerm"
+                          Placeholder="@L["Species_SearchPlaceholder"]"
+                          Adornment="Adornment.Start"
+                          AdornmentIcon="@Icons.Material.Filled.Search"
+                          Variant="Variant.Outlined"
+                          Immediate="true"
+                          DebounceInterval="300"
+                          OnDebounceIntervalElapsed="OnSearchChanged" />
+        </MudItem>
+        <MudItem xs="12" md="6">
+            <div class="d-flex flex-wrap gap-2 align-center" style="min-height: 56px;">
+                @if (categories.Count > 0)
+                {
+                    @foreach (var category in categories)
+                    {
+                        var isSelected = selectedCategoryIds.Contains(category.Id);
+                        <MudChip T="string"
+                                 Color="@(isSelected ? Color.Primary : Color.Default)"
+                                 Variant="@(isSelected ? Variant.Filled : Variant.Outlined)"
+                                 OnClick="() => ToggleCategory(category.Id)"
+                                 Class="cursor-pointer">
+                            @L.GetLocalizedValue(category.Name)
+                        </MudChip>
+                    }
+                }
+            </div>
+        </MudItem>
+    </MudGrid>
 
     @* Species Grid *@
     @if (isInitialLoading)
@@ -79,6 +101,8 @@
     private int LanguageRefresh { get; set; }
 
     private List<SpeciesForSearchDto> species = new();
+    private List<SpeciesCategoryDto> categories = new();
+    private HashSet<int> selectedCategoryIds = new();
     private string searchTerm = string.Empty;
     private string? nextCursor;
     private bool hasMore = true;
@@ -92,8 +116,32 @@
 
     protected override async Task OnInitializedAsync()
     {
+        // Load categories first
+        categories = (await SpeciesHttpClient.GetCategoriesAsync()).ToList();
+
         await LoadPageAsync();
         isInitialLoading = false;
+    }
+
+    private async Task ToggleCategory(int categoryId)
+    {
+        if (selectedCategoryIds.Contains(categoryId))
+        {
+            selectedCategoryIds.Remove(categoryId);
+        }
+        else
+        {
+            selectedCategoryIds.Add(categoryId);
+        }
+
+        await OnSearchChanged();
+    }
+
+    private string? GetCategoryIdsString()
+    {
+        return selectedCategoryIds.Count > 0
+            ? string.Join(",", selectedCategoryIds)
+            : null;
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -123,7 +171,12 @@
         isLoadingMore = true;
         StateHasChanged();
 
-        var request = new CursorPageParameter(nextCursor, PageSize, string.IsNullOrWhiteSpace(searchTerm) ? null : searchTerm);
+        var request = new CursorPageParameter(
+            nextCursor,
+            PageSize,
+            string.IsNullOrWhiteSpace(searchTerm) ? null : searchTerm,
+            GetCategoryIdsString()
+        );
         var page = await SpeciesHttpClient.GetSpeciesCursorPageAsync(request);
 
         species.AddRange(page.Items);

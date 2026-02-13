@@ -18,7 +18,7 @@ namespace FaunaFinder.Wildlife.Database.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.1")
+                .HasAnnotation("ProductVersion", "10.0.2")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.HasPostgresExtension(modelBuilder, "postgis");
@@ -394,6 +394,61 @@ namespace FaunaFinder.Wildlife.Database.Migrations
                     b.ToTable("species", (string)null);
                 });
 
+            modelBuilder.Entity("FaunaFinder.Wildlife.Database.Models.SpeciesCategory", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("code");
+
+                    b.HasKey("Id")
+                        .HasName("pk_species_categories");
+
+                    b.HasIndex("Code")
+                        .IsUnique()
+                        .HasDatabaseName("species_categories_code_uidx");
+
+                    b.ToTable("species_categories", (string)null);
+                });
+
+            modelBuilder.Entity("FaunaFinder.Wildlife.Database.Models.SpeciesCategoryLink", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CategoryId")
+                        .HasColumnType("integer")
+                        .HasColumnName("category_id");
+
+                    b.Property<int>("SpeciesId")
+                        .HasColumnType("integer")
+                        .HasColumnName("species_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_species_category_links");
+
+                    b.HasIndex("CategoryId")
+                        .HasDatabaseName("ix_species_category_links_category_id");
+
+                    b.HasIndex("SpeciesId", "CategoryId")
+                        .IsUnique()
+                        .HasDatabaseName("species_category_links_species_category_uidx");
+
+                    b.ToTable("species_category_links", (string)null);
+                });
+
             modelBuilder.Entity("FaunaFinder.Wildlife.Database.Models.SpeciesLocation", b =>
                 {
                     b.Property<int>("Id")
@@ -603,7 +658,8 @@ namespace FaunaFinder.Wildlife.Database.Migrations
                             b1.Property<string>("Value")
                                 .IsRequired();
 
-                            b1.HasKey("SpeciesId", "__synthesizedOrdinal");
+                            b1.HasKey("SpeciesId", "__synthesizedOrdinal")
+                                .HasName("pk_species");
 
                             b1.ToTable("species");
 
@@ -615,6 +671,56 @@ namespace FaunaFinder.Wildlife.Database.Migrations
                         });
 
                     b.Navigation("CommonName");
+                });
+
+            modelBuilder.Entity("FaunaFinder.Wildlife.Database.Models.SpeciesCategory", b =>
+                {
+                    b.OwnsMany("FaunaFinder.i18n.Contracts.LocaleValue", "Name", b1 =>
+                        {
+                            b1.Property<int>("SpeciesCategoryId");
+
+                            b1.Property<int>("__synthesizedOrdinal")
+                                .ValueGeneratedOnAdd();
+
+                            b1.Property<string>("Code")
+                                .IsRequired();
+
+                            b1.Property<string>("Value")
+                                .IsRequired();
+
+                            b1.HasKey("SpeciesCategoryId", "__synthesizedOrdinal");
+
+                            b1.ToTable("species_categories");
+
+                            b1.ToJson("name");
+
+                            b1.WithOwner()
+                                .HasForeignKey("SpeciesCategoryId")
+                                .HasConstraintName("fk_species_categories_species_categories_species_category_id");
+                        });
+
+                    b.Navigation("Name");
+                });
+
+            modelBuilder.Entity("FaunaFinder.Wildlife.Database.Models.SpeciesCategoryLink", b =>
+                {
+                    b.HasOne("FaunaFinder.Wildlife.Database.Models.SpeciesCategory", "Category")
+                        .WithMany("SpeciesLinks")
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_species_category_links_species_categories_category_id");
+
+                    b.HasOne("FaunaFinder.Wildlife.Database.Models.Species", "Species")
+                        .WithMany("CategoryLinks")
+                        .HasForeignKey("SpeciesId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_species_category_links_species_species_id");
+
+                    b.Navigation("Category");
+
+                    b.Navigation("Species");
                 });
 
             modelBuilder.Entity("FaunaFinder.Wildlife.Database.Models.SpeciesLocation", b =>
@@ -657,11 +763,18 @@ namespace FaunaFinder.Wildlife.Database.Migrations
 
             modelBuilder.Entity("FaunaFinder.Wildlife.Database.Models.Species", b =>
                 {
+                    b.Navigation("CategoryLinks");
+
                     b.Navigation("FwsLinks");
 
                     b.Navigation("Locations");
 
                     b.Navigation("MunicipalitySpecies");
+                });
+
+            modelBuilder.Entity("FaunaFinder.Wildlife.Database.Models.SpeciesCategory", b =>
+                {
+                    b.Navigation("SpeciesLinks");
                 });
 
             modelBuilder.Entity("FaunaFinder.Wildlife.Database.Models.UserSpecies", b =>

@@ -37,4 +37,8 @@ public interface ISpeciesHttpClient
         CursorPageParameter request,
         CancellationToken cancellationToken = default
     );
+
+    Task<IReadOnlyList<SpeciesCategoryDto>> GetCategoriesAsync(
+        CancellationToken cancellationToken = default
+    );
 }
