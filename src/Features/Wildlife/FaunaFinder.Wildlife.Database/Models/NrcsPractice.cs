@@ -8,7 +8,7 @@ public sealed class NrcsPractice
 {
     public required int Id { get; set; }
     public required string Code { get; set; }
-    public required List<LocaleValue> Name { get; set; }
+    public List<LocaleValue> Name { get; set; } = [];
 
     public ICollection<FwsLink> FwsLinks { get; set; } = [];
 
