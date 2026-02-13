@@ -6,6 +6,7 @@ using FluentValidation;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.Routing;
 
 namespace FaunaFinder.Identity.Api;
@@ -16,9 +17,9 @@ public static class AuthEndpoints
     {
         var group = app.MapGroup("/auth").WithTags("Authentication");
 
-        // Public endpoints
-        group.MapPost("/register", Register).WithName("Register");
-        group.MapPost("/login", Login).WithName("Login");
+        // Public endpoints with strict rate limiting
+        group.MapPost("/register", Register).RequireRateLimiting("auth-register").WithName("Register");
+        group.MapPost("/login", Login).RequireRateLimiting("auth-login").WithName("Login");
         group.MapGet("/me", GetCurrentUser).WithName("GetCurrentUser");
 
         // Authenticated endpoints
