@@ -5,6 +5,6 @@ public sealed record SpeciesParameters(
     int Page = 0,
     string? Search = null,
     int? MunicipalityId = null,
-    List<string>? Keywords = null,
+    string? Keywords = null,
     bool FuzzySearch = true
 );

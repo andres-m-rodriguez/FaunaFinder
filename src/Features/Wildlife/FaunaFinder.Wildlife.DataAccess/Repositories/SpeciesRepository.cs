@@ -104,10 +104,13 @@ public sealed class SpeciesRepository(IDbContextFactory<WildlifeDbContext> conte
         var search = parameters.Search?.Trim().ToLower();
         var hasSearch = !string.IsNullOrWhiteSpace(search);
 
-        // Apply keyword filter
-        if (parameters.Keywords is { Count: > 0 })
+        // Apply keyword filter (comma-separated string)
+        if (!string.IsNullOrWhiteSpace(parameters.Keywords))
         {
-            var keywords = parameters.Keywords.Select(k => k.ToLower()).ToList();
+            var keywords = parameters.Keywords
+                .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .Select(k => k.ToLower())
+                .ToList();
             query = query.Where(s => s.SearchKeywords.Any(sk => keywords.Contains(sk.ToLower())));
         }
 
