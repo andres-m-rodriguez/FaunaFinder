@@ -76,6 +76,7 @@ public static class Translations
             ["PuebloDetail_NoSpeciesData"] = "No species data available for this municipality.",
             ["PuebloDetail_NoConservationLinks"] =
                 "No conservation links available for this species.",
+            ["PuebloDetail_ViewLocation"] = "View on Map",
 
             // About Page
             ["About_Title"] = "About FaunaFinder",
@@ -217,6 +218,7 @@ public static class Translations
                 "No hay datos de especies disponibles para este municipio.",
             ["PuebloDetail_NoConservationLinks"] =
                 "No hay enlaces de conservación disponibles para esta especie.",
+            ["PuebloDetail_ViewLocation"] = "Ver en Mapa",
 
             // About Page
             ["About_Title"] = "Acerca de FaunaFinder",

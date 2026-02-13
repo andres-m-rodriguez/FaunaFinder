@@ -117,6 +117,7 @@ interface Window {
 interface GeoJSONLayerWithFeature extends L.Layer {
     feature?: MunicipalityFeature;
     setStyle(style: L.PathOptions): this;
+    getBounds(): L.LatLngBounds;
 }
 
 // ============================================================================
@@ -173,6 +174,7 @@ interface LeafletInterop {
     highlightFeature(e: L.LeafletMouseEvent): void;
     resetHighlight(e: L.LeafletMouseEvent): void;
     highlightMunicipality(county: string): void;
+    focusOnMunicipality(county: string): void;
     showSpeciesLocations(speciesName: string, locations: SpeciesLocation[]): void;
     clearSpeciesLocations(): void;
     focusOnLocation(index: number): void;
@@ -774,6 +776,23 @@ window.leafletInterop = {
                 } else {
                     self.geojsonLayer!.resetStyle(layer as L.Path);
                 }
+            }
+        });
+    },
+
+    focusOnMunicipality(county: string): void {
+        if (!this.geojsonLayer) return;
+
+        this.geojsonLayer.eachLayer((layer: L.Layer) => {
+            const geoLayer = layer as GeoJSONLayerWithFeature;
+            const feature = geoLayer.feature;
+
+            if (feature && feature.properties && feature.properties.COUNTY === county) {
+                const bounds = geoLayer.getBounds();
+                this.map!.flyToBounds(bounds, {
+                    padding: [50, 50],
+                    duration: 0.8
+                });
             }
         });
     },

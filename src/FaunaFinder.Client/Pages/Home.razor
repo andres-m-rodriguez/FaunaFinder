@@ -609,6 +609,9 @@
     [SupplyParameterFromQuery]
     public bool RestoreNearMe { get; set; }
 
+    [SupplyParameterFromQuery]
+    public string? MunicipalityId { get; set; }
+
     private MunicipalityForListDto? selectedMunicipality;
     private string? clickedMunicipalityName;
     private IReadOnlyList<SpeciesForListDto> species = [];
@@ -824,7 +827,36 @@
             {
                 await RestoreNearbySpeciesState();
             }
+            // Check if we need to focus on a specific municipality
+            else if (!string.IsNullOrEmpty(MunicipalityId))
+            {
+                await FocusOnMunicipalityFromParam();
+            }
         }
+    }
+
+    private async Task FocusOnMunicipalityFromParam()
+    {
+        if (string.IsNullOrEmpty(MunicipalityId))
+            return;
+
+        // GeoJsonId is in format "72XXX" where XXX is the county code
+        var countyCode = MunicipalityId.Length > 2 ? MunicipalityId.Substring(2) : MunicipalityId;
+
+        // Find the municipality to get its name
+        var municipality = municipalities?.FirstOrDefault(m => m.GeoJsonId == MunicipalityId);
+
+        if (municipality != null)
+        {
+            // Highlight and focus on the municipality
+            await MapService.HighlightMunicipalityAsync(countyCode);
+            await MapService.FocusOnMunicipalityAsync(countyCode);
+
+            // Also load and show the species for this municipality
+            await OnMunicipalityClick(municipality.GeoJsonId, municipality.Name);
+        }
+
+        StateHasChanged();
     }
 
     private async void OnDarkModeChanged()

@@ -166,4 +166,14 @@ public sealed class MapService : IMapService
     {
         await _js.InvokeVoidAsync("leafletInterop.clearDrawnCircle");
     }
+
+    public async Task HighlightMunicipalityAsync(string countyCode)
+    {
+        await _js.InvokeVoidAsync("leafletInterop.highlightMunicipality", countyCode);
+    }
+
+    public async Task FocusOnMunicipalityAsync(string countyCode)
+    {
+        await _js.InvokeVoidAsync("leafletInterop.focusOnMunicipality", countyCode);
+    }
 }
