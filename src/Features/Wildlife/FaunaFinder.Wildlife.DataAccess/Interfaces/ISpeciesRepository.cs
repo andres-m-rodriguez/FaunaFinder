@@ -25,6 +25,7 @@ public interface ISpeciesRepository
 
     Task<int> GetTotalSpeciesCountAsync(
         string? search = null,
+        bool fuzzySearch = true,
         CancellationToken cancellationToken = default
     );
 
@@ -45,6 +46,7 @@ public interface ISpeciesRepository
 
     Task<CursorPage<SpeciesForSearchDto>> GetSpeciesCursorPageAsync(
         CursorPageParameter request,
+        bool fuzzySearch = true,
         CancellationToken cancellationToken = default
     );
 }

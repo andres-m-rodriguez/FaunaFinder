@@ -49,10 +49,11 @@ public static class SpeciesEndpoints
 
     private static async Task<Ok<int>> GetSpeciesCount(
         string? search,
+        bool fuzzySearch,
         ISpeciesRepository repository,
         CancellationToken ct)
     {
-        var count = await repository.GetTotalSpeciesCountAsync(search, ct);
+        var count = await repository.GetTotalSpeciesCountAsync(search, fuzzySearch, ct);
         return TypedResults.Ok(count);
     }
 
@@ -71,10 +72,11 @@ public static class SpeciesEndpoints
 
     private static async Task<Ok<CursorPage<SpeciesForSearchDto>>> GetSpeciesCursor(
         [AsParameters] CursorPageParameter parameters,
+        bool fuzzySearch,
         ISpeciesRepository repository,
         CancellationToken ct)
     {
-        var page = await repository.GetSpeciesCursorPageAsync(parameters, ct);
+        var page = await repository.GetSpeciesCursorPageAsync(parameters, fuzzySearch, ct);
         return TypedResults.Ok(page);
     }
 }

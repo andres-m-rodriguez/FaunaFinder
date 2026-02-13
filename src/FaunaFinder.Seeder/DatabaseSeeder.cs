@@ -219,6 +219,9 @@ public static class DatabaseSeeder
         {
             Species species;
 
+            // Build search text from common names and scientific name
+            var searchText = string.Join(" ", dto.CommonNameEn, dto.CommonNameEs, dto.ScientificName).ToLower();
+
             if (existingSpecies.TryGetValue(dto.ScientificName, out var existing))
             {
                 species = existing;
@@ -234,6 +237,17 @@ public static class DatabaseSeeder
                 if (species.ImageSourceUrl is null && !string.IsNullOrEmpty(dto.ImageSourceUrl))
                 {
                     species.ImageSourceUrl = dto.ImageSourceUrl;
+                }
+
+                // Update search fields if not set
+                if (string.IsNullOrEmpty(species.SearchText))
+                {
+                    species.SearchText = searchText;
+                }
+
+                if (species.SearchKeywords.Count == 0 && dto.SearchKeywords is { Count: > 0 })
+                {
+                    species.SearchKeywords = dto.SearchKeywords.Select(k => k.ToLower()).ToList();
                 }
             }
             else
@@ -253,6 +267,8 @@ public static class DatabaseSeeder
                         : Convert.FromBase64String(dto.ImageBase64),
                     ProfileImageContentType = dto.ImageContentType,
                     ImageSourceUrl = dto.ImageSourceUrl,
+                    SearchText = searchText,
+                    SearchKeywords = dto.SearchKeywords?.Select(k => k.ToLower()).ToList() ?? [],
                 };
                 context.Species.Add(species);
                 await context.SaveChangesAsync(cancellationToken);
@@ -468,6 +484,9 @@ public static class DatabaseSeeder
 
         [JsonPropertyName("imageSourceUrl")]
         public string? ImageSourceUrl { get; init; }
+
+        [JsonPropertyName("searchKeywords")]
+        public List<string>? SearchKeywords { get; init; }
     }
 
     private sealed class LocationDto

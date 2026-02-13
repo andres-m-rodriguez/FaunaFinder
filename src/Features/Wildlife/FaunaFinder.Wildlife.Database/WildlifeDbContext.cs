@@ -27,6 +27,9 @@ public sealed class WildlifeDbContext(DbContextOptions<WildlifeDbContext> option
     {
         base.OnModelCreating(modelBuilder);
 
+        // Enable pg_trgm extension for fuzzy text search
+        modelBuilder.HasPostgresExtension("pg_trgm");
+
         // Apply all configurations from nested classes
         modelBuilder.ApplyConfiguration(new Municipality.EntityConfiguration());
         modelBuilder.ApplyConfiguration(new MunicipalitySpecies.EntityConfiguration());
