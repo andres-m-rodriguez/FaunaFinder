@@ -74,29 +74,41 @@
                 <ChildContent>
                     @Body
                 </ChildContent>
-            <ErrorContent Context="ex">
-                <MudContainer MaxWidth="MaxWidth.Small" Class="d-flex flex-column align-center justify-center h-full-minus-appbar">
-                    <MudPaper Elevation="3" Class="pa-6 text-center">
-                        <MudIcon Icon="@Icons.Material.Filled.Error" Color="Color.Error" Size="Size.Large" Class="mb-4" />
-                        <MudText Typo="Typo.h5" Class="mb-2">@L["Error_SomethingWentWrong"]</MudText>
-                        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-4">
-                            @L["Error_UnexpectedError"]
-                        </MudText>
-                        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="RecoverFromError">
-                            @L["TryAgain"]
-                        </MudButton>
-                    </MudPaper>
-                </MudContainer>
-            </ErrorContent>
-        </ErrorBoundary>
+                <ErrorContent Context="ex">
+                    @{ _currentError = ex; _showErrorOverlay = true; }
+                    @Body
+                </ErrorContent>
+            </ErrorBoundary>
         </LanguageProvider>
     </MudMainContent>
+
+    <MudOverlay Visible="_showErrorOverlay" DarkBackground="true" AutoClose="true" OnClick="DismissError" ZIndex="9999">
+        <MudPaper Elevation="8" Class="pa-8 error-dialog" @onclick:stopPropagation="true">
+            <div class="d-flex flex-column align-center text-center">
+                <MudIcon Icon="@Icons.Material.Filled.Error" Color="Color.Error" Style="font-size: 4rem;" Class="mb-4" />
+                <MudText Typo="Typo.h4" Class="mb-2">@L["Error_SomethingWentWrong"]</MudText>
+                <MudText Typo="Typo.body1" Color="Color.Secondary" Class="mb-6">
+                    @L["Error_UnexpectedError"]
+                </MudText>
+                <div class="d-flex gap-3">
+                    <MudButton Variant="Variant.Outlined" Color="Color.Default" OnClick="DismissError">
+                        @L["Close"]
+                    </MudButton>
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="RecoverFromError">
+                        @L["TryAgain"]
+                    </MudButton>
+                </div>
+            </div>
+        </MudPaper>
+    </MudOverlay>
 </MudLayout>
 
 @code {
     private ErrorBoundary? errorBoundary;
     private bool _drawerOpen;
     private bool _isDarkMode;
+    private bool _showErrorOverlay;
+    private Exception? _currentError;
 
     private readonly MudTheme _theme = new()
     {
@@ -159,8 +171,17 @@
         _drawerOpen = false;
     }
 
+    private void DismissError()
+    {
+        _showErrorOverlay = false;
+        _currentError = null;
+        errorBoundary?.Recover();
+    }
+
     private void RecoverFromError()
     {
+        _showErrorOverlay = false;
+        _currentError = null;
         errorBoundary?.Recover();
     }
 
