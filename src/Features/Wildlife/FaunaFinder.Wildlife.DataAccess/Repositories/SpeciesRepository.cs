@@ -41,7 +41,8 @@ public sealed class SpeciesRepository(IDbContextFactory<WildlifeDbContext> conte
                         new FwsActionDto(fl.FwsAction.Id, fl.FwsAction.Code, fl.FwsAction.Name),
                         fl.Justification
                     ))
-                    .ToList()
+                    .ToList(),
+                ms.Species.IsFauna
             ))
             .ToListAsync(cancellationToken);
     }
@@ -87,7 +88,8 @@ public sealed class SpeciesRepository(IDbContextFactory<WildlifeDbContext> conte
                     ))
                     .ToList(),
                 s.ProfileImageData != null,
-                s.ImageSourceUrl
+                s.ImageSourceUrl,
+                s.IsFauna
             ))
             .FirstOrDefaultAsync(cancellationToken);
     }
@@ -147,7 +149,8 @@ public sealed class SpeciesRepository(IDbContextFactory<WildlifeDbContext> conte
                 s.Id,
                 s.CommonName.ToList(),
                 s.ScientificName,
-                s.MunicipalitySpecies.Select(ms => ms.Municipality.Name).OrderBy(n => n).ToList()
+                s.MunicipalitySpecies.Select(ms => ms.Municipality.Name).OrderBy(n => n).ToList(),
+                s.IsFauna
             ))
             .ToListAsync(cancellationToken);
     }
@@ -333,7 +336,8 @@ public sealed class SpeciesRepository(IDbContextFactory<WildlifeDbContext> conte
                 s.Id,
                 s.CommonName.ToList(),
                 s.ScientificName,
-                s.MunicipalitySpecies.Select(ms => ms.Municipality.Name).OrderBy(n => n).ToList()
+                s.MunicipalitySpecies.Select(ms => ms.Municipality.Name).OrderBy(n => n).ToList(),
+                s.IsFauna
             ))
             .ToListAsync(cancellationToken);
 

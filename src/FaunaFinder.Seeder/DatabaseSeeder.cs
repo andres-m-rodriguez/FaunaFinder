@@ -305,6 +305,7 @@ public static class DatabaseSeeder
                         : Convert.FromBase64String(dto.ImageBase64),
                     ProfileImageContentType = dto.ImageContentType,
                     ImageSourceUrl = dto.ImageSourceUrl,
+                    IsFauna = dto.IsFauna,
                 };
                 context.Species.Add(species);
                 await context.SaveChangesAsync(cancellationToken);
@@ -550,6 +551,9 @@ public static class DatabaseSeeder
 
         [JsonPropertyName("categoryCodes")]
         public List<string>? CategoryCodes { get; init; }
+
+        [JsonPropertyName("isFauna")]
+        public bool IsFauna { get; init; } = true;
     }
 
     private sealed class LocationDto

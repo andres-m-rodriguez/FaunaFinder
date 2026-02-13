@@ -10,5 +10,6 @@ public sealed record SpeciesForDetailDto(
     List<SpeciesMunicipalityDto> Municipalities,
     List<SpeciesLocationDto> Locations,
     bool HasProfileImage,
-    string? ImageSourceUrl
+    string? ImageSourceUrl,
+    bool IsFauna
 );

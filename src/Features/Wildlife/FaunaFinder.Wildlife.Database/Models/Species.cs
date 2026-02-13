@@ -12,6 +12,7 @@ public sealed class Species
     public required byte[]? ProfileImageData { get; set; }
     public required string? ProfileImageContentType { get; set; }
     public required string? ImageSourceUrl { get; set; }
+    public required bool IsFauna { get; set; }
 
     public ICollection<FwsLink> FwsLinks { get; set; } = [];
     public ICollection<MunicipalitySpecies> MunicipalitySpecies { get; set; } = [];

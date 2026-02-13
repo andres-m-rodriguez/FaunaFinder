@@ -6,5 +6,6 @@ public sealed record SpeciesForListDto(
     int Id,
     List<LocaleValue> CommonName,
     string ScientificName,
-    List<FwsLinkDto> FwsLinks
+    List<FwsLinkDto> FwsLinks,
+    bool IsFauna
 );
