@@ -6,7 +6,8 @@ public sealed record SpeciesForSearchDto(
     int Id,
     List<LocaleValue> CommonName,
     string ScientificName,
-    IReadOnlyList<string> MunicipalityNames
+    IReadOnlyList<string> MunicipalityNames,
+    bool IsFauna
 )
 {
     public string GetCommonName(string locale = "en") =>
