@@ -1,4 +1,4 @@
-<Project Sdk="Aspire.AppHost.Sdk/13.0.0">
+<Project Sdk="Aspire.AppHost.Sdk/13.3.0-preview.1.26112.3">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net10.0</TargetFramework>
@@ -8,10 +8,11 @@
     <NoWarn>$(NoWarn);ASPIREAZURE002</NoWarn>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Aspire.Hosting.Azure.AppContainers" Version="13.1.0" />
-    <PackageReference Include="Aspire.Hosting.Azure.ContainerRegistry" Version="13.1.0" />
-    <PackageReference Include="Aspire.Hosting.Azure.PostgreSQL" Version="13.1.0" />
-    <PackageReference Include="Aspire.Hosting.PostgreSQL" Version="13.1.0" />
+    <PackageReference Include="Aspire.Hosting.Azure.AppContainers" Version="13.3.0-preview.1.26112.3" />
+    <PackageReference Include="Aspire.Hosting.Azure.ContainerRegistry" Version="13.3.0-preview.1.26112.3" />
+    <PackageReference Include="Aspire.Hosting.Azure.PostgreSQL" Version="13.3.0-preview.1.26112.3" />
+    <PackageReference Include="Aspire.Hosting.PostgreSQL" Version="13.3.0-preview.1.26112.3" />
+    <PackageReference Include="Npgsql" Version="9.0.3" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\FaunaFinder.Server\FaunaFinder.Server.csproj" />
