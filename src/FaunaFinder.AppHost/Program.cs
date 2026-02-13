@@ -1,24 +1,16 @@
-using Azure.Provisioning.AppContainers;
-using Azure.Provisioning.ContainerRegistry;
+using FaunaFinder.AppHost.Extensions;
 
 var builder = DistributedApplication.CreateBuilder(args);
 
-var acr = builder.AddAzureContainerRegistry("acr");
-
-builder.AddAzureContainerAppEnvironment("aca").WithAzureContainerRegistry(acr);
-
 var postgres = builder
-    .AddAzurePostgresFlexibleServer("postgres")
-    .RunAsContainer(configureContainer: container =>
-    {
-        container.WithImage("postgis/postgis", "17-3.5");
-        container.WithDataVolume("faunafinder-postgres-data");
-        container.WithPgAdmin();
-    });
+    .AddPostgres("postgres")
+    .WithImage("postgis/postgis", "17-3.5")
+    .WithDataVolume("faunafinder-postgres-data")
+    .WithPgAdmin();
 
-var identityDb = postgres.AddDatabase("faunafinder-identity");
-var wildlifeDb = postgres.AddDatabase("faunafinder-wildlife");
-var mainDb = postgres.AddDatabase("faunafinder");
+var identityDb = postgres.AddDatabase("faunafinder-identity").WithDropDatabaseCommand();
+var wildlifeDb = postgres.AddDatabase("faunafinder-wildlife").WithDropDatabaseCommand();
+var mainDb = postgres.AddDatabase("faunafinder").WithDropDatabaseCommand();
 
 // Database seeder (runs first, seeds all databases)
 var seeder = builder
