@@ -10,69 +10,73 @@ namespace FaunaFinder.Wildlife.Database.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AlterColumn<string>(
-                name: "name",
-                table: "nrcs_practices",
-                type: "jsonb",
-                nullable: true,
-                oldClrType: typeof(string),
-                oldType: "character varying(500)",
-                oldMaxLength: 500);
+            // Use raw SQL with USING clause to convert varchar to jsonb
+            // For existing data, wrap the string in a LocaleValue array format
+            // For empty/null data, use an empty array
+            migrationBuilder.Sql("""
+                ALTER TABLE nrcs_practices
+                ALTER COLUMN name TYPE jsonb
+                USING CASE
+                    WHEN name IS NULL OR name = '' THEN '[]'::jsonb
+                    ELSE jsonb_build_array(jsonb_build_object('Code', 'en', 'Value', name))
+                END;
+                """);
 
-            migrationBuilder.AlterColumn<string>(
-                name: "justification",
-                table: "fws_links",
-                type: "jsonb",
-                nullable: true,
-                oldClrType: typeof(string),
-                oldType: "character varying(2000)",
-                oldMaxLength: 2000,
-                oldNullable: true);
+            migrationBuilder.Sql("""
+                ALTER TABLE fws_actions
+                ALTER COLUMN name TYPE jsonb
+                USING CASE
+                    WHEN name IS NULL OR name = '' THEN '[]'::jsonb
+                    ELSE jsonb_build_array(jsonb_build_object('Code', 'en', 'Value', name))
+                END;
+                """);
 
-            migrationBuilder.AlterColumn<string>(
-                name: "name",
-                table: "fws_actions",
-                type: "jsonb",
-                nullable: true,
-                oldClrType: typeof(string),
-                oldType: "character varying(500)",
-                oldMaxLength: 500);
+            migrationBuilder.Sql("""
+                ALTER TABLE fws_links
+                ALTER COLUMN justification TYPE jsonb
+                USING CASE
+                    WHEN justification IS NULL OR justification = '' THEN '[]'::jsonb
+                    ELSE jsonb_build_array(jsonb_build_object('Code', 'en', 'Value', justification))
+                END;
+                """);
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AlterColumn<string>(
-                name: "name",
-                table: "nrcs_practices",
-                type: "character varying(500)",
-                maxLength: 500,
-                nullable: false,
-                defaultValue: "",
-                oldClrType: typeof(string),
-                oldType: "jsonb",
-                oldNullable: true);
+            // Extract the English value from the jsonb array back to varchar
+            migrationBuilder.Sql("""
+                ALTER TABLE nrcs_practices
+                ALTER COLUMN name TYPE character varying(500)
+                USING (
+                    SELECT value->>'Value'
+                    FROM jsonb_array_elements(name) AS value
+                    WHERE value->>'Code' = 'en'
+                    LIMIT 1
+                );
+                """);
 
-            migrationBuilder.AlterColumn<string>(
-                name: "justification",
-                table: "fws_links",
-                type: "character varying(2000)",
-                maxLength: 2000,
-                nullable: true,
-                oldClrType: typeof(string),
-                oldType: "jsonb",
-                oldNullable: true);
+            migrationBuilder.Sql("""
+                ALTER TABLE fws_actions
+                ALTER COLUMN name TYPE character varying(500)
+                USING (
+                    SELECT value->>'Value'
+                    FROM jsonb_array_elements(name) AS value
+                    WHERE value->>'Code' = 'en'
+                    LIMIT 1
+                );
+                """);
 
-            migrationBuilder.AlterColumn<string>(
-                name: "name",
-                table: "fws_actions",
-                type: "character varying(500)",
-                maxLength: 500,
-                nullable: false,
-                defaultValue: "",
-                oldClrType: typeof(string),
-                oldType: "jsonb",
-                oldNullable: true);
+            migrationBuilder.Sql("""
+                ALTER TABLE fws_links
+                ALTER COLUMN justification TYPE character varying(2000)
+                USING (
+                    SELECT value->>'Value'
+                    FROM jsonb_array_elements(justification) AS value
+                    WHERE value->>'Code' = 'en'
+                    LIMIT 1
+                );
+                """);
         }
     }
 }
