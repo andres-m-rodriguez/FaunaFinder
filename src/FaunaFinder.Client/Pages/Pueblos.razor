@@ -76,7 +76,7 @@
 @code {
     private List<MunicipalityCardDto> municipalities = new();
     private string searchTerm = string.Empty;
-    private string? nextCursor;
+    private int? cursor;
     private bool hasMore = true;
     private bool isInitialLoading = true;
     private bool isLoadingMore = false;
@@ -119,12 +119,27 @@
         isLoadingMore = true;
         StateHasChanged();
 
-        var request = new CursorPageParameter(nextCursor, PageSize, string.IsNullOrWhiteSpace(searchTerm) ? null : searchTerm);
-        var page = await MunicipalityHttpClient.GetMunicipalitiesCursorPageAsync(request);
+        var parameters = new MunicipalityParameters(
+            PageSize: PageSize,
+            Cursor: cursor,
+            Search: string.IsNullOrWhiteSpace(searchTerm) ? null : searchTerm
+        );
 
-        municipalities.AddRange(page.Items);
-        nextCursor = page.NextCursor;
-        hasMore = page.HasMore;
+        var items = new List<MunicipalityCardDto>();
+        await foreach (var item in MunicipalityHttpClient.GetMunicipalityCardsAsync(parameters))
+        {
+            items.Add(item);
+        }
+
+        // Server returns PageSize+1 items; if we got more than PageSize, there's more data
+        hasMore = items.Count > PageSize;
+        if (hasMore)
+        {
+            items.RemoveAt(items.Count - 1);
+        }
+
+        municipalities.AddRange(items);
+        cursor = items.Count > 0 ? items[^1].Id : null;
 
         isLoadingMore = false;
         StateHasChanged();
@@ -134,7 +149,7 @@
     {
         // Reset state for new search
         municipalities.Clear();
-        nextCursor = null;
+        cursor = null;
         hasMore = true;
         isInitialLoading = true;
         isObserverInitialized = false;

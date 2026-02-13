@@ -1,4 +1,3 @@
-using FaunaFinder.Pagination.Contracts;
 using FaunaFinder.Wildlife.Contracts.Dtos;
 using FaunaFinder.Wildlife.Contracts.Parameters;
 
@@ -16,7 +15,7 @@ public interface ISpeciesHttpClient
         CancellationToken cancellationToken = default
     );
 
-    Task<IReadOnlyList<SpeciesForSearchDto>> GetSpeciesAsync(
+    IAsyncEnumerable<SpeciesForSearchDto> GetSpeciesAsync(
         SpeciesParameters parameters,
         CancellationToken cancellationToken = default
     );
@@ -30,11 +29,6 @@ public interface ISpeciesHttpClient
         double latitude,
         double longitude,
         double radiusMeters,
-        CancellationToken cancellationToken = default
-    );
-
-    Task<CursorPage<SpeciesForSearchDto>> GetSpeciesCursorPageAsync(
-        CursorPageParameter request,
         CancellationToken cancellationToken = default
     );
 

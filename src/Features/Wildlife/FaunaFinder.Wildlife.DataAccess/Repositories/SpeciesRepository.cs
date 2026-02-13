@@ -94,9 +94,17 @@ public sealed class SpeciesRepository(IDbContextFactory<WildlifeDbContext> conte
             .FirstOrDefaultAsync(cancellationToken);
     }
 
-    public async Task<IReadOnlyList<SpeciesForSearchDto>> GetSpeciesAsync(
+    public IAsyncEnumerable<SpeciesForSearchDto> GetSpeciesAsync(
         SpeciesParameters parameters,
         CancellationToken cancellationToken = default
+    )
+    {
+        return GetSpeciesInternalAsync(parameters, cancellationToken);
+    }
+
+    private async IAsyncEnumerable<SpeciesForSearchDto> GetSpeciesInternalAsync(
+        SpeciesParameters parameters,
+        [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default
     )
     {
         await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
@@ -140,11 +148,16 @@ public sealed class SpeciesRepository(IDbContextFactory<WildlifeDbContext> conte
             );
         }
 
-        // Project and return with municipality names
-        return await query
-            .OrderBy(s => s.ScientificName)
-            .Skip(parameters.Page * parameters.PageSize)
-            .Take(parameters.PageSize)
+        // Apply cursor filter
+        if (parameters.Cursor.HasValue)
+        {
+            query = query.Where(s => s.Id > parameters.Cursor.Value);
+        }
+
+        // Fetch PageSize + 1 for client-side HasMore detection
+        await foreach (var species in query
+            .OrderBy(s => s.Id)
+            .Take(parameters.PageSize + 1)
             .Select(s => new SpeciesForSearchDto(
                 s.Id,
                 s.CommonName.ToList(),
@@ -152,7 +165,11 @@ public sealed class SpeciesRepository(IDbContextFactory<WildlifeDbContext> conte
                 s.MunicipalitySpecies.Select(ms => ms.Municipality.Name).OrderBy(n => n).ToList(),
                 s.IsFauna
             ))
-            .ToListAsync(cancellationToken);
+            .AsAsyncEnumerable()
+            .WithCancellation(cancellationToken))
+        {
+            yield return species;
+        }
     }
 
     public async Task<int> GetTotalSpeciesCountAsync(
@@ -283,73 +300,6 @@ public sealed class SpeciesRepository(IDbContextFactory<WildlifeDbContext> conte
     private static double DegreesToRadians(double degrees)
     {
         return degrees * Math.PI / 180;
-    }
-
-    public async Task<CursorPage<SpeciesForSearchDto>> GetSpeciesCursorPageAsync(
-        CursorPageParameter request,
-        CancellationToken cancellationToken = default
-    )
-    {
-        await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
-
-        var query = context.Species.AsNoTracking().AsQueryable();
-
-        // Apply category filter (comma-separated IDs)
-        if (!string.IsNullOrWhiteSpace(request.CategoryIds))
-        {
-            var categoryIds = request.CategoryIds
-                .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-                .Select(id => int.TryParse(id, out var parsed) ? parsed : (int?)null)
-                .Where(id => id.HasValue)
-                .Select(id => id!.Value)
-                .ToList();
-
-            if (categoryIds.Count > 0)
-            {
-                query = query.Where(s =>
-                    s.CategoryLinks.Any(cl => categoryIds.Contains(cl.CategoryId))
-                );
-            }
-        }
-
-        // Apply search filter
-        if (!string.IsNullOrWhiteSpace(request.Search))
-        {
-            var search = request.Search.Trim().ToLower();
-            query = query.Where(s =>
-                s.CommonName.Any(cn => cn.Value.ToLower().Contains(search))
-                || s.ScientificName.ToLower().Contains(search)
-            );
-        }
-
-        // Apply cursor filter
-        if (request.Cursor is not null && CursorHelper.TryDecode(request.Cursor, out var cursorId))
-        {
-            query = query.Where(s => s.Id > cursorId);
-        }
-
-        // Fetch one extra to determine HasMore
-        var items = await query
-            .OrderBy(s => s.Id)
-            .Take(request.PageSize + 1)
-            .Select(s => new SpeciesForSearchDto(
-                s.Id,
-                s.CommonName.ToList(),
-                s.ScientificName,
-                s.MunicipalitySpecies.Select(ms => ms.Municipality.Name).OrderBy(n => n).ToList(),
-                s.IsFauna
-            ))
-            .ToListAsync(cancellationToken);
-
-        var hasMore = items.Count > request.PageSize;
-        if (hasMore)
-        {
-            items.RemoveAt(items.Count - 1);
-        }
-
-        var nextCursor = hasMore && items.Count > 0 ? CursorHelper.Encode(items[^1].Id) : null;
-
-        return new CursorPage<SpeciesForSearchDto>(items, nextCursor, hasMore);
     }
 
     public async Task<IReadOnlyList<SpeciesCategoryDto>> GetAllCategoriesAsync(

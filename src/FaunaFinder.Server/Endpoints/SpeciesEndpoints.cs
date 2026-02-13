@@ -1,4 +1,3 @@
-using FaunaFinder.Pagination.Contracts;
 using FaunaFinder.Wildlife.Contracts.Dtos;
 using FaunaFinder.Wildlife.Contracts.Parameters;
 using FaunaFinder.Wildlife.DataAccess.Interfaces;
@@ -17,17 +16,15 @@ public static class SpeciesEndpoints
         group.MapGet("/by-municipality/{municipalityId:int}", GetSpeciesByMunicipality).WithName("GetSpeciesByMunicipality");
         group.MapGet("/count", GetSpeciesCount).WithName("GetSpeciesCount");
         group.MapGet("/nearby", GetSpeciesNearby).WithName("GetSpeciesNearby");
-        group.MapGet("/cursor", GetSpeciesCursor).WithName("GetSpeciesCursor");
         group.MapGet("/categories", GetCategories).WithName("GetCategories");
     }
 
-    private static async Task<Ok<IReadOnlyList<SpeciesForSearchDto>>> GetSpecies(
+    private static IAsyncEnumerable<SpeciesForSearchDto> GetSpecies(
         [AsParameters] SpeciesParameters parameters,
         ISpeciesRepository repository,
         CancellationToken ct)
     {
-        var species = await repository.GetSpeciesAsync(parameters, ct);
-        return TypedResults.Ok(species);
+        return repository.GetSpeciesAsync(parameters, ct);
     }
 
     private static async Task<Results<Ok<SpeciesForDetailDto>, NotFound>> GetSpeciesDetail(
@@ -68,15 +65,6 @@ public static class SpeciesEndpoints
             parameters.RadiusMeters,
             ct);
         return TypedResults.Ok(species);
-    }
-
-    private static async Task<Ok<CursorPage<SpeciesForSearchDto>>> GetSpeciesCursor(
-        [AsParameters] CursorPageParameter parameters,
-        ISpeciesRepository repository,
-        CancellationToken ct)
-    {
-        var page = await repository.GetSpeciesCursorPageAsync(parameters, ct);
-        return TypedResults.Ok(page);
     }
 
     private static async Task<Ok<IReadOnlyList<SpeciesCategoryDto>>> GetCategories(

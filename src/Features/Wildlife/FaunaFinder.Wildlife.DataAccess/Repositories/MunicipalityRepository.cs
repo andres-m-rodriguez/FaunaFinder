@@ -42,9 +42,17 @@ public sealed class MunicipalityRepository(IDbContextFactory<WildlifeDbContext> 
             .FirstOrDefaultAsync(cancellationToken);
     }
 
-    public async Task<IReadOnlyList<MunicipalityCardDto>> GetMunicipalitiesWithSpeciesCountAsync(
+    public IAsyncEnumerable<MunicipalityCardDto> GetMunicipalitiesWithSpeciesCountAsync(
         MunicipalityParameters parameters,
         CancellationToken cancellationToken = default
+    )
+    {
+        return GetMunicipalitiesInternalAsync(parameters, cancellationToken);
+    }
+
+    private async IAsyncEnumerable<MunicipalityCardDto> GetMunicipalitiesInternalAsync(
+        MunicipalityParameters parameters,
+        [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default
     )
     {
         await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
@@ -57,12 +65,22 @@ public sealed class MunicipalityRepository(IDbContextFactory<WildlifeDbContext> 
             query = query.Where(m => m.Name.ToLower().Contains(search));
         }
 
-        return await query
-            .OrderBy(static m => m.Name)
-            .Skip(parameters.Page * parameters.PageSize)
-            .Take(parameters.PageSize)
+        // Apply cursor filter
+        if (parameters.Cursor.HasValue)
+        {
+            query = query.Where(m => m.Id > parameters.Cursor.Value);
+        }
+
+        // Fetch PageSize + 1 for client-side HasMore detection
+        await foreach (var municipality in query
+            .OrderBy(m => m.Id)
+            .Take(parameters.PageSize + 1)
             .Select(static m => new MunicipalityCardDto(m.Id, m.Name, m.MunicipalitySpecies.Count))
-            .ToListAsync(cancellationToken);
+            .AsAsyncEnumerable()
+            .WithCancellation(cancellationToken))
+        {
+            yield return municipality;
+        }
     }
 
     public async Task<int> GetTotalMunicipalitiesCountAsync(
@@ -81,45 +99,5 @@ public sealed class MunicipalityRepository(IDbContextFactory<WildlifeDbContext> 
         }
 
         return await query.CountAsync(cancellationToken);
-    }
-
-    public async Task<CursorPage<MunicipalityCardDto>> GetMunicipalitiesCursorPageAsync(
-        CursorPageParameter request,
-        CancellationToken cancellationToken = default
-    )
-    {
-        await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
-
-        var query = context.Municipalities.AsNoTracking().AsQueryable();
-
-        // Apply search filter
-        if (!string.IsNullOrWhiteSpace(request.Search))
-        {
-            var search = request.Search.ToLower();
-            query = query.Where(m => m.Name.ToLower().Contains(search));
-        }
-
-        // Apply cursor filter
-        if (request.Cursor is not null && CursorHelper.TryDecode(request.Cursor, out var cursorId))
-        {
-            query = query.Where(m => m.Id > cursorId);
-        }
-
-        // Fetch one extra to determine HasMore
-        var items = await query
-            .OrderBy(m => m.Id)
-            .Take(request.PageSize + 1)
-            .Select(static m => new MunicipalityCardDto(m.Id, m.Name, m.MunicipalitySpecies.Count))
-            .ToListAsync(cancellationToken);
-
-        var hasMore = items.Count > request.PageSize;
-        if (hasMore)
-        {
-            items.RemoveAt(items.Count - 1);
-        }
-
-        var nextCursor = hasMore && items.Count > 0 ? CursorHelper.Encode(items[^1].Id) : null;
-
-        return new CursorPage<MunicipalityCardDto>(items, nextCursor, hasMore);
     }
 }
