@@ -35,4 +35,15 @@ public sealed class ExportHttpClient(HttpClient httpClient) : IExportHttpClient
         response.EnsureSuccessStatusCode();
         return await response.Content.ReadAsByteArrayAsync(cancellationToken);
     }
+
+    public async Task<byte[]> ExportSpeciesPdfAsync(
+        int speciesId,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var url = $"/api/export/species/{speciesId}/pdf";
+        var response = await httpClient.GetAsync(url, cancellationToken);
+        response.EnsureSuccessStatusCode();
+        return await response.Content.ReadAsByteArrayAsync(cancellationToken);
+    }
 }

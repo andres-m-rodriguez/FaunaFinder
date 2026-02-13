@@ -11,6 +11,7 @@ public static class ExportEndpoints
 
         group.MapGet("/municipality/{municipalityId:int}/pdf", ExportMunicipalityPdf).WithName("ExportMunicipalityPdf");
         group.MapGet("/municipality/{municipalityId:int}/csv", ExportMunicipalityCsv).WithName("ExportMunicipalityCsv");
+        group.MapGet("/species/{speciesId:int}/pdf", ExportSpeciesPdf).WithName("ExportSpeciesPdf");
     }
 
     private static async Task<IResult> ExportMunicipalityPdf(
@@ -63,5 +64,22 @@ public static class ExportEndpoints
         var fileName = $"{municipality.Name.Replace(" ", "_")}_Species_Report.csv";
 
         return Results.File(csvBytes, "text/csv", fileName);
+    }
+
+    private static async Task<IResult> ExportSpeciesPdf(
+        int speciesId,
+        ISpeciesRepository speciesRepository,
+        ISpeciesReportService reportService,
+        CancellationToken ct)
+    {
+        var species = await speciesRepository.GetSpeciesDetailAsync(speciesId, ct);
+        if (species is null)
+            return Results.NotFound();
+
+        var pdfBytes = reportService.GeneratePdfReport(species);
+        var commonName = species.CommonName.FirstOrDefault()?.Value ?? species.ScientificName;
+        var fileName = $"{commonName.Replace(" ", "_")}_Report.pdf";
+
+        return Results.File(pdfBytes, "application/pdf", fileName);
     }
 }

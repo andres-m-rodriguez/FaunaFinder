@@ -13,4 +13,9 @@ public interface IExportHttpClient
         IEnumerable<int>? speciesIds = null,
         CancellationToken cancellationToken = default
     );
+
+    Task<byte[]> ExportSpeciesPdfAsync(
+        int speciesId,
+        CancellationToken cancellationToken = default
+    );
 }
