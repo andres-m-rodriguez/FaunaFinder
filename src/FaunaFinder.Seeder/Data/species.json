@@ -86,11 +86,7 @@
     "commonNameEs": "Agelaius xanthomus",
     "municipalityGeoJsonIds": [
       "72023",
-      "72055",
-      "72079",
-      "72089",
-      "72123",
-      "72125"
+      "72079"
     ],
     "locations": [
       {
@@ -137,22 +133,9 @@
     "commonNameEn": "Amazona vittata",
     "commonNameEs": "Amazona vittata",
     "municipalityGeoJsonIds": [
-      "72001",
       "72013",
-      "72029",
-      "72051",
-      "72053",
-      "72057",
-      "72065",
-      "72073",
-      "72083",
-      "72089",
-      "72101",
-      "72103",
-      "72107",
-      "72131",
-      "72139",
-      "72141"
+      "72141",
+      "72107"
     ],
     "locations": [
       {
@@ -337,12 +320,11 @@
     "commonNameEn": "Banara vanderbiltii",
     "commonNameEs": "Banara vanderbiltii",
     "municipalityGeoJsonIds": [
-      "72033",
+      "72091",
       "72043",
       "72051",
-      "72091",
       "72127",
-      "72145"
+      "72033"
     ],
     "locations": [
       {
@@ -430,12 +412,11 @@
     "commonNameEn": "Buxus vahlii",
     "commonNameEs": "Buxus vahlii",
     "municipalityGeoJsonIds": [
-      "72005",
-      "72021",
-      "72047",
       "72071",
       "72117",
-      "72137"
+      "72021",
+      "72005",
+      "72047"
     ],
     "locations": [
       {
@@ -585,14 +566,9 @@
     "commonNameEn": "Caprimulgus noctitherus",
     "commonNameEs": "Caprimulgus noctitherus",
     "municipalityGeoJsonIds": [
-      "72023",
       "72055",
-      "72057",
-      "72079",
-      "72113",
-      "72121",
-      "72125",
-      "72153"
+      "72023",
+      "72079"
     ],
     "locations": [
       {
@@ -673,12 +649,11 @@
     "commonNameEn": "Chamaecrista glandulosa var. mirabilis",
     "commonNameEs": "Chamaecrista glandulosa var. mirabilis",
     "municipalityGeoJsonIds": [
+      "72091",
+      "72051",
       "72013",
       "72047",
-      "72051",
-      "72091",
-      "72127",
-      "72145"
+      "72127"
     ],
     "locations": [
       {
@@ -766,19 +741,10 @@
     "commonNameEn": "Cordia bellonis",
     "commonNameEs": "Cordia bellonis",
     "municipalityGeoJsonIds": [
-      "72013",
-      "72039",
-      "72047",
-      "72054",
-      "72081",
-      "72083",
-      "72091",
-      "72093",
       "72121",
-      "72125",
-      "72129",
+      "72013",
       "72141",
-      "72153"
+      "72093"
     ],
     "locations": [
       {
@@ -822,12 +788,11 @@
     "commonNameEn": "Cornutia obovata",
     "commonNameEs": "Cornutia obovata",
     "municipalityGeoJsonIds": [
-      "72009",
       "72019",
-      "72071",
-      "72107",
       "72115",
-      "72141"
+      "72071",
+      "72141",
+      "72009"
     ],
     "locations": [
       {
@@ -898,12 +863,8 @@
     "commonNameEn": "Crescentia portoricensis",
     "commonNameEs": "Crescentia portoricensis",
     "municipalityGeoJsonIds": [
-      "72047",
-      "72055",
-      "72069",
-      "72093",
       "72121",
-      "72125",
+      "72093",
       "72153"
     ],
     "locations": [
@@ -949,12 +910,10 @@
     "commonNameEs": "Cyathea dryopteroides",
     "municipalityGeoJsonIds": [
       "72001",
-      "72047",
-      "72073",
-      "72083",
+      "72149",
       "72111",
       "72113",
-      "72149"
+      "72083"
     ],
     "locations": [
       {
@@ -1013,12 +972,10 @@
     "commonNameEs": "Daphnopsis helleriana",
     "municipalityGeoJsonIds": [
       "72021",
-      "72051",
-      "72061",
-      "72071",
-      "72115",
       "72137",
-      "72143"
+      "72115",
+      "72071",
+      "72051"
     ],
     "locations": [
       {
@@ -1073,16 +1030,9 @@
     "commonNameEn": "Eleutherodactylus cooki",
     "commonNameEs": "Eleutherodactylus cooki",
     "municipalityGeoJsonIds": [
-      "72025",
-      "72031",
-      "72035",
-      "72069",
-      "72085",
-      "72095",
-      "72103",
-      "72109",
       "72129",
-      "72151"
+      "72151",
+      "72095"
     ],
     "locations": [
       {
@@ -1129,9 +1079,8 @@
     "commonNameEn": "Eleutherodactylus jasperi",
     "commonNameEs": "Eleutherodactylus jasperi",
     "municipalityGeoJsonIds": [
-      "72025",
       "72035",
-      "72057"
+      "72025"
     ],
     "locations": [
       {
@@ -1196,54 +1145,9 @@
     "commonNameEn": "Epicrates inornatus",
     "commonNameEs": "Epicrates inornatus",
     "municipalityGeoJsonIds": [
-      "72001",
-      "72005",
-      "72007",
       "72013",
-      "72017",
-      "72023",
-      "72027",
-      "72029",
-      "72031",
-      "72037",
-      "72039",
-      "72041",
-      "72047",
-      "72051",
-      "72053",
-      "72054",
-      "72057",
-      "72059",
-      "72061",
-      "72063",
-      "72065",
-      "72069",
-      "72071",
-      "72073",
-      "72077",
-      "72079",
-      "72089",
-      "72091",
-      "72093",
-      "72095",
-      "72097",
-      "72101",
-      "72107",
-      "72111",
-      "72113",
-      "72115",
       "72119",
-      "72121",
-      "72125",
-      "72127",
-      "72137",
-      "72139",
-      "72141",
-      "72143",
-      "72145",
-      "72149",
-      "72151",
-      "72153"
+      "72089"
     ],
     "locations": [
       {
@@ -1304,16 +1208,10 @@
     "commonNameEn": "Eugenia haematocarpa",
     "commonNameEs": "Eugenia haematocarpa",
     "municipalityGeoJsonIds": [
-      "72031",
-      "72063",
-      "72069",
-      "72071",
-      "72077",
-      "72085",
-      "72103",
-      "72109",
       "72119",
-      "72151"
+      "72151",
+      "72031",
+      "72109"
     ],
     "locations": [
       {
@@ -1358,12 +1256,9 @@
     "commonNameEs": "Eugenia woodburyana",
     "municipalityGeoJsonIds": [
       "72023",
-      "72025",
-      "72047",
       "72055",
-      "72079",
-      "72113",
-      "72123"
+      "72025",
+      "72113"
     ],
     "locations": [
       {
@@ -1407,12 +1302,10 @@
     "commonNameEn": "Gesneria pauciflora",
     "commonNameEs": "Gesneria pauciflora",
     "municipalityGeoJsonIds": [
-      "72047",
-      "72079",
-      "72093",
-      "72107",
       "72121",
-      "72153"
+      "72093",
+      "72079",
+      "72047"
     ],
     "locations": [
       {
@@ -1456,22 +1349,10 @@
     "commonNameEn": "Goetzea elegans",
     "commonNameEs": "Goetzea elegans",
     "municipalityGeoJsonIds": [
-      "72007",
-      "72009",
-      "72011",
-      "72013",
-      "72021",
-      "72025",
-      "72037",
-      "72065",
       "72071",
-      "72097",
-      "72113",
-      "72115",
       "72119",
-      "72127",
-      "72129",
-      "72147"
+      "72007",
+      "72127"
     ],
     "locations": [
       {
@@ -1516,11 +1397,10 @@
     "commonNameEs": "Gonocalyx concolor",
     "municipalityGeoJsonIds": [
       "72025",
+      "72035",
       "72041",
-      "72057",
-      "72089",
       "72109",
-      "72129"
+      "72089"
     ],
     "locations": [
       {
@@ -1602,7 +1482,6 @@
     "commonNameEn": "Ilex sintenisii",
     "commonNameEs": "Ilex sintenisii",
     "municipalityGeoJsonIds": [
-      "72037",
       "72103",
       "72119",
       "72153"
@@ -1751,8 +1630,7 @@
     "commonNameEs": "Mitracarpus polycladus",
     "municipalityGeoJsonIds": [
       "72055",
-      "72059",
-      "72153"
+      "72059"
     ],
     "locations": [
       {
@@ -1811,24 +1689,11 @@
     "commonNameEn": "Ottoschulzia rhodoxylon",
     "commonNameEs": "Ottoschulzia rhodoxylon",
     "municipalityGeoJsonIds": [
-      "72005",
-      "72013",
-      "72017",
-      "72021",
-      "72027",
-      "72051",
-      "72053",
-      "72055",
-      "72059",
-      "72061",
-      "72071",
-      "72091",
-      "72097",
-      "72115",
-      "72119",
-      "72121",
       "72137",
-      "72143"
+      "72115",
+      "72021",
+      "72013",
+      "72091"
     ],
     "locations": [
       {
@@ -1872,18 +1737,9 @@
     "commonNameEn": "Peltophryne lemur",
     "commonNameEs": "Peltophryne lemur",
     "municipalityGeoJsonIds": [
-      "72013",
-      "72041",
-      "72043",
       "72055",
-      "72059",
-      "72091",
-      "72111",
       "72113",
-      "72115",
-      "72133",
-      "72145",
-      "72153"
+      "72133"
     ],
     "locations": [
       {
@@ -2018,17 +1874,11 @@
     "commonNameEn": "Schoepfia arenaria",
     "commonNameEs": "Schoepfia arenaria",
     "municipalityGeoJsonIds": [
-      "72013",
-      "72027",
-      "72037",
-      "72043",
-      "72053",
-      "72071",
-      "72087",
       "72103",
+      "72027",
       "72115",
       "72119",
-      "72127"
+      "72037"
     ],
     "locations": [
       {
@@ -2072,14 +1922,9 @@
     "commonNameEn": "Setophaga angelae",
     "commonNameEs": "Setophaga angelae",
     "municipalityGeoJsonIds": [
-      "72037",
-      "72059",
-      "72081",
-      "72083",
       "72093",
-      "72097",
       "72121",
-      "72125",
+      "72081",
       "72153"
     ],
     "locations": [
@@ -2128,13 +1973,9 @@
     "commonNameEs": "Solanum drymophilum",
     "municipalityGeoJsonIds": [
       "72013",
-      "72021",
-      "72025",
       "72035",
-      "72047",
-      "72107",
-      "72113",
-      "72123"
+      "72123",
+      "72021"
     ],
     "locations": [
       {
@@ -2178,25 +2019,11 @@
     "commonNameEn": "Stahlia monosperma",
     "commonNameEs": "Stahlia monosperma",
     "municipalityGeoJsonIds": [
-      "72019",
-      "72021",
-      "72023",
-      "72029",
-      "72033",
-      "72035",
-      "72037",
-      "72041",
-      "72045",
-      "72053",
-      "72067",
-      "72089",
-      "72095",
-      "72097",
-      "72119",
       "72125",
-      "72127",
-      "72137",
-      "72151"
+      "72037",
+      "72095",
+      "72021",
+      "72033"
     ],
     "locations": [
       {
@@ -2447,7 +2274,6 @@
     "commonNameEn": "Trichilia triacantha",
     "commonNameEs": "Trichilia triacantha",
     "municipalityGeoJsonIds": [
-      "72055",
       "72107"
     ],
     "locations": [
@@ -2474,13 +2300,10 @@
     "commonNameEn": "Varronia rupicola",
     "commonNameEs": "Varronia rupicola",
     "municipalityGeoJsonIds": [
-      "72001",
-      "72055",
-      "72059",
-      "72093",
       "72111",
-      "72113",
-      "72153"
+      "72153",
+      "72055",
+      "72093"
     ],
     "locations": [
       {
@@ -2524,9 +2347,8 @@
     "commonNameEn": "Vernonia proctorii",
     "commonNameEs": "Vernonia proctorii",
     "municipalityGeoJsonIds": [
-      "72013",
       "72023",
-      "72079"
+      "72013"
     ],
     "locations": [
       {
