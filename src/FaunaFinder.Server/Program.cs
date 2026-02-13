@@ -20,6 +20,7 @@ builder.Services.AddRazorComponents().AddInteractiveWebAssemblyComponents();
 
 builder.Services.AddScoped<IAppLocalizer, AppLocalizer>();
 builder.Services.AddScoped<IMunicipalityReportService, MunicipalityReportService>();
+builder.Services.AddScoped<ISpeciesReportService, SpeciesReportService>();
 
 QuestPDF.Settings.License = LicenseType.Community;
 

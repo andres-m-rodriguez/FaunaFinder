@@ -1,6 +1,9 @@
 @page "/species/{Id:int}"
 @using BlazingSingularity.Commands
+@using FaunaFinder.Client.Services.Map
 @inject ISpeciesHttpClient SpeciesHttpClient
+@inject IExportHttpClient ExportHttpClient
+@inject IMapService MapService
 @inject NavigationManager NavigationManager
 @inject IAppLocalizer L
 
@@ -79,16 +82,28 @@
                             @L["SpeciesDetail_FoundIn", species.Municipalities.Count, species.Municipalities.Count == 1 ? L["Species_Municipality"] : L["Species_Municipalities"]]
                         </MudText>
                     </div>
-                    @if (species.Locations.Count > 0)
-                    {
-                        <MudButton Variant="Variant.Filled"
+                    <div class="d-flex flex-wrap gap-2 mt-4">
+                        @if (species.Locations.Count > 0)
+                        {
+                            <MudButton Variant="Variant.Filled"
+                                       Color="Color.Primary"
+                                       StartIcon="@Icons.Material.Filled.Map"
+                                       OnClick="ViewLocations">
+                                @L["SpeciesDetail_ViewLocations"]
+                            </MudButton>
+                        }
+                        <MudButton Variant="Variant.Outlined"
                                    Color="Color.Primary"
-                                   StartIcon="@Icons.Material.Filled.Map"
-                                   OnClick="ViewLocations"
-                                   Class="mt-4">
-                            @L["SpeciesDetail_ViewLocations"]
+                                   StartIcon="@Icons.Material.Filled.PictureAsPdf"
+                                   OnClick="() => DownloadPdfCommand.ExecuteAsync()"
+                                   Disabled="DownloadPdfCommand.IsLoading">
+                            @if (DownloadPdfCommand.IsLoading)
+                            {
+                                <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                            }
+                            @L["Export_PDF"]
                         </MudButton>
-                    }
+                    </div>
                 </MudItem>
             </MudGrid>
         </MudPaper>
@@ -377,6 +392,18 @@
     private void ViewLocations()
     {
         NavigationManager.NavigateTo($"/?speciesId={Id}");
+    }
+
+    [RelayCommand]
+    private async Task DownloadPdf()
+    {
+        if (species == null)
+            return;
+
+        var pdfBytes = await ExportHttpClient.ExportSpeciesPdfAsync(species.Id);
+        var commonName = L.GetLocalizedValue(species.CommonName);
+        var fileName = $"{commonName.Replace(" ", "_")}_Report.pdf";
+        await MapService.DownloadFileAsync(pdfBytes, fileName, "application/pdf");
     }
 
     private string GetProfileImageUrl()
