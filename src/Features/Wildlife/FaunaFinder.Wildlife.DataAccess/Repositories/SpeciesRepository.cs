@@ -3,7 +3,6 @@ using FaunaFinder.Wildlife.Contracts.Dtos;
 using FaunaFinder.Wildlife.Contracts.Parameters;
 using FaunaFinder.Wildlife.DataAccess.Interfaces;
 using FaunaFinder.Wildlife.Database;
-using FaunaFinder.Wildlife.Database.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace FaunaFinder.Wildlife.DataAccess.Repositories;
@@ -101,38 +100,33 @@ public sealed class SpeciesRepository(IDbContextFactory<WildlifeDbContext> conte
         await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
 
         var query = context.Species.AsNoTracking().AsQueryable();
-        var search = parameters.Search?.Trim().ToLower();
-        var hasSearch = !string.IsNullOrWhiteSpace(search);
 
-        // Apply keyword filter (comma-separated string)
-        if (!string.IsNullOrWhiteSpace(parameters.Keywords))
+        // Apply category filter (comma-separated IDs)
+        if (!string.IsNullOrWhiteSpace(parameters.CategoryIds))
         {
-            var keywords = parameters.Keywords
+            var categoryIds = parameters.CategoryIds
                 .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-                .Select(k => k.ToLower())
+                .Select(id => int.TryParse(id, out var parsed) ? parsed : (int?)null)
+                .Where(id => id.HasValue)
+                .Select(id => id!.Value)
                 .ToList();
-            query = query.Where(s => s.SearchKeywords.Any(sk => keywords.Contains(sk.ToLower())));
+
+            if (categoryIds.Count > 0)
+            {
+                query = query.Where(s =>
+                    s.CategoryLinks.Any(cl => categoryIds.Contains(cl.CategoryId))
+                );
+            }
         }
 
-        // Apply search filter (fuzzy or exact)
-        if (hasSearch)
+        // Apply search filter (name contains)
+        if (!string.IsNullOrWhiteSpace(parameters.Search))
         {
-            if (parameters.FuzzySearch)
-            {
-                // Fuzzy search using pg_trgm + keyword matching
-                query = query.Where(s =>
-                    (s.SearchText != null && EF.Functions.TrigramsSimilarity(s.SearchText, search!) > 0.2)
-                    || s.SearchKeywords.Any(k => k.ToLower().Contains(search!))
-                );
-            }
-            else
-            {
-                // Exact substring search (fallback)
-                query = query.Where(s =>
-                    s.CommonName.Any(cn => cn.Value.ToLower().Contains(search!))
-                    || s.ScientificName.ToLower().Contains(search!)
-                );
-            }
+            var search = parameters.Search.Trim().ToLower();
+            query = query.Where(s =>
+                s.CommonName.Any(cn => cn.Value.ToLower().Contains(search))
+                || s.ScientificName.ToLower().Contains(search)
+            );
         }
 
         if (parameters.MunicipalityId.HasValue)
@@ -144,21 +138,9 @@ public sealed class SpeciesRepository(IDbContextFactory<WildlifeDbContext> conte
             );
         }
 
-        // Order by relevance score when searching, otherwise by name
-        IOrderedQueryable<Species> orderedQuery;
-        if (hasSearch && parameters.FuzzySearch)
-        {
-            orderedQuery = query.OrderByDescending(s =>
-                s.SearchText != null ? EF.Functions.TrigramsSimilarity(s.SearchText, search!) : 0
-            );
-        }
-        else
-        {
-            orderedQuery = query.OrderBy(s => s.ScientificName);
-        }
-
         // Project and return with municipality names
-        return await orderedQuery
+        return await query
+            .OrderBy(s => s.ScientificName)
             .Skip(parameters.Page * parameters.PageSize)
             .Take(parameters.PageSize)
             .Select(s => new SpeciesForSearchDto(
@@ -172,7 +154,6 @@ public sealed class SpeciesRepository(IDbContextFactory<WildlifeDbContext> conte
 
     public async Task<int> GetTotalSpeciesCountAsync(
         string? search = null,
-        bool fuzzySearch = true,
         CancellationToken cancellationToken = default
     )
     {
@@ -183,20 +164,10 @@ public sealed class SpeciesRepository(IDbContextFactory<WildlifeDbContext> conte
         if (!string.IsNullOrWhiteSpace(search))
         {
             var searchLower = search.Trim().ToLower();
-            if (fuzzySearch)
-            {
-                query = query.Where(s =>
-                    (s.SearchText != null && EF.Functions.TrigramsSimilarity(s.SearchText, searchLower) > 0.2)
-                    || s.SearchKeywords.Any(k => k.ToLower().Contains(searchLower))
-                );
-            }
-            else
-            {
-                query = query.Where(s =>
-                    s.CommonName.Any(cn => cn.Value.ToLower().Contains(searchLower))
-                    || s.ScientificName.ToLower().Contains(searchLower)
-                );
-            }
+            query = query.Where(s =>
+                s.CommonName.Any(cn => cn.Value.ToLower().Contains(searchLower))
+                || s.ScientificName.ToLower().Contains(searchLower)
+            );
         }
 
         return await query.CountAsync(cancellationToken);
@@ -313,33 +284,21 @@ public sealed class SpeciesRepository(IDbContextFactory<WildlifeDbContext> conte
 
     public async Task<CursorPage<SpeciesForSearchDto>> GetSpeciesCursorPageAsync(
         CursorPageParameter request,
-        bool fuzzySearch = true,
         CancellationToken cancellationToken = default
     )
     {
         await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
 
         var query = context.Species.AsNoTracking().AsQueryable();
-        var search = request.Search?.Trim().ToLower();
-        var hasSearch = !string.IsNullOrWhiteSpace(search);
 
-        // Apply search filter (fuzzy or exact)
-        if (hasSearch)
+        // Apply search filter
+        if (!string.IsNullOrWhiteSpace(request.Search))
         {
-            if (fuzzySearch)
-            {
-                query = query.Where(s =>
-                    (s.SearchText != null && EF.Functions.TrigramsSimilarity(s.SearchText, search!) > 0.2)
-                    || s.SearchKeywords.Any(k => k.ToLower().Contains(search!))
-                );
-            }
-            else
-            {
-                query = query.Where(s =>
-                    s.CommonName.Any(cn => cn.Value.ToLower().Contains(search!))
-                    || s.ScientificName.ToLower().Contains(search!)
-                );
-            }
+            var search = request.Search.Trim().ToLower();
+            query = query.Where(s =>
+                s.CommonName.Any(cn => cn.Value.ToLower().Contains(search))
+                || s.ScientificName.ToLower().Contains(search)
+            );
         }
 
         // Apply cursor filter

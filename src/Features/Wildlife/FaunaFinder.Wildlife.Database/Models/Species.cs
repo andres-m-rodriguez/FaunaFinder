@@ -13,13 +13,10 @@ public sealed class Species
     public required string? ProfileImageContentType { get; set; }
     public required string? ImageSourceUrl { get; set; }
 
-    // Smart search fields
-    public string? SearchText { get; set; }
-    public List<string> SearchKeywords { get; set; } = [];
-
     public ICollection<FwsLink> FwsLinks { get; set; } = [];
     public ICollection<MunicipalitySpecies> MunicipalitySpecies { get; set; } = [];
     public ICollection<SpeciesLocation> Locations { get; set; } = [];
+    public ICollection<SpeciesCategoryLink> CategoryLinks { get; set; } = [];
 
     public sealed class EntityConfiguration : IEntityTypeConfiguration<Species>
     {
@@ -36,26 +33,10 @@ public sealed class Species
 
             builder.Property(static e => e.ImageSourceUrl).HasMaxLength(500);
 
-            // Smart search fields
-            builder.Property(static e => e.SearchText).HasMaxLength(1000);
-
             builder
                 .HasIndex(static e => e.ScientificName)
                 .IsUnique()
                 .HasDatabaseName("species_scientific_name_uidx");
-
-            // GIN index for trigram search on SearchText
-            builder
-                .HasIndex(static e => e.SearchText)
-                .HasDatabaseName("species_search_text_gin_idx")
-                .HasMethod("gin")
-                .HasOperators("gin_trgm_ops");
-
-            // GIN index for keyword array search
-            builder
-                .HasIndex(static e => e.SearchKeywords)
-                .HasDatabaseName("species_search_keywords_gin_idx")
-                .HasMethod("gin");
         }
     }
 }

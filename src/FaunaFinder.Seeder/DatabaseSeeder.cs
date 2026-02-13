@@ -31,7 +31,10 @@ public static class DatabaseSeeder
         // Seed FWS actions
         await SeedFwsActionsAsync(context, cancellationToken);
 
-        // Seed species (with images, locations, and municipality links)
+        // Seed species categories
+        await SeedSpeciesCategoriesAsync(context, cancellationToken);
+
+        // Seed species (with images, locations, municipality links, and categories)
         await SeedSpeciesAsync(context, cancellationToken);
 
         // Seed FWS links (species-practice-action relationships)
@@ -191,6 +194,49 @@ public static class DatabaseSeeder
         await context.SaveChangesAsync(cancellationToken);
     }
 
+    private static async Task SeedSpeciesCategoriesAsync(
+        WildlifeDbContext context,
+        CancellationToken cancellationToken
+    )
+    {
+        var defaultCategories = new[]
+        {
+            ("bird", "Bird", "Ave"),
+            ("mammal", "Mammal", "Mamífero"),
+            ("reptile", "Reptile", "Reptil"),
+            ("amphibian", "Amphibian", "Anfibio"),
+            ("fish", "Fish", "Pez"),
+            ("invertebrate", "Invertebrate", "Invertebrado"),
+        };
+
+        var existing = await context.SpeciesCategories.ToDictionaryAsync(
+            c => c.Code,
+            c => c,
+            cancellationToken
+        );
+
+        foreach (var (code, nameEn, nameEs) in defaultCategories)
+        {
+            if (!existing.ContainsKey(code))
+            {
+                context.SpeciesCategories.Add(
+                    new SpeciesCategory
+                    {
+                        Id = 0,
+                        Code = code,
+                        Name =
+                        [
+                            new LocaleValue(SupportedLocales.English, nameEn),
+                            new LocaleValue(SupportedLocales.Spanish, nameEs),
+                        ],
+                    }
+                );
+            }
+        }
+
+        await context.SaveChangesAsync(cancellationToken);
+    }
+
     private static async Task SeedSpeciesAsync(
         WildlifeDbContext context,
         CancellationToken cancellationToken
@@ -209,6 +255,12 @@ public static class DatabaseSeeder
             cancellationToken
         );
 
+        var categories = await context.SpeciesCategories.ToDictionaryAsync(
+            c => c.Code,
+            c => c,
+            cancellationToken
+        );
+
         var municipalities = await context.Municipalities.ToDictionaryAsync(
             m => m.GeoJsonId,
             m => m,
@@ -218,9 +270,6 @@ public static class DatabaseSeeder
         foreach (var dto in speciesList)
         {
             Species species;
-
-            // Build search text from common names and scientific name
-            var searchText = string.Join(" ", dto.CommonNameEn, dto.CommonNameEs, dto.ScientificName).ToLower();
 
             if (existingSpecies.TryGetValue(dto.ScientificName, out var existing))
             {
@@ -237,17 +286,6 @@ public static class DatabaseSeeder
                 if (species.ImageSourceUrl is null && !string.IsNullOrEmpty(dto.ImageSourceUrl))
                 {
                     species.ImageSourceUrl = dto.ImageSourceUrl;
-                }
-
-                // Update search fields if not set
-                if (string.IsNullOrEmpty(species.SearchText))
-                {
-                    species.SearchText = searchText;
-                }
-
-                if (species.SearchKeywords.Count == 0 && dto.SearchKeywords is { Count: > 0 })
-                {
-                    species.SearchKeywords = dto.SearchKeywords.Select(k => k.ToLower()).ToList();
                 }
             }
             else
@@ -267,8 +305,6 @@ public static class DatabaseSeeder
                         : Convert.FromBase64String(dto.ImageBase64),
                     ProfileImageContentType = dto.ImageContentType,
                     ImageSourceUrl = dto.ImageSourceUrl,
-                    SearchText = searchText,
-                    SearchKeywords = dto.SearchKeywords?.Select(k => k.ToLower()).ToList() ?? [],
                 };
                 context.Species.Add(species);
                 await context.SaveChangesAsync(cancellationToken);
@@ -323,6 +359,33 @@ public static class DatabaseSeeder
                                 Longitude = loc.Longitude,
                                 RadiusMeters = loc.RadiusMeters,
                                 Description = loc.Description,
+                            }
+                        );
+                    }
+                }
+            }
+
+            // Link to categories
+            if (dto.CategoryCodes is { Count: > 0 })
+            {
+                var existingCategoryLinks = await context
+                    .SpeciesCategoryLinks.Where(scl => scl.SpeciesId == species.Id)
+                    .Select(scl => scl.CategoryId)
+                    .ToHashSetAsync(cancellationToken);
+
+                foreach (var categoryCode in dto.CategoryCodes)
+                {
+                    if (
+                        categories.TryGetValue(categoryCode, out var category)
+                        && !existingCategoryLinks.Contains(category.Id)
+                    )
+                    {
+                        context.SpeciesCategoryLinks.Add(
+                            new SpeciesCategoryLink
+                            {
+                                Id = 0,
+                                SpeciesId = species.Id,
+                                CategoryId = category.Id,
                             }
                         );
                     }
@@ -485,8 +548,8 @@ public static class DatabaseSeeder
         [JsonPropertyName("imageSourceUrl")]
         public string? ImageSourceUrl { get; init; }
 
-        [JsonPropertyName("searchKeywords")]
-        public List<string>? SearchKeywords { get; init; }
+        [JsonPropertyName("categoryCodes")]
+        public List<string>? CategoryCodes { get; init; }
     }
 
     private sealed class LocationDto

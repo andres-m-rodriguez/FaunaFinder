@@ -13,6 +13,8 @@ public sealed class WildlifeDbContext(DbContextOptions<WildlifeDbContext> option
     // Species data
     public DbSet<Species> Species => Set<Species>();
     public DbSet<SpeciesLocation> SpeciesLocations => Set<SpeciesLocation>();
+    public DbSet<SpeciesCategory> SpeciesCategories => Set<SpeciesCategory>();
+    public DbSet<SpeciesCategoryLink> SpeciesCategoryLinks => Set<SpeciesCategoryLink>();
 
     // Conservation data
     public DbSet<FwsAction> FwsActions => Set<FwsAction>();
@@ -27,14 +29,13 @@ public sealed class WildlifeDbContext(DbContextOptions<WildlifeDbContext> option
     {
         base.OnModelCreating(modelBuilder);
 
-        // Enable pg_trgm extension for fuzzy text search
-        modelBuilder.HasPostgresExtension("pg_trgm");
-
         // Apply all configurations from nested classes
         modelBuilder.ApplyConfiguration(new Municipality.EntityConfiguration());
         modelBuilder.ApplyConfiguration(new MunicipalitySpecies.EntityConfiguration());
         modelBuilder.ApplyConfiguration(new Species.EntityConfiguration());
         modelBuilder.ApplyConfiguration(new SpeciesLocation.EntityConfiguration());
+        modelBuilder.ApplyConfiguration(new SpeciesCategory.EntityConfiguration());
+        modelBuilder.ApplyConfiguration(new SpeciesCategoryLink.EntityConfiguration());
         modelBuilder.ApplyConfiguration(new FwsAction.EntityConfiguration());
         modelBuilder.ApplyConfiguration(new FwsLink.EntityConfiguration());
         modelBuilder.ApplyConfiguration(new NrcsPractice.EntityConfiguration());
