@@ -22,9 +22,10 @@ public sealed class IdentityClient(
         {
             return new ValidationError(
                 "Validation failed",
-                validationResult.Errors
-                    .GroupBy(e => e.PropertyName)
-                    .ToDictionary(g => g.Key, g => g.Select(e => e.ErrorMessage).ToArray()));
+                validationResult
+                    .Errors.GroupBy(e => e.PropertyName)
+                    .ToDictionary(g => g.Key, g => g.Select(e => e.ErrorMessage).ToArray())
+            );
         }
 
         var response = await httpClient.PostAsJsonAsync("api/auth/login", request, cancellationToken);
@@ -40,27 +41,33 @@ public sealed class IdentityClient(
             HttpStatusCode.Unauthorized => new InvalidCredentialsError(),
             HttpStatusCode.Locked => new AccountLockedError(null),
             HttpStatusCode.Forbidden => new AccountNotApprovedError(),
-            _ => new UnexpectedError(await response.Content.ReadAsStringAsync(cancellationToken))
+            _ => new UnexpectedError(await response.Content.ReadAsStringAsync(cancellationToken)),
         };
     }
 
-    public async Task<RegisterResult> RegisterAsync(RegisterRequest request, CancellationToken cancellationToken = default)
+    public async Task<RegisterResult> RegisterAsync(
+        RegisterRequest request,
+        CancellationToken cancellationToken = default
+    )
     {
         var validationResult = await registerValidator.ValidateAsync(request, cancellationToken);
         if (!validationResult.IsValid)
         {
             return new ValidationError(
                 "Validation failed",
-                validationResult.Errors
-                    .GroupBy(e => e.PropertyName)
-                    .ToDictionary(g => g.Key, g => g.Select(e => e.ErrorMessage).ToArray()));
+                validationResult
+                    .Errors.GroupBy(e => e.PropertyName)
+                    .ToDictionary(g => g.Key, g => g.Select(e => e.ErrorMessage).ToArray())
+            );
         }
 
         var response = await httpClient.PostAsJsonAsync("api/auth/register", request, cancellationToken);
 
         if (response.IsSuccessStatusCode)
         {
-            var success = await response.Content.ReadFromJsonAsync<RegisterSuccess>(cancellationToken);
+            var success = await response.Content.ReadFromJsonAsync<RegisterSuccess>(
+                cancellationToken
+            );
             return success!;
         }
 
@@ -78,7 +85,9 @@ public sealed class IdentityClient(
         await httpClient.PostAsync("api/auth/logout", null, cancellationToken);
     }
 
-    public async Task<GetCurrentUserResult> GetCurrentUserAsync(CancellationToken cancellationToken = default)
+    public async Task<GetCurrentUserResult> GetCurrentUserAsync(
+        CancellationToken cancellationToken = default
+    )
     {
         var response = await httpClient.GetAsync("api/auth/me", cancellationToken);
 
@@ -96,7 +105,9 @@ public sealed class IdentityClient(
         return new UnexpectedError(await response.Content.ReadAsStringAsync(cancellationToken));
     }
 
-    public async Task<GetUsersResult> GetAllUsersAsync(CancellationToken cancellationToken = default)
+    public async Task<GetUsersResult> GetAllUsersAsync(
+        CancellationToken cancellationToken = default
+    )
     {
         var response = await httpClient.GetAsync("api/auth/users", cancellationToken);
 
@@ -112,7 +123,10 @@ public sealed class IdentityClient(
         return new UnexpectedError(await response.Content.ReadAsStringAsync(cancellationToken));
     }
 
-    public async Task<GetUsersCursorPageResult> GetUsersCursorPageAsync(CursorPageParameter request, CancellationToken cancellationToken = default)
+    public async Task<GetUsersCursorPageResult> GetUsersCursorPageAsync(
+        CursorPageParameter request,
+        CancellationToken cancellationToken = default
+    )
     {
         var queryParams = new List<string> { $"pageSize={request.PageSize}" };
 
@@ -127,7 +141,9 @@ public sealed class IdentityClient(
 
         if (response.IsSuccessStatusCode)
         {
-            var page = await response.Content.ReadFromJsonAsync<CursorPage<UserInfo>>(cancellationToken);
+            var page = await response.Content.ReadFromJsonAsync<CursorPage<UserInfo>>(
+                cancellationToken
+            );
             return page!;
         }
 
@@ -137,7 +153,10 @@ public sealed class IdentityClient(
         return new UnexpectedError(await response.Content.ReadAsStringAsync(cancellationToken));
     }
 
-    public async Task<GetAccessRequestsCursorPageResult> GetAccessRequestsCursorPageAsync(AccessRequestPageParameter request, CancellationToken cancellationToken = default)
+    public async Task<GetAccessRequestsCursorPageResult> GetAccessRequestsCursorPageAsync(
+        AccessRequestPageParameter request,
+        CancellationToken cancellationToken = default
+    )
     {
         var queryParams = new List<string> { $"pageSize={request.PageSize}" };
 
@@ -155,7 +174,9 @@ public sealed class IdentityClient(
 
         if (response.IsSuccessStatusCode)
         {
-            var page = await response.Content.ReadFromJsonAsync<CursorPage<AccessRequestInfo>>(cancellationToken);
+            var page = await response.Content.ReadFromJsonAsync<CursorPage<AccessRequestInfo>>(
+                cancellationToken
+            );
             return page!;
         }
 
@@ -165,13 +186,18 @@ public sealed class IdentityClient(
         return new UnexpectedError(await response.Content.ReadAsStringAsync(cancellationToken));
     }
 
-    public async Task<GetAccessRequestByIdResult> GetAccessRequestByIdAsync(int id, CancellationToken cancellationToken = default)
+    public async Task<GetAccessRequestByIdResult> GetAccessRequestByIdAsync(
+        int id,
+        CancellationToken cancellationToken = default
+    )
     {
         var response = await httpClient.GetAsync($"api/auth/access-requests/{id}", cancellationToken);
 
         if (response.IsSuccessStatusCode)
         {
-            var accessRequest = await response.Content.ReadFromJsonAsync<AccessRequestInfo>(cancellationToken);
+            var accessRequest = await response.Content.ReadFromJsonAsync<AccessRequestInfo>(
+                cancellationToken
+            );
             return accessRequest!;
         }
 
@@ -179,17 +205,21 @@ public sealed class IdentityClient(
         {
             HttpStatusCode.NotFound => new AccessRequestNotFoundError(id),
             HttpStatusCode.Forbidden => new ForbiddenError(),
-            _ => new UnexpectedError(await response.Content.ReadAsStringAsync(cancellationToken))
+            _ => new UnexpectedError(await response.Content.ReadAsStringAsync(cancellationToken)),
         };
     }
 
-    public async Task<GetAccessRequestsResult> GetPendingAccessRequestsAsync(CancellationToken cancellationToken = default)
+    public async Task<GetAccessRequestsResult> GetPendingAccessRequestsAsync(
+        CancellationToken cancellationToken = default
+    )
     {
         var response = await httpClient.GetAsync("api/auth/access-requests/pending", cancellationToken);
 
         if (response.IsSuccessStatusCode)
         {
-            var requests = await response.Content.ReadFromJsonAsync<AccessRequestInfo[]>(cancellationToken);
+            var requests = await response.Content.ReadFromJsonAsync<AccessRequestInfo[]>(
+                cancellationToken
+            );
             return requests!;
         }
 
@@ -199,23 +229,30 @@ public sealed class IdentityClient(
         return new UnexpectedError(await response.Content.ReadAsStringAsync(cancellationToken));
     }
 
-    public async Task<UpdateAccessRequestStatusResult> UpdateAccessRequestStatusAsync(int id, UpdateAccessRequestStatusRequest request, CancellationToken cancellationToken = default)
+    public async Task<UpdateAccessRequestStatusResult> UpdateAccessRequestStatusAsync(
+        int id,
+        UpdateAccessRequestStatusRequest request,
+        CancellationToken cancellationToken = default
+    )
     {
         var validationResult = await updateAccessRequestStatusValidator.ValidateAsync(request, cancellationToken);
         if (!validationResult.IsValid)
         {
             return new ValidationError(
                 "Validation failed",
-                validationResult.Errors
-                    .GroupBy(e => e.PropertyName)
-                    .ToDictionary(g => g.Key, g => g.Select(e => e.ErrorMessage).ToArray()));
+                validationResult
+                    .Errors.GroupBy(e => e.PropertyName)
+                    .ToDictionary(g => g.Key, g => g.Select(e => e.ErrorMessage).ToArray())
+            );
         }
 
         var response = await httpClient.PutAsJsonAsync($"api/auth/access-requests/{id}/status", request, cancellationToken);
 
         if (response.IsSuccessStatusCode)
         {
-            var accessRequest = await response.Content.ReadFromJsonAsync<AccessRequestInfo>(cancellationToken);
+            var accessRequest = await response.Content.ReadFromJsonAsync<AccessRequestInfo>(
+                cancellationToken
+            );
             return accessRequest!;
         }
 
@@ -223,8 +260,11 @@ public sealed class IdentityClient(
         {
             HttpStatusCode.NotFound => new AccessRequestNotFoundError(id),
             HttpStatusCode.Forbidden => new ForbiddenError(),
-            HttpStatusCode.BadRequest => new ValidationError("Validation failed", new Dictionary<string, string[]>()),
-            _ => new UnexpectedError(await response.Content.ReadAsStringAsync(cancellationToken))
+            HttpStatusCode.BadRequest => new ValidationError(
+                "Validation failed",
+                new Dictionary<string, string[]>()
+            ),
+            _ => new UnexpectedError(await response.Content.ReadAsStringAsync(cancellationToken)),
         };
     }
 }

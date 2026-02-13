@@ -10,19 +10,23 @@ public interface ISpeciesRepository
 
     Task<IReadOnlyList<SpeciesForListDto>> GetSpeciesByMunicipalityAsync(
         int municipalityId,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 
     Task<SpeciesForDetailDto?> GetSpeciesDetailAsync(
         int speciesId,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 
     Task<IReadOnlyList<SpeciesForSearchDto>> GetSpeciesAsync(
         SpeciesParameters parameters,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 
     Task<int> GetTotalSpeciesCountAsync(
         string? search = null,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 
     /// <summary>
     /// Gets species that have locations within the specified radius from the given coordinates.
@@ -36,9 +40,11 @@ public interface ISpeciesRepository
         double latitude,
         double longitude,
         double radiusMeters,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 
     Task<CursorPage<SpeciesForSearchDto>> GetSpeciesCursorPageAsync(
         CursorPageParameter request,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 }

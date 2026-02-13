@@ -54,7 +54,8 @@ public static class TranslationKeys
     public const string SpeciesDetail_FoundIn = "SpeciesDetail_FoundIn";
     public const string SpeciesDetail_MunicipalitiesTitle = "SpeciesDetail_MunicipalitiesTitle";
     public const string SpeciesDetail_NoMunicipalityData = "SpeciesDetail_NoMunicipalityData";
-    public const string SpeciesDetail_ConservationLinksTitle = "SpeciesDetail_ConservationLinksTitle";
+    public const string SpeciesDetail_ConservationLinksTitle =
+        "SpeciesDetail_ConservationLinksTitle";
     public const string SpeciesDetail_NoConservationLinks = "SpeciesDetail_NoConservationLinks";
     public const string SpeciesDetail_ViewLocations = "SpeciesDetail_ViewLocations";
 

@@ -11,7 +11,8 @@ public sealed class WildlifeHttpClient(HttpClient httpClient) : IWildlifeHttpCli
     public async Task<IReadOnlyList<SpeciesForSearchDto>> SearchSpeciesAsync(
         string query,
         int limit = 10,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         if (string.IsNullOrWhiteSpace(query) || query.Length < 2)
             return [];
@@ -27,7 +28,8 @@ public sealed class WildlifeHttpClient(HttpClient httpClient) : IWildlifeHttpCli
     public async Task<SightingsPage> GetMySightingsAsync(
         int page = 1,
         int pageSize = 12,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         var url = $"/api/sightings/mine?page={page}&pageSize={pageSize}";
         var result = await httpClient.GetFromJsonAsync<SightingsPage>(url, cancellationToken);
@@ -38,7 +40,8 @@ public sealed class WildlifeHttpClient(HttpClient httpClient) : IWildlifeHttpCli
         int page,
         int pageSize,
         string? status = null,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         var url = $"/api/sightings?page={page}&pageSize={pageSize}";
         if (!string.IsNullOrWhiteSpace(status))
@@ -52,7 +55,8 @@ public sealed class WildlifeHttpClient(HttpClient httpClient) : IWildlifeHttpCli
 
     public async Task<CreateSightingResponse> CreateSightingAsync(
         CreateSightingRequest request,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         var response = await httpClient.PostAsJsonAsync("/api/sightings", request, cancellationToken);
 
@@ -68,7 +72,8 @@ public sealed class WildlifeHttpClient(HttpClient httpClient) : IWildlifeHttpCli
 
     public async Task<SightingDetailDto?> GetSightingDetailAsync(
         int id,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         return await httpClient.GetFromJsonAsync<SightingDetailDto>(
             $"/api/sightings/{id}",
@@ -80,11 +85,14 @@ public sealed class WildlifeHttpClient(HttpClient httpClient) : IWildlifeHttpCli
         int sightingId,
         byte[] photoData,
         string contentType,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         using var content = new MultipartFormDataContent();
         using var fileContent = new ByteArrayContent(photoData);
-        fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(contentType);
+        fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(
+            contentType
+        );
         content.Add(fileContent, "photo", "photo" + GetFileExtension(contentType));
 
         var response = await httpClient.PatchAsync(
@@ -100,7 +108,8 @@ public sealed class WildlifeHttpClient(HttpClient httpClient) : IWildlifeHttpCli
         int sightingId,
         string status,
         string? reviewNotes,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         var request = new ReviewSightingRequest(status, reviewNotes);
         var response = await httpClient.PostAsJsonAsync(
@@ -112,12 +121,13 @@ public sealed class WildlifeHttpClient(HttpClient httpClient) : IWildlifeHttpCli
         return response.IsSuccessStatusCode;
     }
 
-    private static string GetFileExtension(string contentType) => contentType.ToLowerInvariant() switch
-    {
-        "image/jpeg" => ".jpg",
-        "image/png" => ".png",
-        "image/gif" => ".gif",
-        "image/webp" => ".webp",
-        _ => ".jpg"
-    };
+    private static string GetFileExtension(string contentType) =>
+        contentType.ToLowerInvariant() switch
+        {
+            "image/jpeg" => ".jpg",
+            "image/png" => ".png",
+            "image/gif" => ".gif",
+            "image/webp" => ".webp",
+            _ => ".jpg",
+        };
 }

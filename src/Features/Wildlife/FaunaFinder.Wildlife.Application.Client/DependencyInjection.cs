@@ -4,7 +4,10 @@ namespace FaunaFinder.Wildlife.Application.Client;
 
 public static class DependencyInjection
 {
-    public static IServiceCollection AddWildlifeClient(this IServiceCollection services, Action<HttpClient>? configureClient = null)
+    public static IServiceCollection AddWildlifeClient(
+        this IServiceCollection services,
+        Action<HttpClient>? configureClient = null
+    )
     {
         services.AddHttpClient<IMunicipalityHttpClient, MunicipalityHttpClient>(client =>
         {
@@ -29,7 +32,10 @@ public static class DependencyInjection
         return services;
     }
 
-    public static IServiceCollection AddWildlifeClient(this IServiceCollection services, Uri baseAddress)
+    public static IServiceCollection AddWildlifeClient(
+        this IServiceCollection services,
+        Uri baseAddress
+    )
     {
         return services.AddWildlifeClient(client => client.BaseAddress = baseAddress);
     }

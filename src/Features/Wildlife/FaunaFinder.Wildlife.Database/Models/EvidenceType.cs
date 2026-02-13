@@ -7,5 +7,5 @@ public enum EvidenceType
     Visual = 1,
     Heard = 2,
     Tracks = 4,
-    Photo = 8
+    Photo = 8,
 }

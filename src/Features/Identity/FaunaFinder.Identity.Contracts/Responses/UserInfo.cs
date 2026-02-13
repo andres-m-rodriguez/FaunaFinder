@@ -5,4 +5,5 @@ public sealed record UserInfo(
     string Email,
     string DisplayName,
     string Role,
-    DateTime CreatedAt);
+    DateTime CreatedAt
+);

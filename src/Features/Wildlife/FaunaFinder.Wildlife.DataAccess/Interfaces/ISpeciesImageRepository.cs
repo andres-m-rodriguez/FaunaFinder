@@ -9,7 +9,8 @@ public interface ISpeciesImageRepository
     /// </summary>
     Task<SpeciesProfileImageDto?> GetProfileImageAsync(
         int speciesId,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 
     /// <summary>
     /// Sets or replaces the profile image for a species.
@@ -18,12 +19,14 @@ public interface ISpeciesImageRepository
         int speciesId,
         byte[] imageData,
         string contentType,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 
     /// <summary>
     /// Removes the profile image from a species.
     /// </summary>
     Task<bool> DeleteProfileImageAsync(
         int speciesId,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 }

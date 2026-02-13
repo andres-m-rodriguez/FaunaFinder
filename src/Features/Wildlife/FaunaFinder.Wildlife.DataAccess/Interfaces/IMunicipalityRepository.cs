@@ -7,21 +7,26 @@ namespace FaunaFinder.Wildlife.DataAccess.Interfaces;
 public interface IMunicipalityRepository
 {
     Task<IReadOnlyList<MunicipalityForListDto>> GetAllMunicipalitiesAsync(
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 
     Task<MunicipalityForDetailDto?> GetMunicipalityDetailAsync(
         int municipalityId,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 
     Task<IReadOnlyList<MunicipalityCardDto>> GetMunicipalitiesWithSpeciesCountAsync(
         MunicipalityParameters parameters,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 
     Task<int> GetTotalMunicipalitiesCountAsync(
         string? search = null,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 
     Task<CursorPage<MunicipalityCardDto>> GetMunicipalitiesCursorPageAsync(
         CursorPageParameter request,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 }

@@ -8,10 +8,25 @@ namespace FaunaFinder.Identity.Contracts.Results;
 public sealed record RegisterSuccess(string Message);
 
 [GenerateOneOf]
-public partial class LoginResult : OneOfBase<UserInfo, InvalidCredentialsError, AccountLockedError, AccountNotApprovedError, ValidationError, UnexpectedError>;
+public partial class LoginResult
+    : OneOfBase<
+        UserInfo,
+        InvalidCredentialsError,
+        AccountLockedError,
+        AccountNotApprovedError,
+        ValidationError,
+        UnexpectedError
+    >;
 
 [GenerateOneOf]
-public partial class RegisterResult : OneOfBase<RegisterSuccess, EmailAlreadyExistsError, RegistrationFailedError, ValidationError, UnexpectedError>;
+public partial class RegisterResult
+    : OneOfBase<
+        RegisterSuccess,
+        EmailAlreadyExistsError,
+        RegistrationFailedError,
+        ValidationError,
+        UnexpectedError
+    >;
 
 [GenerateOneOf]
 public partial class GetCurrentUserResult : OneOfBase<UserInfo, UnauthorizedError, UnexpectedError>;
@@ -20,16 +35,27 @@ public partial class GetCurrentUserResult : OneOfBase<UserInfo, UnauthorizedErro
 public partial class GetUsersResult : OneOfBase<UserInfo[], ForbiddenError, UnexpectedError>;
 
 [GenerateOneOf]
-public partial class GetAccessRequestsResult : OneOfBase<AccessRequestInfo[], ForbiddenError, UnexpectedError>;
+public partial class GetAccessRequestsResult
+    : OneOfBase<AccessRequestInfo[], ForbiddenError, UnexpectedError>;
 
 [GenerateOneOf]
-public partial class UpdateAccessRequestStatusResult : OneOfBase<AccessRequestInfo, AccessRequestNotFoundError, ForbiddenError, ValidationError, UnexpectedError>;
+public partial class UpdateAccessRequestStatusResult
+    : OneOfBase<
+        AccessRequestInfo,
+        AccessRequestNotFoundError,
+        ForbiddenError,
+        ValidationError,
+        UnexpectedError
+    >;
 
 [GenerateOneOf]
-public partial class GetUsersCursorPageResult : OneOfBase<CursorPage<UserInfo>, ForbiddenError, UnexpectedError>;
+public partial class GetUsersCursorPageResult
+    : OneOfBase<CursorPage<UserInfo>, ForbiddenError, UnexpectedError>;
 
 [GenerateOneOf]
-public partial class GetAccessRequestByIdResult : OneOfBase<AccessRequestInfo, AccessRequestNotFoundError, ForbiddenError, UnexpectedError>;
+public partial class GetAccessRequestByIdResult
+    : OneOfBase<AccessRequestInfo, AccessRequestNotFoundError, ForbiddenError, UnexpectedError>;
 
 [GenerateOneOf]
-public partial class GetAccessRequestsCursorPageResult : OneOfBase<CursorPage<AccessRequestInfo>, ForbiddenError, UnexpectedError>;
+public partial class GetAccessRequestsCursorPageResult
+    : OneOfBase<CursorPage<AccessRequestInfo>, ForbiddenError, UnexpectedError>;

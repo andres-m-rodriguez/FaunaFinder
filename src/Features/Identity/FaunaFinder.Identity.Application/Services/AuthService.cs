@@ -2,9 +2,9 @@ using FaunaFinder.Identity.Contracts.Errors;
 using FaunaFinder.Identity.Contracts.Requests;
 using FaunaFinder.Identity.Contracts.Responses;
 using FaunaFinder.Identity.Contracts.Results;
+using FaunaFinder.Identity.DataAccess.Interfaces;
 using FaunaFinder.Identity.Database;
 using FaunaFinder.Identity.Database.Models;
-using FaunaFinder.Identity.DataAccess.Interfaces;
 using FaunaFinder.Pagination.Contracts;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -22,7 +22,10 @@ public sealed class AuthService(
     IDbContextFactory<IdentityDbContext> contextFactory
 ) : IAuthService
 {
-    public async Task<RegisterResult> RegisterAsync(RegisterRequest request, CancellationToken cancellationToken = default)
+    public async Task<RegisterResult> RegisterAsync(
+        RegisterRequest request,
+        CancellationToken cancellationToken = default
+    )
     {
         // Check if email already exists as a user
         var existingUser = await userManager.FindByEmailAsync(request.Email);
@@ -32,7 +35,10 @@ public sealed class AuthService(
         }
 
         // Check if email already has a pending access request
-        var existingRequest = await accessRequestRepository.GetEntityByEmailAsync(request.Email, cancellationToken);
+        var existingRequest = await accessRequestRepository.GetEntityByEmailAsync(
+            request.Email,
+            cancellationToken
+        );
         if (existingRequest is not null)
         {
             return new EmailAlreadyExistsError(request.Email);
@@ -50,7 +56,7 @@ public sealed class AuthService(
             Message = request.Message,
             Status = AccessRequestStatus.Pending,
             CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow
+            UpdatedAt = DateTime.UtcNow,
         };
 
         await accessRequestRepository.CreateAsync(accessRequest, cancellationToken);
@@ -58,7 +64,10 @@ public sealed class AuthService(
         return new RegisterSuccess("Registration submitted! An admin will review your request.");
     }
 
-    public async Task<LoginResult> LoginAsync(LoginRequest request, CancellationToken cancellationToken = default)
+    public async Task<LoginResult> LoginAsync(
+        LoginRequest request,
+        CancellationToken cancellationToken = default
+    )
     {
         var user = await userManager.FindByEmailAsync(request.Email);
         if (user is null)
@@ -70,7 +79,8 @@ public sealed class AuthService(
             user,
             request.Password,
             isPersistent: request.RememberMe,
-            lockoutOnFailure: true);
+            lockoutOnFailure: true
+        );
 
         if (result.IsLockedOut)
         {
@@ -83,7 +93,13 @@ public sealed class AuthService(
             return new InvalidCredentialsError();
         }
 
-        return new UserInfo(user.Id, user.Email!, user.DisplayName, user.Role.ToString(), user.CreatedAt);
+        return new UserInfo(
+            user.Id,
+            user.Email!,
+            user.DisplayName,
+            user.Role.ToString(),
+            user.CreatedAt
+        );
     }
 
     public async Task LogoutAsync(CancellationToken cancellationToken = default)
@@ -91,7 +107,9 @@ public sealed class AuthService(
         await signInManager.SignOutAsync();
     }
 
-    public async Task<GetCurrentUserResult> GetCurrentUserAsync(CancellationToken cancellationToken = default)
+    public async Task<GetCurrentUserResult> GetCurrentUserAsync(
+        CancellationToken cancellationToken = default
+    )
     {
         var httpContext = httpContextAccessor.HttpContext;
         if (httpContext?.User.Identity?.IsAuthenticated != true)
@@ -105,10 +123,18 @@ public sealed class AuthService(
             return new UnauthorizedError();
         }
 
-        return new UserInfo(user.Id, user.Email!, user.DisplayName, user.Role.ToString(), user.CreatedAt);
+        return new UserInfo(
+            user.Id,
+            user.Email!,
+            user.DisplayName,
+            user.Role.ToString(),
+            user.CreatedAt
+        );
     }
 
-    public async Task<GetUsersResult> GetAllUsersAsync(CancellationToken cancellationToken = default)
+    public async Task<GetUsersResult> GetAllUsersAsync(
+        CancellationToken cancellationToken = default
+    )
     {
         if (!await IsCurrentUserAdminAsync())
             return new ForbiddenError();
@@ -117,7 +143,10 @@ public sealed class AuthService(
         return users.ToArray();
     }
 
-    public async Task<GetUsersCursorPageResult> GetUsersCursorPageAsync(CursorPageParameter request, CancellationToken cancellationToken = default)
+    public async Task<GetUsersCursorPageResult> GetUsersCursorPageAsync(
+        CursorPageParameter request,
+        CancellationToken cancellationToken = default
+    )
     {
         if (!await IsCurrentUserAdminAsync())
             return new ForbiddenError();
@@ -126,7 +155,9 @@ public sealed class AuthService(
         return page;
     }
 
-    public async Task<GetAccessRequestsResult> GetPendingAccessRequestsAsync(CancellationToken cancellationToken = default)
+    public async Task<GetAccessRequestsResult> GetPendingAccessRequestsAsync(
+        CancellationToken cancellationToken = default
+    )
     {
         if (!await IsCurrentUserAdminAsync())
             return new ForbiddenError();
@@ -135,7 +166,10 @@ public sealed class AuthService(
         return requests.ToArray();
     }
 
-    public async Task<GetAccessRequestByIdResult> GetAccessRequestByIdAsync(int id, CancellationToken cancellationToken = default)
+    public async Task<GetAccessRequestByIdResult> GetAccessRequestByIdAsync(
+        int id,
+        CancellationToken cancellationToken = default
+    )
     {
         if (!await IsCurrentUserAdminAsync())
             return new ForbiddenError();
@@ -147,7 +181,10 @@ public sealed class AuthService(
         return accessRequest;
     }
 
-    public async Task<GetAccessRequestsCursorPageResult> GetAccessRequestsCursorPageAsync(AccessRequestPageParameter request, CancellationToken cancellationToken = default)
+    public async Task<GetAccessRequestsCursorPageResult> GetAccessRequestsCursorPageAsync(
+        AccessRequestPageParameter request,
+        CancellationToken cancellationToken = default
+    )
     {
         if (!await IsCurrentUserAdminAsync())
             return new ForbiddenError();
@@ -156,16 +193,23 @@ public sealed class AuthService(
         return page;
     }
 
-    public async Task<UpdateAccessRequestStatusResult> UpdateAccessRequestStatusAsync(int id, UpdateAccessRequestStatusRequest request, CancellationToken cancellationToken = default)
+    public async Task<UpdateAccessRequestStatusResult> UpdateAccessRequestStatusAsync(
+        int id,
+        UpdateAccessRequestStatusRequest request,
+        CancellationToken cancellationToken = default
+    )
     {
         if (!await IsCurrentUserAdminAsync())
             return new ForbiddenError();
 
         if (!Enum.TryParse<AccessRequestStatus>(request.Status, out var newStatus))
-            return new ValidationError("Invalid status", new Dictionary<string, string[]>
-            {
-                ["Status"] = [$"'{request.Status}' is not a valid status"]
-            });
+            return new ValidationError(
+                "Invalid status",
+                new Dictionary<string, string[]>
+                {
+                    ["Status"] = [$"'{request.Status}' is not a valid status"],
+                }
+            );
 
         // Fetch the access request entity to get password hash for approval
         var accessRequestInfo = await accessRequestRepository.GetByIdAsync(id, cancellationToken);
@@ -178,10 +222,16 @@ public sealed class AuthService(
             var existingUser = await userManager.FindByEmailAsync(accessRequestInfo.Email);
             if (existingUser is not null)
             {
-                return new ValidationError("User already exists", new Dictionary<string, string[]>
-                {
-                    ["Email"] = [$"A user with email '{accessRequestInfo.Email}' already exists"]
-                });
+                return new ValidationError(
+                    "User already exists",
+                    new Dictionary<string, string[]>
+                    {
+                        ["Email"] =
+                        [
+                            $"A user with email '{accessRequestInfo.Email}' already exists",
+                        ],
+                    }
+                );
             }
 
             // We need the entity to get the password hash
@@ -197,29 +247,40 @@ public sealed class AuthService(
                 DisplayName = accessRequestInfo.DisplayName,
                 Role = UserRole.Student,
                 CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
+                UpdatedAt = DateTime.UtcNow,
             };
 
             var createResult = await userManager.CreateAsync(user);
             if (!createResult.Succeeded)
-                return new UnexpectedError(string.Join(", ", createResult.Errors.Select(e => e.Description)));
+                return new UnexpectedError(
+                    string.Join(", ", createResult.Errors.Select(e => e.Description))
+                );
 
             // Transfer the password hash directly
             user.PasswordHash = accessRequestEntity.PasswordHash;
             var updateResult = await userManager.UpdateAsync(user);
             if (!updateResult.Succeeded)
-                return new UnexpectedError(string.Join(", ", updateResult.Errors.Select(e => e.Description)));
+                return new UnexpectedError(
+                    string.Join(", ", updateResult.Errors.Select(e => e.Description))
+                );
         }
 
         // Update the access request status
-        var updated = await accessRequestRepository.UpdateStatusAsync(id, newStatus, cancellationToken);
+        var updated = await accessRequestRepository.UpdateStatusAsync(
+            id,
+            newStatus,
+            cancellationToken
+        );
         if (updated is null)
             return new AccessRequestNotFoundError(id);
 
         return updated;
     }
 
-    private async Task<AccessRequest?> GetAccessRequestEntityAsync(int id, CancellationToken cancellationToken)
+    private async Task<AccessRequest?> GetAccessRequestEntityAsync(
+        int id,
+        CancellationToken cancellationToken
+    )
     {
         await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
         return await context.AccessRequests.FindAsync([id], cancellationToken);

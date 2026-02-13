@@ -27,20 +27,28 @@ public class ReportSightingForm
     public int GetBehaviors()
     {
         int behaviors = 0;
-        if (BehaviorFeeding) behaviors |= 1;
-        if (BehaviorResting) behaviors |= 2;
-        if (BehaviorMoving) behaviors |= 4;
-        if (BehaviorCalling) behaviors |= 8;
+        if (BehaviorFeeding)
+            behaviors |= 1;
+        if (BehaviorResting)
+            behaviors |= 2;
+        if (BehaviorMoving)
+            behaviors |= 4;
+        if (BehaviorCalling)
+            behaviors |= 8;
         return behaviors;
     }
 
     public int GetEvidence()
     {
         int evidence = 0;
-        if (EvidenceVisual) evidence |= 1;
-        if (EvidenceHeard) evidence |= 2;
-        if (EvidenceTracks) evidence |= 4;
-        if (EvidencePhoto) evidence |= 8;
+        if (EvidenceVisual)
+            evidence |= 1;
+        if (EvidenceHeard)
+            evidence |= 2;
+        if (EvidenceTracks)
+            evidence |= 4;
+        if (EvidencePhoto)
+            evidence |= 8;
         return evidence;
     }
 
@@ -54,33 +62,33 @@ public class ReportSightingFormValidator : AbstractValidator<ReportSightingForm>
 {
     public ReportSightingFormValidator()
     {
-        RuleFor(x => x.SpeciesId)
-            .NotNull().WithMessage("Species is required");
+        RuleFor(x => x.SpeciesId).NotNull().WithMessage("Species is required");
 
-        RuleFor(x => x.Mode)
-            .NotEmpty().WithMessage("Mode is required");
+        RuleFor(x => x.Mode).NotEmpty().WithMessage("Mode is required");
 
-        RuleFor(x => x.Confidence)
-            .NotEmpty().WithMessage("Confidence level is required");
+        RuleFor(x => x.Confidence).NotEmpty().WithMessage("Confidence level is required");
 
-        RuleFor(x => x.Count)
-            .NotEmpty().WithMessage("Count estimate is required");
+        RuleFor(x => x.Count).NotEmpty().WithMessage("Count estimate is required");
 
         RuleFor(x => x.Notes)
-            .MaximumLength(2000).WithMessage("Notes cannot exceed 2000 characters");
+            .MaximumLength(2000)
+            .WithMessage("Notes cannot exceed 2000 characters");
 
         RuleFor(x => x.Latitude)
-            .InclusiveBetween(-90, 90).WithMessage("Latitude must be between -90 and 90");
+            .InclusiveBetween(-90, 90)
+            .WithMessage("Latitude must be between -90 and 90");
 
         RuleFor(x => x.Longitude)
-            .InclusiveBetween(-180, 180).WithMessage("Longitude must be between -180 and 180");
+            .InclusiveBetween(-180, 180)
+            .WithMessage("Longitude must be between -180 and 180");
 
         RuleFor(x => x.ObservedDate)
-            .NotNull().WithMessage("Date is required")
-            .LessThanOrEqualTo(DateTime.Today).WithMessage("Observation date cannot be in the future");
+            .NotNull()
+            .WithMessage("Date is required")
+            .LessThanOrEqualTo(DateTime.Today)
+            .WithMessage("Observation date cannot be in the future");
 
-        RuleFor(x => x.ObservedTime)
-            .NotNull().WithMessage("Time is required");
+        RuleFor(x => x.ObservedTime).NotNull().WithMessage("Time is required");
 
         // Observation date/time combined cannot be in the future
         RuleFor(x => x)
@@ -103,15 +111,16 @@ public class ReportSightingFormValidator : AbstractValidator<ReportSightingForm>
         return observedAt > DateTime.Now.AddMinutes(5); // 5 minute grace period
     }
 
-    public Func<object, string, Task<IEnumerable<string>>> ValidateValue => async (model, propertyName) =>
-    {
-        var result = await ValidateAsync(
-            ValidationContext<ReportSightingForm>.CreateWithOptions(
-                (ReportSightingForm)model,
-                x => x.IncludeProperties(propertyName)));
+    public Func<object, string, Task<IEnumerable<string>>> ValidateValue =>
+        async (model, propertyName) =>
+        {
+            var result = await ValidateAsync(
+                ValidationContext<ReportSightingForm>.CreateWithOptions(
+                    (ReportSightingForm)model,
+                    x => x.IncludeProperties(propertyName)
+                )
+            );
 
-        return result.IsValid
-            ? []
-            : result.Errors.Select(e => e.ErrorMessage);
-    };
+            return result.IsValid ? [] : result.Errors.Select(e => e.ErrorMessage);
+        };
 }

@@ -1,13 +1,14 @@
 using FaunaFinder.Pagination.Contracts;
 using FaunaFinder.Wildlife.Contracts.Dtos;
 using FaunaFinder.Wildlife.Contracts.Parameters;
-using FaunaFinder.Wildlife.Database;
 using FaunaFinder.Wildlife.DataAccess.Interfaces;
+using FaunaFinder.Wildlife.Database;
 using Microsoft.EntityFrameworkCore;
 
 namespace FaunaFinder.Wildlife.DataAccess.Repositories;
 
-public sealed class SpeciesRepository(IDbContextFactory<WildlifeDbContext> contextFactory) : ISpeciesRepository
+public sealed class SpeciesRepository(IDbContextFactory<WildlifeDbContext> contextFactory)
+    : ISpeciesRepository
 {
     public async Task<bool> ExistsAsync(int speciesId, CancellationToken cancellationToken = default)
     {
@@ -17,12 +18,13 @@ public sealed class SpeciesRepository(IDbContextFactory<WildlifeDbContext> conte
 
     public async Task<IReadOnlyList<SpeciesForListDto>> GetSpeciesByMunicipalityAsync(
         int municipalityId,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
 
-        return await context.MunicipalitySpecies
-            .AsNoTracking()
+        return await context
+            .MunicipalitySpecies.AsNoTracking()
             .Where(ms => ms.MunicipalityId == municipalityId)
             .OrderBy(ms => ms.Species.ScientificName)
             .Select(ms => new SpeciesForListDto(
@@ -30,60 +32,53 @@ public sealed class SpeciesRepository(IDbContextFactory<WildlifeDbContext> conte
                 ms.Species.CommonName.ToList(),
                 ms.Species.ScientificName,
                 ms.Species.FwsLinks.Select(fl => new FwsLinkDto(
-                    fl.Id,
-                    new NrcsPracticeDto(
-                        fl.NrcsPractice.Id,
-                        fl.NrcsPractice.Code,
-                        fl.NrcsPractice.Name
-                    ),
-                    new FwsActionDto(
-                        fl.FwsAction.Id,
-                        fl.FwsAction.Code,
-                        fl.FwsAction.Name
-                    ),
-                    fl.Justification
-                )).ToList()
+                        fl.Id,
+                        new NrcsPracticeDto(
+                            fl.NrcsPractice.Id,
+                            fl.NrcsPractice.Code,
+                            fl.NrcsPractice.Name
+                        ),
+                        new FwsActionDto(fl.FwsAction.Id, fl.FwsAction.Code, fl.FwsAction.Name),
+                        fl.Justification
+                    ))
+                    .ToList()
             ))
             .ToListAsync(cancellationToken);
     }
 
     public async Task<SpeciesForDetailDto?> GetSpeciesDetailAsync(
         int speciesId,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
 
         // NO .Include() - Project everything in one query
-        return await context.Species
-            .AsNoTracking()
+        return await context
+            .Species.AsNoTracking()
             .Where(s => s.Id == speciesId)
             .Select(s => new SpeciesForDetailDto(
                 s.Id,
                 s.CommonName.ToList(),
                 s.ScientificName,
                 s.FwsLinks.Select(fl => new FwsLinkDto(
-                    fl.Id,
-                    new NrcsPracticeDto(
-                        fl.NrcsPractice.Id,
-                        fl.NrcsPractice.Code,
-                        fl.NrcsPractice.Name
-                    ),
-                    new FwsActionDto(
-                        fl.FwsAction.Id,
-                        fl.FwsAction.Code,
-                        fl.FwsAction.Name
-                    ),
-                    fl.Justification
-                )).ToList(),
-                s.MunicipalitySpecies
-                    .OrderBy(ms => ms.Municipality.Name)
+                        fl.Id,
+                        new NrcsPracticeDto(
+                            fl.NrcsPractice.Id,
+                            fl.NrcsPractice.Code,
+                            fl.NrcsPractice.Name
+                        ),
+                        new FwsActionDto(fl.FwsAction.Id, fl.FwsAction.Code, fl.FwsAction.Name),
+                        fl.Justification
+                    ))
+                    .ToList(),
+                s.MunicipalitySpecies.OrderBy(ms => ms.Municipality.Name)
                     .Select(ms => new SpeciesMunicipalityDto(
                         ms.Municipality.Id,
                         ms.Municipality.Name
                     ))
                     .ToList(),
-                s.Locations
-                    .Select(l => new SpeciesLocationDto(
+                s.Locations.Select(l => new SpeciesLocationDto(
                         l.Id,
                         l.Latitude,
                         l.Longitude,
@@ -99,7 +94,8 @@ public sealed class SpeciesRepository(IDbContextFactory<WildlifeDbContext> conte
 
     public async Task<IReadOnlyList<SpeciesForSearchDto>> GetSpeciesAsync(
         SpeciesParameters parameters,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
 
@@ -110,15 +106,18 @@ public sealed class SpeciesRepository(IDbContextFactory<WildlifeDbContext> conte
         {
             var search = parameters.Search.ToLower();
             query = query.Where(s =>
-                s.CommonName.Any(cn => cn.Value.ToLower().Contains(search)) ||
-                s.ScientificName.ToLower().Contains(search));
+                s.CommonName.Any(cn => cn.Value.ToLower().Contains(search))
+                || s.ScientificName.ToLower().Contains(search)
+            );
         }
 
         if (parameters.MunicipalityId.HasValue)
         {
             query = query.Where(s =>
                 s.MunicipalitySpecies.Any(ms =>
-                    ms.MunicipalityId == parameters.MunicipalityId.Value));
+                    ms.MunicipalityId == parameters.MunicipalityId.Value
+                )
+            );
         }
 
         // Project and return with municipality names
@@ -130,17 +129,15 @@ public sealed class SpeciesRepository(IDbContextFactory<WildlifeDbContext> conte
                 s.Id,
                 s.CommonName.ToList(),
                 s.ScientificName,
-                s.MunicipalitySpecies
-                    .Select(ms => ms.Municipality.Name)
-                    .OrderBy(n => n)
-                    .ToList()
+                s.MunicipalitySpecies.Select(ms => ms.Municipality.Name).OrderBy(n => n).ToList()
             ))
             .ToListAsync(cancellationToken);
     }
 
     public async Task<int> GetTotalSpeciesCountAsync(
         string? search = null,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
 
@@ -150,8 +147,9 @@ public sealed class SpeciesRepository(IDbContextFactory<WildlifeDbContext> conte
         {
             var searchLower = search.ToLower();
             query = query.Where(s =>
-                s.CommonName.Any(cn => cn.Value.ToLower().Contains(searchLower)) ||
-                s.ScientificName.ToLower().Contains(searchLower));
+                s.CommonName.Any(cn => cn.Value.ToLower().Contains(searchLower))
+                || s.ScientificName.ToLower().Contains(searchLower)
+            );
         }
 
         return await query.CountAsync(cancellationToken);
@@ -161,27 +159,30 @@ public sealed class SpeciesRepository(IDbContextFactory<WildlifeDbContext> conte
         double latitude,
         double longitude,
         double radiusMeters,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
 
         // Get all species locations - we'll filter by distance in memory
         // because SQLite doesn't have native geospatial functions
-        var speciesWithLocations = await context.Species
-            .AsNoTracking()
+        var speciesWithLocations = await context
+            .Species.AsNoTracking()
             .Where(s => s.Locations.Any())
             .Select(s => new
             {
                 s.Id,
                 CommonName = s.CommonName.ToList(),
                 s.ScientificName,
-                Locations = s.Locations.Select(l => new
-                {
-                    l.Latitude,
-                    l.Longitude,
-                    l.RadiusMeters,
-                    l.Description
-                }).ToList()
+                Locations = s
+                    .Locations.Select(l => new
+                    {
+                        l.Latitude,
+                        l.Longitude,
+                        l.RadiusMeters,
+                        l.Description,
+                    })
+                    .ToList(),
             })
             .ToListAsync(cancellationToken);
 
@@ -193,26 +194,32 @@ public sealed class SpeciesRepository(IDbContextFactory<WildlifeDbContext> conte
             foreach (var location in species.Locations)
             {
                 var distance = CalculateHaversineDistance(
-                    latitude, longitude,
-                    location.Latitude, location.Longitude);
+                    latitude,
+                    longitude,
+                    location.Latitude,
+                    location.Longitude
+                );
 
                 // Check if the species location circle overlaps with the search radius
                 // The distance to the edge of the species circle should be within our search radius
                 var effectiveDistance = distance - location.RadiusMeters;
-                if (effectiveDistance < 0) effectiveDistance = 0;
+                if (effectiveDistance < 0)
+                    effectiveDistance = 0;
 
                 if (effectiveDistance <= radiusMeters)
                 {
-                    results.Add(new SpeciesNearbyDto(
-                        species.Id,
-                        species.CommonName,
-                        species.ScientificName,
-                        distance,
-                        location.Latitude,
-                        location.Longitude,
-                        location.RadiusMeters,
-                        location.Description
-                    ));
+                    results.Add(
+                        new SpeciesNearbyDto(
+                            species.Id,
+                            species.CommonName,
+                            species.ScientificName,
+                            distance,
+                            location.Latitude,
+                            location.Longitude,
+                            location.RadiusMeters,
+                            location.Description
+                        )
+                    );
                 }
             }
         }
@@ -229,17 +236,23 @@ public sealed class SpeciesRepository(IDbContextFactory<WildlifeDbContext> conte
     /// Calculates the distance between two points using the Haversine formula.
     /// </summary>
     private static double CalculateHaversineDistance(
-        double lat1, double lon1,
-        double lat2, double lon2)
+        double lat1,
+        double lon1,
+        double lat2,
+        double lon2
+    )
     {
         const double EarthRadiusMeters = 6371000;
 
         var dLat = DegreesToRadians(lat2 - lat1);
         var dLon = DegreesToRadians(lon2 - lon1);
 
-        var a = Math.Sin(dLat / 2) * Math.Sin(dLat / 2) +
-                Math.Cos(DegreesToRadians(lat1)) * Math.Cos(DegreesToRadians(lat2)) *
-                Math.Sin(dLon / 2) * Math.Sin(dLon / 2);
+        var a =
+            Math.Sin(dLat / 2) * Math.Sin(dLat / 2)
+            + Math.Cos(DegreesToRadians(lat1))
+                * Math.Cos(DegreesToRadians(lat2))
+                * Math.Sin(dLon / 2)
+                * Math.Sin(dLon / 2);
 
         var c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
 
@@ -253,7 +266,8 @@ public sealed class SpeciesRepository(IDbContextFactory<WildlifeDbContext> conte
 
     public async Task<CursorPage<SpeciesForSearchDto>> GetSpeciesCursorPageAsync(
         CursorPageParameter request,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
 
@@ -264,8 +278,9 @@ public sealed class SpeciesRepository(IDbContextFactory<WildlifeDbContext> conte
         {
             var search = request.Search.ToLower();
             query = query.Where(s =>
-                s.CommonName.Any(cn => cn.Value.ToLower().Contains(search)) ||
-                s.ScientificName.ToLower().Contains(search));
+                s.CommonName.Any(cn => cn.Value.ToLower().Contains(search))
+                || s.ScientificName.ToLower().Contains(search)
+            );
         }
 
         // Apply cursor filter
@@ -282,10 +297,7 @@ public sealed class SpeciesRepository(IDbContextFactory<WildlifeDbContext> conte
                 s.Id,
                 s.CommonName.ToList(),
                 s.ScientificName,
-                s.MunicipalitySpecies
-                    .Select(ms => ms.Municipality.Name)
-                    .OrderBy(n => n)
-                    .ToList()
+                s.MunicipalitySpecies.Select(ms => ms.Municipality.Name).OrderBy(n => n).ToList()
             ))
             .ToListAsync(cancellationToken);
 
@@ -295,9 +307,7 @@ public sealed class SpeciesRepository(IDbContextFactory<WildlifeDbContext> conte
             items.RemoveAt(items.Count - 1);
         }
 
-        var nextCursor = hasMore && items.Count > 0
-            ? CursorHelper.Encode(items[^1].Id)
-            : null;
+        var nextCursor = hasMore && items.Count > 0 ? CursorHelper.Encode(items[^1].Id) : null;
 
         return new CursorPage<SpeciesForSearchDto>(items, nextCursor, hasMore);
     }

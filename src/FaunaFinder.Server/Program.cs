@@ -1,23 +1,22 @@
-using FaunaFinder.Server.Components;
-using FaunaFinder.Server.Endpoints;
-using FaunaFinder.Server.Services.Export;
-using FaunaFinder.Server.Services.Localization;
 using FaunaFinder.Identity.Api;
 using FaunaFinder.Identity.Application.Extensions;
 using FaunaFinder.Identity.DataAccess.Extensions;
 using FaunaFinder.Identity.Database.Extensions;
+using FaunaFinder.Server.Components;
+using FaunaFinder.Server.Endpoints;
+using FaunaFinder.Server.Services.Export;
+using FaunaFinder.Server.Services.Localization;
 using FaunaFinder.Wildlife.Api;
 using FaunaFinder.Wildlife.Application.Extensions;
-using FaunaFinder.Wildlife.Database.Extensions;
 using FaunaFinder.Wildlife.DataAccess.Extensions;
+using FaunaFinder.Wildlife.Database.Extensions;
 using QuestPDF.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
 
-builder.Services.AddRazorComponents()
-    .AddInteractiveWebAssemblyComponents();
+builder.Services.AddRazorComponents().AddInteractiveWebAssemblyComponents();
 
 builder.Services.AddScoped<IAppLocalizer, AppLocalizer>();
 builder.Services.AddScoped<IMunicipalityReportService, MunicipalityReportService>();

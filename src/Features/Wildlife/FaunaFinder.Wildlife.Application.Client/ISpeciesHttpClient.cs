@@ -1,6 +1,6 @@
+using FaunaFinder.Pagination.Contracts;
 using FaunaFinder.Wildlife.Contracts.Dtos;
 using FaunaFinder.Wildlife.Contracts.Parameters;
-using FaunaFinder.Pagination.Contracts;
 
 namespace FaunaFinder.Wildlife.Application.Client;
 
@@ -8,27 +8,33 @@ public interface ISpeciesHttpClient
 {
     Task<IReadOnlyList<SpeciesForListDto>> GetSpeciesByMunicipalityAsync(
         int municipalityId,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 
     Task<SpeciesForDetailDto?> GetSpeciesDetailAsync(
         int speciesId,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 
     Task<IReadOnlyList<SpeciesForSearchDto>> GetSpeciesAsync(
         SpeciesParameters parameters,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 
     Task<int> GetTotalSpeciesCountAsync(
         string? search = null,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 
     Task<IReadOnlyList<SpeciesNearbyDto>> GetSpeciesNearbyAsync(
         double latitude,
         double longitude,
         double radiusMeters,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 
     Task<CursorPage<SpeciesForSearchDto>> GetSpeciesCursorPageAsync(
         CursorPageParameter request,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 }

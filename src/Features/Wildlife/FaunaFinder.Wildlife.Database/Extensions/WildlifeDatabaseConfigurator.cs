@@ -9,9 +9,11 @@ public static class WildlifeDatabaseConfigurator
 {
     public static IHostApplicationBuilder AddWildlifeDatabase(
         this IHostApplicationBuilder builder,
-        string connectionName = "faunafinder-wildlife")
+        string connectionName = "faunafinder-wildlife"
+    )
     {
-        var connectionString = builder.Configuration.GetConnectionString(connectionName)
+        var connectionString =
+            builder.Configuration.GetConnectionString(connectionName)
             ?? throw new ArgumentException($"Connection string '{connectionName}' not found");
 
         // Register DbContext pool
@@ -35,12 +37,15 @@ public static class WildlifeDatabaseConfigurator
     private static void ConfigureDbContext(string connectionString, DbContextOptionsBuilder options)
     {
         options.EnableThreadSafetyChecks(false);
-        options.UseNpgsql(connectionString, npgsqlOptions =>
-        {
-            npgsqlOptions.MigrationsAssembly("FaunaFinder.Wildlife.Database");
-            npgsqlOptions.EnableRetryOnFailure(maxRetryCount: 5);
-            npgsqlOptions.UseNetTopologySuite();
-        });
+        options.UseNpgsql(
+            connectionString,
+            npgsqlOptions =>
+            {
+                npgsqlOptions.MigrationsAssembly("FaunaFinder.Wildlife.Database");
+                npgsqlOptions.EnableRetryOnFailure(maxRetryCount: 5);
+                npgsqlOptions.UseNetTopologySuite();
+            }
+        );
         options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
         options.UseSnakeCaseNamingConvention();
     }

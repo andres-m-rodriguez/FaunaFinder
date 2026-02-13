@@ -1,5 +1,5 @@
-using FluentValidation;
 using FaunaFinder.Wildlife.Contracts.Requests;
+using FluentValidation;
 
 namespace FaunaFinder.Wildlife.Contracts.Validators;
 

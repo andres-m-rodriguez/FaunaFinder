@@ -22,25 +22,33 @@ public sealed class FwsLink
             builder.ToTable("fws_links");
             builder.HasKey(static e => e.Id);
 
-            builder.Property(static e => e.Justification)
-                .HasMaxLength(2000);
+            builder.Property(static e => e.Justification).HasMaxLength(2000);
 
-            builder.HasOne(static e => e.NrcsPractice)
+            builder
+                .HasOne(static e => e.NrcsPractice)
                 .WithMany(static p => p.FwsLinks)
                 .HasForeignKey(static e => e.NrcsPracticeId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            builder.HasOne(static e => e.FwsAction)
+            builder
+                .HasOne(static e => e.FwsAction)
                 .WithMany(static a => a.FwsLinks)
                 .HasForeignKey(static e => e.FwsActionId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            builder.HasOne(static e => e.Species)
+            builder
+                .HasOne(static e => e.Species)
                 .WithMany(static s => s.FwsLinks)
                 .HasForeignKey(static e => e.SpeciesId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            builder.HasIndex(static e => new { e.NrcsPracticeId, e.FwsActionId, e.SpeciesId })
+            builder
+                .HasIndex(static e => new
+                {
+                    e.NrcsPracticeId,
+                    e.FwsActionId,
+                    e.SpeciesId,
+                })
                 .HasDatabaseName("fws_links_practice_action_species_idx");
         }
     }

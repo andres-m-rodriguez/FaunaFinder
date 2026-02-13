@@ -1,7 +1,7 @@
 using System.Net.Http.Json;
+using FaunaFinder.Pagination.Contracts;
 using FaunaFinder.Wildlife.Contracts.Dtos;
 using FaunaFinder.Wildlife.Contracts.Parameters;
-using FaunaFinder.Pagination.Contracts;
 
 namespace FaunaFinder.Wildlife.Application.Client;
 
@@ -9,53 +9,63 @@ public sealed class SpeciesHttpClient(HttpClient httpClient) : ISpeciesHttpClien
 {
     public async Task<IReadOnlyList<SpeciesForListDto>> GetSpeciesByMunicipalityAsync(
         int municipalityId,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         var result = await httpClient.GetFromJsonAsync<IReadOnlyList<SpeciesForListDto>>(
             $"api/species/by-municipality/{municipalityId}",
-            cancellationToken);
+            cancellationToken
+        );
         return result ?? [];
     }
 
     public async Task<SpeciesForDetailDto?> GetSpeciesDetailAsync(
         int speciesId,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         return await httpClient.GetFromJsonAsync<SpeciesForDetailDto>(
             $"api/species/{speciesId}",
-            cancellationToken);
+            cancellationToken
+        );
     }
 
     public async Task<IReadOnlyList<SpeciesForSearchDto>> GetSpeciesAsync(
         SpeciesParameters parameters,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         var queryString = BuildSpeciesQueryString(parameters);
         var result = await httpClient.GetFromJsonAsync<IReadOnlyList<SpeciesForSearchDto>>(
             $"api/species{queryString}",
-            cancellationToken);
+            cancellationToken
+        );
         return result ?? [];
     }
 
     public async Task<int> GetTotalSpeciesCountAsync(
         string? search = null,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         var queryString = string.IsNullOrEmpty(search) ? "" : $"?search={Uri.EscapeDataString(search)}";
         return await httpClient.GetFromJsonAsync<int>(
             $"api/species/count{queryString}",
-            cancellationToken);
+            cancellationToken
+        );
     }
 
     public async Task<IReadOnlyList<SpeciesNearbyDto>> GetSpeciesNearbyAsync(
         double latitude,
         double longitude,
         double radiusMeters,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         var result = await httpClient.GetFromJsonAsync<IReadOnlyList<SpeciesNearbyDto>>(
             $"api/species/nearby?latitude={latitude}&longitude={longitude}&radiusMeters={radiusMeters}",
-            cancellationToken);
+            cancellationToken
+        );
         return result ?? [];
     }
 
@@ -64,7 +74,7 @@ public sealed class SpeciesHttpClient(HttpClient httpClient) : ISpeciesHttpClien
         var queryParams = new List<string>
         {
             $"pageSize={parameters.PageSize}",
-            $"page={parameters.Page}"
+            $"page={parameters.Page}",
         };
 
         if (!string.IsNullOrEmpty(parameters.Search))
@@ -82,21 +92,20 @@ public sealed class SpeciesHttpClient(HttpClient httpClient) : ISpeciesHttpClien
 
     public async Task<CursorPage<SpeciesForSearchDto>> GetSpeciesCursorPageAsync(
         CursorPageParameter request,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         var queryString = BuildCursorQueryString(request);
         var result = await httpClient.GetFromJsonAsync<CursorPage<SpeciesForSearchDto>>(
             $"api/species/cursor{queryString}",
-            cancellationToken);
+            cancellationToken
+        );
         return result ?? new CursorPage<SpeciesForSearchDto>([], null, false);
     }
 
     private static string BuildCursorQueryString(CursorPageParameter request)
     {
-        var queryParams = new List<string>
-        {
-            $"pageSize={request.PageSize}"
-        };
+        var queryParams = new List<string> { $"pageSize={request.PageSize}" };
 
         if (!string.IsNullOrEmpty(request.Cursor))
         {

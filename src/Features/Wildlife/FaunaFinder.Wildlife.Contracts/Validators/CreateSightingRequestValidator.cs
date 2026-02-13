@@ -6,14 +6,27 @@ public sealed class CreateSightingRequestValidator : AbstractValidator<CreateSig
 {
     private static readonly string[] ValidModes = ["Casual", "Survey"];
     private static readonly string[] ValidConfidenceLevels = ["Certain", "FairlySure", "Unsure"];
-    private static readonly string[] ValidCountRanges = ["One", "TwoToFive", "SixToTwenty", "TwentyPlus"];
-    private static readonly string[] ValidWeatherOptions = ["Clear", "PartlyCloudy", "Cloudy", "Rainy", "Stormy", "Foggy", "Windy"];
+    private static readonly string[] ValidCountRanges =
+    [
+        "One",
+        "TwoToFive",
+        "SixToTwenty",
+        "TwentyPlus",
+    ];
+    private static readonly string[] ValidWeatherOptions =
+    [
+        "Clear",
+        "PartlyCloudy",
+        "Cloudy",
+        "Rainy",
+        "Stormy",
+        "Foggy",
+        "Windy",
+    ];
 
     public CreateSightingRequestValidator()
     {
-        RuleFor(x => x.SpeciesId)
-            .GreaterThan(0)
-            .WithMessage("SpeciesId must be greater than 0");
+        RuleFor(x => x.SpeciesId).GreaterThan(0).WithMessage("SpeciesId must be greater than 0");
 
         RuleFor(x => x.Latitude)
             .InclusiveBetween(-90, 90)
@@ -48,8 +61,13 @@ public sealed class CreateSightingRequestValidator : AbstractValidator<CreateSig
             .WithMessage("Count must be one of: One, TwoToFive, SixToTwenty, TwentyPlus");
 
         RuleFor(x => x.Weather)
-            .Must(weather => weather is null || ValidWeatherOptions.Contains(weather, StringComparer.OrdinalIgnoreCase))
-            .WithMessage("Weather must be one of: Clear, PartlyCloudy, Cloudy, Rainy, Stormy, Foggy, Windy");
+            .Must(weather =>
+                weather is null
+                || ValidWeatherOptions.Contains(weather, StringComparer.OrdinalIgnoreCase)
+            )
+            .WithMessage(
+                "Weather must be one of: Clear, PartlyCloudy, Cloudy, Rainy, Stormy, Foggy, Windy"
+            );
 
         RuleFor(x => x.Notes)
             .MaximumLength(2000)
