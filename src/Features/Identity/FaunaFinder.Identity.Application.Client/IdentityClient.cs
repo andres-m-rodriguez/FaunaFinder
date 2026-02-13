@@ -41,8 +41,19 @@ public sealed class IdentityClient(
             HttpStatusCode.Unauthorized => new InvalidCredentialsError(),
             HttpStatusCode.Locked => new AccountLockedError(null),
             HttpStatusCode.Forbidden => new AccountNotApprovedError(),
+            HttpStatusCode.TooManyRequests => ParseTooManyRequestsError(response),
             _ => new UnexpectedError(await response.Content.ReadAsStringAsync(cancellationToken)),
         };
+    }
+
+    private static TooManyRequestsError ParseTooManyRequestsError(HttpResponseMessage response)
+    {
+        int? retryAfter = null;
+        if (response.Headers.RetryAfter?.Delta is { } delta)
+        {
+            retryAfter = (int)delta.TotalSeconds;
+        }
+        return new TooManyRequestsError(retryAfter);
     }
 
     public async Task<RegisterResult> RegisterAsync(
@@ -74,6 +85,11 @@ public sealed class IdentityClient(
         if (response.StatusCode == HttpStatusCode.Conflict)
         {
             return new EmailAlreadyExistsError(request.Email);
+        }
+
+        if (response.StatusCode == HttpStatusCode.TooManyRequests)
+        {
+            return ParseTooManyRequestsError(response);
         }
 
         var error = await response.Content.ReadAsStringAsync(cancellationToken);

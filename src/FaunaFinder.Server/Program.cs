@@ -1,3 +1,4 @@
+using System.Threading.RateLimiting;
 using FaunaFinder.Identity.Api;
 using FaunaFinder.Identity.Application.Extensions;
 using FaunaFinder.Identity.DataAccess.Extensions;
@@ -10,6 +11,7 @@ using FaunaFinder.Wildlife.Api;
 using FaunaFinder.Wildlife.Application.Extensions;
 using FaunaFinder.Wildlife.DataAccess.Extensions;
 using FaunaFinder.Wildlife.Database.Extensions;
+using Microsoft.AspNetCore.RateLimiting;
 using QuestPDF.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -35,6 +37,50 @@ builder.Services.AddWildlifeApplication();
 builder.Services.AddWildlifeDataAccess();
 
 builder.Services.AddAuthorization();
+
+// Configure rate limiting
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+    // General API rate limit: 100 requests per minute per IP
+    options.AddFixedWindowLimiter("api", limiterOptions =>
+    {
+        limiterOptions.PermitLimit = 100;
+        limiterOptions.Window = TimeSpan.FromMinutes(1);
+        limiterOptions.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+        limiterOptions.QueueLimit = 0;
+    });
+
+    // Strict login rate limit: 5 attempts per minute per IP
+    options.AddFixedWindowLimiter("auth-login", limiterOptions =>
+    {
+        limiterOptions.PermitLimit = 5;
+        limiterOptions.Window = TimeSpan.FromMinutes(1);
+        limiterOptions.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+        limiterOptions.QueueLimit = 0;
+    });
+
+    // Strict register rate limit: 3 attempts per minute per IP
+    options.AddFixedWindowLimiter("auth-register", limiterOptions =>
+    {
+        limiterOptions.PermitLimit = 3;
+        limiterOptions.Window = TimeSpan.FromMinutes(1);
+        limiterOptions.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+        limiterOptions.QueueLimit = 0;
+    });
+
+    options.OnRejected = async (context, cancellationToken) =>
+    {
+        if (context.Lease.TryGetMetadata(MetadataName.RetryAfter, out var retryAfter))
+        {
+            context.HttpContext.Response.Headers.RetryAfter = retryAfter.TotalSeconds.ToString("0");
+        }
+
+        context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+        await context.HttpContext.Response.WriteAsync("Too many requests. Please try again later.", cancellationToken);
+    };
+});
 
 // Configure cookie authentication
 builder.Services.ConfigureApplicationCookie(options =>
@@ -69,12 +115,13 @@ app.UseAntiforgery();
 
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseRateLimiter();
 
 app.MapDefaultEndpoints();
 app.MapStaticAssets();
 
 // API endpoints
-var api = app.MapGroup("/api");
+var api = app.MapGroup("/api").RequireRateLimiting("api");
 api.MapMunicipalityEndpoints();
 api.MapSpeciesEndpoints();
 api.MapSpeciesImageEndpoints();
