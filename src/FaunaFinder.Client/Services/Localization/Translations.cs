@@ -370,6 +370,22 @@ public static class Translations
             ["ReviewQueue_CloseDetails"] = "Close",
             ["ReviewQueue_Unauthorized"] = "You do not have permission to access this page.",
             ["Nav_ReviewQueue"] = "Review Queue",
+
+            // Statistics
+            ["Nav_Statistics"] = "Statistics",
+            ["PageTitle_Statistics"] = "Statistics - FaunaFinder",
+            ["Statistics_Title"] = "Wildlife Statistics",
+            ["Statistics_Description"] = "Explore aggregated data and trends from wildlife sightings across Puerto Rico.",
+            ["Statistics_TotalSightings"] = "Total Sightings",
+            ["Statistics_TotalSpecies"] = "Species in Database",
+            ["Statistics_TotalMunicipalities"] = "Municipalities",
+            ["Statistics_ThisMonth"] = "Sightings This Month",
+            ["Statistics_SightingsOverTime"] = "Sightings Over Time",
+            ["Statistics_SpeciesByCategory"] = "Species by Category",
+            ["Statistics_SightingsByMunicipality"] = "Top Municipalities by Sightings",
+            ["Statistics_TopSpecies"] = "Most Observed Species",
+            ["Statistics_Sightings"] = "Sightings",
+            ["Statistics_NoData"] = "No data available yet.",
         };
 
     public static IReadOnlyDictionary<string, string> Spanish { get; } =
@@ -751,5 +767,21 @@ public static class Translations
             ["ReviewQueue_CloseDetails"] = "Cerrar",
             ["ReviewQueue_Unauthorized"] = "No tienes permiso para acceder a esta página.",
             ["Nav_ReviewQueue"] = "Cola de Revisión",
+
+            // Statistics
+            ["Nav_Statistics"] = "Estadísticas",
+            ["PageTitle_Statistics"] = "Estadísticas - FaunaFinder",
+            ["Statistics_Title"] = "Estadísticas de Vida Silvestre",
+            ["Statistics_Description"] = "Explora datos agregados y tendencias de avistamientos de vida silvestre en Puerto Rico.",
+            ["Statistics_TotalSightings"] = "Total de Avistamientos",
+            ["Statistics_TotalSpecies"] = "Especies en Base de Datos",
+            ["Statistics_TotalMunicipalities"] = "Municipios",
+            ["Statistics_ThisMonth"] = "Avistamientos Este Mes",
+            ["Statistics_SightingsOverTime"] = "Avistamientos a lo Largo del Tiempo",
+            ["Statistics_SpeciesByCategory"] = "Especies por Categoría",
+            ["Statistics_SightingsByMunicipality"] = "Principales Municipios por Avistamientos",
+            ["Statistics_TopSpecies"] = "Especies Más Observadas",
+            ["Statistics_Sightings"] = "Avistamientos",
+            ["Statistics_NoData"] = "No hay datos disponibles aún.",
         };
 }

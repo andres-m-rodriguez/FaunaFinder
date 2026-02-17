@@ -128,6 +128,7 @@ api.MapSpeciesImageEndpoints();
 api.MapExportEndpoints();
 api.MapIdentityEndpoints();
 api.MapSightingsEndpoints();
+api.MapStatisticsEndpoints();
 
 // Serve App.razor as the shell with WASM interactivity
 app.MapRazorComponents<App>()

@@ -15,6 +15,7 @@
     <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.0" />
     <PackageReference Include="BlazingSingularity" Version="1.0.0-beta.3" />
     <PackageReference Include="MudBlazor" Version="8.4.0" />
+    <PackageReference Include="Blazor-ApexCharts" Version="3.7.1" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Common\FaunaFinder.i18n.Contracts\FaunaFinder.i18n.Contracts.csproj" />

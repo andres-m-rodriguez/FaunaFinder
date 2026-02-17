@@ -47,4 +47,8 @@ public interface IWildlifeHttpClient
         string? reviewNotes,
         CancellationToken cancellationToken = default
     );
+
+    Task<PublicStatisticsDto?> GetPublicStatisticsAsync(
+        CancellationToken cancellationToken = default
+    );
 }
