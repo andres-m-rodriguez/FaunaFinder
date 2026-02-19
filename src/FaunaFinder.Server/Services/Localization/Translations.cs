@@ -10,6 +10,7 @@ public static class Translations
             ["Nav_Species"] = "Species",
             ["Nav_Pueblos"] = "Municipalities",
             ["Nav_About"] = "About",
+            ["Nav_Statistics"] = "Statistics",
 
             // Common
             ["AppTitle"] = "FaunaFinder",
@@ -159,6 +160,7 @@ public static class Translations
             ["Nav_Species"] = "Especies",
             ["Nav_Pueblos"] = "Pueblos",
             ["Nav_About"] = "Acerca de",
+            ["Nav_Statistics"] = "Estadísticas",
 
             // Common
             ["AppTitle"] = "FaunaFinder",

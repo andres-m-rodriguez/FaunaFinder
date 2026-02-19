@@ -1,0 +1,272 @@
+@page "/statistics"
+@inject IAppLocalizer L
+@inject IWildlifeHttpClient WildlifeClient
+
+<PageTitle>@L["PageTitle_Statistics"]</PageTitle>
+
+@code {
+    private PublicStatisticsDto? _statistics;
+    private bool _loading = true;
+    private string? _error;
+
+    protected override void OnInitialized()
+    {
+        L.LanguageSignal.OnChange(async () => await InvokeAsync(StateHasChanged));
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadStatisticsAsync();
+    }
+
+    private async Task LoadStatisticsAsync()
+    {
+        try
+        {
+            _loading = true;
+            _statistics = await WildlifeClient.GetPublicStatisticsAsync();
+        }
+        catch (Exception)
+        {
+            _error = L["Error_UnexpectedError"];
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private ApexChartOptions<SightingsByMonthDto> GetLineChartOptions() => new()
+    {
+        Chart = new Chart
+        {
+            Background = "transparent",
+            Toolbar = new Toolbar { Show = false }
+        },
+        Stroke = new Stroke { Curve = Curve.Smooth, Width = 3 },
+        Xaxis = new XAxis
+        {
+            Categories = _statistics?.SightingsByMonth
+                .Select(x => $"{x.Year}-{x.Month:D2}")
+                .ToList()
+        },
+        Colors = ["#1976d2"]
+    };
+
+    private ApexChartOptions<SpeciesByCategoryDto> GetDonutChartOptions() => new()
+    {
+        Chart = new Chart
+        {
+            Background = "transparent"
+        },
+        Labels = _statistics?.SpeciesByCategory.Select(x => x.Category).ToList(),
+        Colors = ["#4caf50", "#2196f3"]
+    };
+
+    private ApexChartOptions<SightingsByMunicipalityDto> GetBarChartOptions() => new()
+    {
+        Chart = new Chart
+        {
+            Background = "transparent",
+            Toolbar = new Toolbar { Show = false }
+        },
+        PlotOptions = new PlotOptions
+        {
+            Bar = new PlotOptionsBar
+            {
+                Horizontal = true,
+                BorderRadius = 4
+            }
+        },
+        Colors = ["#ff9800"]
+    };
+
+    private ApexChartOptions<TopSpeciesDto> GetTopSpeciesChartOptions() => new()
+    {
+        Chart = new Chart
+        {
+            Background = "transparent",
+            Toolbar = new Toolbar { Show = false }
+        },
+        PlotOptions = new PlotOptions
+        {
+            Bar = new PlotOptionsBar
+            {
+                Horizontal = true,
+                BorderRadius = 4
+            }
+        },
+        Colors = ["#9c27b0"]
+    };
+
+    private string GetMonthLabel(int year, int month)
+    {
+        var date = new DateTime(year, month, 1);
+        return date.ToString("MMM yyyy");
+    }
+}
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="py-8">
+    <MudText Typo="Typo.h4" Color="Color.Primary" GutterBottom="true">@L["Statistics_Title"]</MudText>
+    <MudText Typo="Typo.body1" Class="mb-6">@L["Statistics_Description"]</MudText>
+
+    @if (_loading)
+    {
+        <MudGrid>
+            @for (int i = 0; i < 4; i++)
+            {
+                <MudItem xs="12" sm="6" md="3">
+                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="120px" />
+                </MudItem>
+            }
+        </MudGrid>
+        <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="300px" Class="mt-6" />
+    }
+    else if (_error != null)
+    {
+        <MudAlert Severity="Severity.Error" Class="mb-4">@_error</MudAlert>
+    }
+    else if (_statistics != null)
+    {
+        <!-- Overview Cards -->
+        <MudGrid Class="mb-6">
+            <MudItem xs="12" sm="6" md="3">
+                <MudPaper Elevation="2" Class="pa-4 text-center">
+                    <MudIcon Icon="@Icons.Material.Filled.Visibility" Size="Size.Large" Color="Color.Primary" />
+                    <MudText Typo="Typo.h4" Color="Color.Primary">@_statistics.Overview.TotalApprovedSightings</MudText>
+                    <MudText Typo="Typo.body2">@L["Statistics_TotalSightings"]</MudText>
+                </MudPaper>
+            </MudItem>
+            <MudItem xs="12" sm="6" md="3">
+                <MudPaper Elevation="2" Class="pa-4 text-center">
+                    <MudIcon Icon="@Icons.Material.Filled.Pets" Size="Size.Large" Color="Color.Success" />
+                    <MudText Typo="Typo.h4" Color="Color.Success">@_statistics.Overview.TotalSpecies</MudText>
+                    <MudText Typo="Typo.body2">@L["Statistics_TotalSpecies"]</MudText>
+                </MudPaper>
+            </MudItem>
+            <MudItem xs="12" sm="6" md="3">
+                <MudPaper Elevation="2" Class="pa-4 text-center">
+                    <MudIcon Icon="@Icons.Material.Filled.Map" Size="Size.Large" Color="Color.Warning" />
+                    <MudText Typo="Typo.h4" Color="Color.Warning">@_statistics.Overview.TotalMunicipalities</MudText>
+                    <MudText Typo="Typo.body2">@L["Statistics_TotalMunicipalities"]</MudText>
+                </MudPaper>
+            </MudItem>
+            <MudItem xs="12" sm="6" md="3">
+                <MudPaper Elevation="2" Class="pa-4 text-center">
+                    <MudIcon Icon="@Icons.Material.Filled.TrendingUp" Size="Size.Large" Color="Color.Secondary" />
+                    <MudText Typo="Typo.h4" Color="Color.Secondary">@_statistics.Overview.SightingsThisMonth</MudText>
+                    <MudText Typo="Typo.body2">@L["Statistics_ThisMonth"]</MudText>
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+
+        <!-- Charts Row 1 -->
+        <MudGrid Class="mb-6">
+            <!-- Sightings Over Time -->
+            <MudItem xs="12" md="8">
+                <MudPaper Elevation="2" Class="pa-4">
+                    <MudText Typo="Typo.h6" GutterBottom="true">@L["Statistics_SightingsOverTime"]</MudText>
+                    @if (_statistics.SightingsByMonth.Any())
+                    {
+                        <ApexChart TItem="SightingsByMonthDto"
+                                   Options="GetLineChartOptions()"
+                                   Height="300">
+                            <ApexPointSeries TItem="SightingsByMonthDto"
+                                           Items="_statistics.SightingsByMonth"
+                                           SeriesType="SeriesType.Line"
+                                           Name="@L["Statistics_Sightings"]"
+                                           XValue="@(e => GetMonthLabel(e.Year, e.Month))"
+                                           YValue="@(e => (decimal)e.Count)" />
+                        </ApexChart>
+                    }
+                    else
+                    {
+                        <MudText Typo="Typo.body2" Color="Color.Default" Class="text-center py-8">
+                            @L["Statistics_NoData"]
+                        </MudText>
+                    }
+                </MudPaper>
+            </MudItem>
+
+            <!-- Species by Category -->
+            <MudItem xs="12" md="4">
+                <MudPaper Elevation="2" Class="pa-4">
+                    <MudText Typo="Typo.h6" GutterBottom="true">@L["Statistics_SpeciesByCategory"]</MudText>
+                    @if (_statistics.SpeciesByCategory.Any())
+                    {
+                        <ApexChart TItem="SpeciesByCategoryDto"
+                                   Options="GetDonutChartOptions()"
+                                   Height="300">
+                            <ApexPointSeries TItem="SpeciesByCategoryDto"
+                                           Items="_statistics.SpeciesByCategory"
+                                           SeriesType="SeriesType.Donut"
+                                           XValue="@(e => e.Category)"
+                                           YValue="@(e => (decimal)e.Count)" />
+                        </ApexChart>
+                    }
+                    else
+                    {
+                        <MudText Typo="Typo.body2" Color="Color.Default" Class="text-center py-8">
+                            @L["Statistics_NoData"]
+                        </MudText>
+                    }
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+
+        <!-- Charts Row 2 -->
+        <MudGrid>
+            <!-- Sightings by Municipality -->
+            <MudItem xs="12" md="6">
+                <MudPaper Elevation="2" Class="pa-4">
+                    <MudText Typo="Typo.h6" GutterBottom="true">@L["Statistics_SightingsByMunicipality"]</MudText>
+                    @if (_statistics.SightingsByMunicipality.Any())
+                    {
+                        <ApexChart TItem="SightingsByMunicipalityDto"
+                                   Options="GetBarChartOptions()"
+                                   Height="350">
+                            <ApexPointSeries TItem="SightingsByMunicipalityDto"
+                                           Items="_statistics.SightingsByMunicipality"
+                                           SeriesType="SeriesType.Bar"
+                                           Name="@L["Statistics_Sightings"]"
+                                           XValue="@(e => e.MunicipalityName)"
+                                           YValue="@(e => (decimal)e.SightingsCount)" />
+                        </ApexChart>
+                    }
+                    else
+                    {
+                        <MudText Typo="Typo.body2" Color="Color.Default" Class="text-center py-8">
+                            @L["Statistics_NoData"]
+                        </MudText>
+                    }
+                </MudPaper>
+            </MudItem>
+
+            <!-- Top Observed Species -->
+            <MudItem xs="12" md="6">
+                <MudPaper Elevation="2" Class="pa-4">
+                    <MudText Typo="Typo.h6" GutterBottom="true">@L["Statistics_TopSpecies"]</MudText>
+                    @if (_statistics.TopSpecies.Any())
+                    {
+                        <ApexChart TItem="TopSpeciesDto"
+                                   Options="GetTopSpeciesChartOptions()"
+                                   Height="350">
+                            <ApexPointSeries TItem="TopSpeciesDto"
+                                           Items="_statistics.TopSpecies"
+                                           SeriesType="SeriesType.Bar"
+                                           Name="@L["Statistics_Sightings"]"
+                                           XValue="@(e => e.SpeciesName)"
+                                           YValue="@(e => (decimal)e.SightingsCount)" />
+                        </ApexChart>
+                    }
+                    else
+                    {
+                        <MudText Typo="Typo.body2" Color="Color.Default" Class="text-center py-8">
+                            @L["Statistics_NoData"]
+                        </MudText>
+                    }
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+    }
+</MudContainer>

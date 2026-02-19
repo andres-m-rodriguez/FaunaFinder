@@ -12,6 +12,7 @@ public static class WildlifeDataAccessConfigurator
         services.AddScoped<ISpeciesRepository, SpeciesRepository>();
         services.AddScoped<ISpeciesImageRepository, SpeciesImageRepository>();
         services.AddScoped<ISightingRepository, SightingRepository>();
+        services.AddScoped<IStatisticsRepository, StatisticsRepository>();
 
         return services;
     }

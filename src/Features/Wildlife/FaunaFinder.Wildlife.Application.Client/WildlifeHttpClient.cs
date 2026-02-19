@@ -121,6 +121,16 @@ public sealed class WildlifeHttpClient(HttpClient httpClient) : IWildlifeHttpCli
         return response.IsSuccessStatusCode;
     }
 
+    public async Task<PublicStatisticsDto?> GetPublicStatisticsAsync(
+        CancellationToken cancellationToken = default
+    )
+    {
+        return await httpClient.GetFromJsonAsync<PublicStatisticsDto>(
+            "/api/statistics",
+            cancellationToken
+        );
+    }
+
     private static string GetFileExtension(string contentType) =>
         contentType.ToLowerInvariant() switch
         {
