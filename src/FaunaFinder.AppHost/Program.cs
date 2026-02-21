@@ -13,16 +13,15 @@ var identityDb = postgres.AddDatabase("faunafinder-identity").WithDropDatabaseCo
 var wildlifeDb = postgres.AddDatabase("faunafinder-wildlife").WithDropDatabaseCommand();
 var mainDb = postgres.AddDatabase("faunafinder").WithDropDatabaseCommand();
 
-// Database seeder (manual job in Azure, runs locally during development)
-builder
+// Database seeder (runs first, seeds all databases)
+var seeder = builder
     .AddProject<Projects.FaunaFinder_Seeder>("seeder")
     .WithReference(mainDb)
     .WithReference(identityDb)
     .WithReference(wildlifeDb)
     .WaitFor(mainDb)
     .WaitFor(identityDb)
-    .WaitFor(wildlifeDb)
-    .PublishAsAzureContainerAppJob();
+    .WaitFor(wildlifeDb);
 
 // API + WASM Client
 builder
@@ -30,9 +29,7 @@ builder
     .WithReference(mainDb)
     .WithReference(identityDb)
     .WithReference(wildlifeDb)
-    .WaitFor(mainDb)
-    .WaitFor(identityDb)
-    .WaitFor(wildlifeDb)
+    .WaitFor(seeder)
     .WithExternalHttpEndpoints();
 
 builder.Build().Run();
