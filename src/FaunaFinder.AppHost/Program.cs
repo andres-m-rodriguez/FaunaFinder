@@ -5,6 +5,9 @@ using Microsoft.Extensions.Logging;
 
 var builder = DistributedApplication.CreateBuilder(args);
 
+// Azure Container App Environment (required for PublishAsAzureContainerAppJob)
+builder.AddAzureContainerAppEnvironment("aca-env");
+
 var postgres = builder
     .AddAzurePostgresFlexibleServer("postgres")
     .RunAsContainer(c => c
