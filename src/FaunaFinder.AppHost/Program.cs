@@ -27,7 +27,7 @@ var seeder = builder
     .WaitFor(wildlifeDb)
     .PublishAsAzureContainerAppJob();
 
-// Pipeline step to run migrations after provisioning
+// Pipeline step to run migrations after deployment
 builder.Pipeline.AddStep("run-migrations", async (context) =>
 {
     var task = await context.ReportingStep
@@ -35,9 +35,6 @@ builder.Pipeline.AddStep("run-migrations", async (context) =>
 
     await using (task.ConfigureAwait(false))
     {
-        context.Logger.LogInformation("Triggering seeder job to apply migrations...");
-
-        // Get resource group and job name from provisioned resources
         var resourceGroup = Environment.GetEnvironmentVariable("AZURE_RESOURCE_GROUP");
         if (string.IsNullOrEmpty(resourceGroup))
         {
@@ -45,32 +42,44 @@ builder.Pipeline.AddStep("run-migrations", async (context) =>
             return;
         }
 
-        var process = new System.Diagnostics.Process
-        {
-            StartInfo = new System.Diagnostics.ProcessStartInfo
-            {
-                FileName = "az",
-                Arguments = $"containerapp job start --name seeder --resource-group {resourceGroup}",
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                UseShellExecute = false
-            }
-        };
+        context.Logger.LogInformation("Triggering seeder job to apply migrations...");
 
-        process.Start();
-        var output = await process.StandardOutput.ReadToEndAsync();
-        var error = await process.StandardError.ReadToEndAsync();
-        await process.WaitForExitAsync(context.CancellationToken);
+        // Start the job and wait for completion (az containerapp job start waits by default)
+        var (exitCode, output, error) = await RunAzCommandAsync(
+            $"containerapp job start --name seeder --resource-group {resourceGroup}",
+            context.CancellationToken);
 
-        if (process.ExitCode != 0)
+        if (exitCode != 0)
         {
-            context.Logger.LogError("Failed to trigger seeder job: {Error}", error);
-            throw new InvalidOperationException($"Migration job failed: {error}");
+            context.Logger.LogError("Failed to start seeder job: {Error}", error);
+            throw new InvalidOperationException($"Migration job failed to start: {error}");
         }
 
-        context.Logger.LogInformation("Seeder job triggered successfully: {Output}", output);
+        context.Logger.LogInformation("Seeder job completed successfully");
     }
-}, dependsOn: "provision", requiredBy: "deploy");
+}, dependsOn: "deploy");
+
+static async Task<(int exitCode, string output, string error)> RunAzCommandAsync(string arguments, CancellationToken ct)
+{
+    var process = new System.Diagnostics.Process
+    {
+        StartInfo = new System.Diagnostics.ProcessStartInfo
+        {
+            FileName = "az",
+            Arguments = arguments,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            UseShellExecute = false
+        }
+    };
+
+    process.Start();
+    var output = await process.StandardOutput.ReadToEndAsync(ct);
+    var error = await process.StandardError.ReadToEndAsync(ct);
+    await process.WaitForExitAsync(ct);
+
+    return (process.ExitCode, output, error);
+}
 
 // API + WASM Client
 builder
