@@ -13,36 +13,26 @@ permissions:
   id-token: write
   contents: read
 
-
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
     env:
       AZURE_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
       AZURE_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
       AZURE_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
       AZURE_LOCATION: ${{ vars.AZURE_LOCATION }}
-      AZURE_ENV_NAME: ${{ vars.AZURE_ENV_NAME }}
+      AZURE_RESOURCE_GROUP: ${{ vars.AZURE_RESOURCE_GROUP }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Install azd
-        uses: Azure/setup-azd@v2
+
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: | 
-            8.x
-            9.x
-            10.x
+          dotnet-version: 10.x
 
-      - name: Log in with Azure (Federated Credentials)
-        run: |
-          azd auth login `
-            --client-id "$Env:AZURE_CLIENT_ID" `
-            --federated-credential-provider "github" `
-            --tenant-id "$Env:AZURE_TENANT_ID"
-        shell: pwsh
+      - name: Install Aspire CLI
+        run: dotnet tool install -g aspire.cli
 
       - name: Log in with Azure CLI (Federated Credentials)
         uses: azure/login@v2
@@ -51,9 +41,6 @@ jobs:
           tenant-id: ${{ vars.AZURE_TENANT_ID }}
           subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
 
-      - name: Provision Infrastructure
-        run: azd provision --no-prompt
-
-      - name: Deploy Application
-        run: azd deploy --no-prompt
+      - name: Deploy with Aspire Pipelines
+        run: aspire do deploy --project src/FaunaFinder.AppHost --environment Production
         
