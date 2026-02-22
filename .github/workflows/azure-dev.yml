@@ -15,12 +15,15 @@ permissions:
   contents: read
 
 jobs:
-  detect-changes:
+  deploy:
     runs-on: ubuntu-latest
-    outputs:
-      deploy-server: ${{ steps.mapping.outputs.deploy-server }}
-      deploy-seeder: ${{ steps.mapping.outputs.deploy-seeder }}
-      run-migrations: ${{ steps.mapping.outputs.run-migrations }}
+    env:
+      AZURE_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
+      AZURE_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+      AZURE_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      AZURE_LOCATION: ${{ vars.AZURE_LOCATION }}
+      AZURE_RESOURCE_GROUP: ${{ vars.AZURE_RESOURCE_GROUP }}
+      ASPIRE_CLI_TELEMETRY_OPTOUT: 1
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -32,8 +35,10 @@ jobs:
         with:
           dotnet-version: 10.x
 
-      - name: Install dotnet-affected
-        run: dotnet tool install -g dotnet-affected
+      - name: Install tools
+        run: |
+          dotnet tool install -g dotnet-affected
+          dotnet tool install -g aspire.cli --prerelease
 
       - name: Detect affected projects
         id: affected
@@ -42,69 +47,12 @@ jobs:
           if [ -f affected.txt ] && [ -s affected.txt ]; then
             cat affected.txt
             AFFECTED=$(cat affected.txt | tr '\n' ',' | sed 's/,$//')
-            echo "projects=$AFFECTED" >> $GITHUB_OUTPUT
+            echo "AFFECTED_PROJECTS=$AFFECTED" >> $GITHUB_ENV
+            echo "Affected projects: $AFFECTED"
           else
-            echo "projects=" >> $GITHUB_OUTPUT
             echo "No affected projects detected"
           fi
 
-      - name: Map projects to Aspire deploy steps
-        id: mapping
-        run: |
-          AFFECTED="${{ steps.affected.outputs.projects }}"
-          DEPLOY_SERVER="false"
-          DEPLOY_SEEDER="false"
-          RUN_MIGRATIONS="false"
-
-          # Server: FaunaFinder.Server, .Client, .Api, .Application, .Contracts, .DataAccess, etc.
-          if echo "$AFFECTED" | grep -qE "FaunaFinder\.(Server|Client|ServiceDefaults)|\.Api|\.Application|\.Contracts|\.DataAccess|i18n|Pagination"; then
-            DEPLOY_SERVER="true"
-          fi
-
-          # Seeder: FaunaFinder.Seeder, .Database projects
-          if echo "$AFFECTED" | grep -qE "FaunaFinder\.Seeder|\.Database"; then
-            DEPLOY_SEEDER="true"
-            RUN_MIGRATIONS="true"
-          fi
-
-          # Force deploy all on manual trigger with flag
-          if [ "${{ github.event.inputs.force-deploy-all }}" == "true" ]; then
-            DEPLOY_SERVER="true"
-            DEPLOY_SEEDER="true"
-            RUN_MIGRATIONS="true"
-          fi
-
-          echo "deploy-server=$DEPLOY_SERVER" >> $GITHUB_OUTPUT
-          echo "deploy-seeder=$DEPLOY_SEEDER" >> $GITHUB_OUTPUT
-          echo "run-migrations=$RUN_MIGRATIONS" >> $GITHUB_OUTPUT
-
-          echo "Deploy server: $DEPLOY_SERVER"
-          echo "Deploy seeder: $DEPLOY_SEEDER"
-          echo "Run migrations: $RUN_MIGRATIONS"
-
-  deploy-server:
-    needs: detect-changes
-    if: needs.detect-changes.outputs.deploy-server == 'true'
-    runs-on: ubuntu-latest
-    env:
-      AZURE_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
-      AZURE_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
-      AZURE_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
-      AZURE_LOCATION: ${{ vars.AZURE_LOCATION }}
-      AZURE_RESOURCE_GROUP: ${{ vars.AZURE_RESOURCE_GROUP }}
-      ASPIRE_CLI_TELEMETRY_OPTOUT: 1
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: 10.x
-
-      - name: Install Aspire CLI
-        run: dotnet tool install -g aspire.cli --prerelease
-
       - name: Log in with Azure CLI
         uses: azure/login@v2
         with:
@@ -112,90 +60,11 @@ jobs:
           tenant-id: ${{ vars.AZURE_TENANT_ID }}
           subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
 
-      - name: Deploy server
-        run: aspire do deploy-server --project src/FaunaFinder.AppHost --environment Production --non-interactive
+      - name: Deploy with Aspire
+        run: aspire do deploy --project src/FaunaFinder.AppHost --environment Production --non-interactive
         env:
           Azure__SubscriptionId: ${{ vars.AZURE_SUBSCRIPTION_ID }}
           Azure__Location: ${{ vars.AZURE_LOCATION }}
           Azure__ResourceGroup: ${{ vars.AZURE_RESOURCE_GROUP }}
-
-  deploy-seeder:
-    needs: detect-changes
-    if: needs.detect-changes.outputs.deploy-seeder == 'true'
-    runs-on: ubuntu-latest
-    env:
-      AZURE_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
-      AZURE_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
-      AZURE_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
-      AZURE_LOCATION: ${{ vars.AZURE_LOCATION }}
-      AZURE_RESOURCE_GROUP: ${{ vars.AZURE_RESOURCE_GROUP }}
-      ASPIRE_CLI_TELEMETRY_OPTOUT: 1
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: 10.x
-
-      - name: Install Aspire CLI
-        run: dotnet tool install -g aspire.cli --prerelease
-
-      - name: Log in with Azure CLI
-        uses: azure/login@v2
-        with:
-          client-id: ${{ vars.AZURE_CLIENT_ID }}
-          tenant-id: ${{ vars.AZURE_TENANT_ID }}
-          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
-
-      - name: Deploy seeder
-        run: aspire do deploy-seeder --project src/FaunaFinder.AppHost --environment Production --non-interactive
-        env:
-          Azure__SubscriptionId: ${{ vars.AZURE_SUBSCRIPTION_ID }}
-          Azure__Location: ${{ vars.AZURE_LOCATION }}
-          Azure__ResourceGroup: ${{ vars.AZURE_RESOURCE_GROUP }}
-
-  run-migrations:
-    needs: [detect-changes, deploy-seeder]
-    if: needs.detect-changes.outputs.run-migrations == 'true'
-    runs-on: ubuntu-latest
-    env:
-      AZURE_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
-      AZURE_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
-      AZURE_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
-      AZURE_RESOURCE_GROUP: ${{ vars.AZURE_RESOURCE_GROUP }}
-      ASPIRE_CLI_TELEMETRY_OPTOUT: 1
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: 10.x
-
-      - name: Install Aspire CLI
-        run: dotnet tool install -g aspire.cli --prerelease
-
-      - name: Log in with Azure CLI
-        uses: azure/login@v2
-        with:
-          client-id: ${{ vars.AZURE_CLIENT_ID }}
-          tenant-id: ${{ vars.AZURE_TENANT_ID }}
-          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
-
-      - name: Run migrations
-        run: aspire do run-migrations --project src/FaunaFinder.AppHost --environment Production --non-interactive
-        env:
-          Azure__SubscriptionId: ${{ vars.AZURE_SUBSCRIPTION_ID }}
-          Azure__Location: ${{ vars.AZURE_LOCATION }}
-          Azure__ResourceGroup: ${{ vars.AZURE_RESOURCE_GROUP }}
-
-  skip-deployment:
-    needs: detect-changes
-    if: needs.detect-changes.outputs.deploy-server == 'false' && needs.detect-changes.outputs.deploy-seeder == 'false'
-    runs-on: ubuntu-latest
-    steps:
-      - name: No changes detected
-        run: echo "No affected services. Skipping deployment."
+          AFFECTED_PROJECTS: ${{ env.AFFECTED_PROJECTS }}
+          FORCE_DEPLOY_ALL: ${{ github.event.inputs.force-deploy-all }}

@@ -31,11 +31,18 @@ var seeder = builder
     .WaitFor(wildlifeDb)
     .PublishAsAzureContainerAppJob();
 
-// Pipeline step to run migrations after deployment
+// Pipeline step to run migrations after deployment (only if seeder is affected)
 builder.Pipeline.AddStep(
     "run-migrations",
     async (context) =>
     {
+        // Check if seeder should be deployed based on affected projects
+        if (!SelectiveDeploymentExtensions.ShouldDeployResource("seeder"))
+        {
+            context.Logger.LogInformation("Seeder not affected - skipping migrations");
+            return;
+        }
+
         var task = await context.ReportingStep.CreateTaskAsync(
             "Running database migrations",
             context.CancellationToken
