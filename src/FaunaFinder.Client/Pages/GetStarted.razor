@@ -1,0 +1,349 @@
+@page "/get-started"
+@inject IAppLocalizer L
+@inject NavigationManager Navigation
+
+<PageTitle>@L["PageTitle_GetStarted"]</PageTitle>
+
+@code {
+    private int _currentSlide = 0;
+    private const int TotalSlides = 4;
+    private bool _isAnimating = false;
+
+    protected override void OnInitialized()
+    {
+        L.LanguageSignal.OnChange(async () => await InvokeAsync(StateHasChanged));
+    }
+
+    private async Task NextSlide()
+    {
+        if (_currentSlide < TotalSlides - 1 && !_isAnimating)
+        {
+            _isAnimating = true;
+            _currentSlide++;
+            StateHasChanged();
+            await Task.Delay(300);
+            _isAnimating = false;
+        }
+    }
+
+    private async Task PreviousSlide()
+    {
+        if (_currentSlide > 0 && !_isAnimating)
+        {
+            _isAnimating = true;
+            _currentSlide--;
+            StateHasChanged();
+            await Task.Delay(300);
+            _isAnimating = false;
+        }
+    }
+
+    private void GoToSlide(int index)
+    {
+        if (index >= 0 && index < TotalSlides && !_isAnimating)
+        {
+            _currentSlide = index;
+        }
+    }
+
+    private void NavigateToRegister()
+    {
+        Navigation.NavigateTo("/register");
+    }
+
+    private void NavigateToLogin()
+    {
+        Navigation.NavigateTo("/login");
+    }
+}
+
+<style>
+    .slide-container {
+        min-height: calc(100vh - 64px);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        padding: 2rem;
+    }
+
+    .slide-content {
+        max-width: 900px;
+        width: 100%;
+        animation: fadeIn 0.3s ease-in-out;
+    }
+
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateX(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    .slide-indicators {
+        display: flex;
+        justify-content: center;
+        gap: 0.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .slide-indicator {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background-color: var(--mud-palette-action-disabled);
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .slide-indicator.active {
+        background-color: var(--mud-palette-primary);
+        transform: scale(1.2);
+    }
+
+    .slide-indicator:hover {
+        background-color: var(--mud-palette-primary-lighten);
+    }
+
+    .coqui-image-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        border-radius: 16px;
+        background: linear-gradient(135deg, var(--mud-palette-primary-lighten) 0%, var(--mud-palette-primary) 100%);
+        min-height: 300px;
+    }
+
+    .coqui-icon {
+        font-size: 8rem;
+        color: white;
+        opacity: 0.9;
+    }
+
+    .split-card {
+        cursor: pointer;
+        transition: all 0.3s ease;
+        height: 100%;
+    }
+
+    .split-card:hover {
+        transform: translateY(-4px);
+    }
+
+    .feature-list {
+        list-style: none;
+        padding: 0;
+    }
+
+    .feature-list li {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 0.75rem;
+    }
+
+    /* Mobile responsiveness */
+    @@media (max-width: 600px) {
+        .slide-container {
+            padding: 1rem;
+            min-height: calc(100vh - 56px);
+        }
+
+        .slide-content {
+            width: 100%;
+        }
+
+        .coqui-image-container {
+            min-height: 200px;
+        }
+
+        .coqui-icon {
+            font-size: 5rem;
+        }
+
+        .slide-indicators {
+            margin-bottom: 1rem;
+        }
+
+        .feature-list li {
+            font-size: 0.9rem;
+        }
+    }
+</style>
+
+<div class="slide-container">
+    <!-- Slide Indicators -->
+    <div class="slide-indicators">
+        @for (int i = 0; i < TotalSlides; i++)
+        {
+            var index = i;
+            <div class="slide-indicator @(i == _currentSlide ? "active" : "")"
+                 @onclick="() => GoToSlide(index)"></div>
+        }
+    </div>
+
+    <!-- Slide Content -->
+    <div class="slide-content" @key="_currentSlide">
+        @switch (_currentSlide)
+        {
+            case 0:
+                <!-- Slide 1: Welcome -->
+                <MudPaper Elevation="4" Class="pa-8 text-center">
+                    <MudIcon Icon="@Icons.Material.Filled.Pets"
+                             Style="font-size: 5rem;"
+                             Color="Color.Primary"
+                             Class="mb-4" />
+                    <MudText Typo="Typo.h3" Color="Color.Primary" GutterBottom="true">
+                        @L["GetStarted_WelcomeTitle"]
+                    </MudText>
+                    <MudText Typo="Typo.h6" Color="Color.Secondary" Class="mb-4">
+                        @L["GetStarted_WelcomeSubtitle"]
+                    </MudText>
+                    <MudText Typo="Typo.body1" Class="mb-6" Style="max-width: 600px; margin: 0 auto;">
+                        @L["GetStarted_WelcomeDescription"]
+                    </MudText>
+                </MudPaper>
+                break;
+
+            case 1:
+                <!-- Slide 2: About with Coqui -->
+                <MudPaper Elevation="4" Class="pa-6">
+                    <MudGrid Spacing="4">
+                        <MudItem xs="12" md="5">
+                            <div class="coqui-image-container">
+                                <MudIcon Icon="@Icons.Custom.Uncategorized.Radioactive"
+                                         Class="coqui-icon" />
+                            </div>
+                        </MudItem>
+                        <MudItem xs="12" md="7" Class="d-flex flex-column justify-center">
+                            <MudText Typo="Typo.h4" Color="Color.Primary" GutterBottom="true">
+                                @L["GetStarted_MissionTitle"]
+                            </MudText>
+                            <MudText Typo="Typo.body1" Class="mb-4">
+                                @L["GetStarted_MissionDescription1"]
+                            </MudText>
+                            <MudText Typo="Typo.body1">
+                                @L["GetStarted_MissionDescription2"]
+                            </MudText>
+                        </MudItem>
+                    </MudGrid>
+                </MudPaper>
+                break;
+
+            case 2:
+                <!-- Slide 3: For Students -->
+                <MudPaper Elevation="4" Class="pa-8">
+                    <div class="text-center mb-6">
+                        <MudIcon Icon="@Icons.Material.Filled.School"
+                                 Style="font-size: 4rem;"
+                                 Color="Color.Primary" />
+                        <MudText Typo="Typo.h4" Color="Color.Primary" GutterBottom="true" Class="mt-2">
+                            @L["GetStarted_StudentTitle"]
+                        </MudText>
+                        <MudText Typo="Typo.body1" Color="Color.Secondary">
+                            @L["GetStarted_StudentSubtitle"]
+                        </MudText>
+                    </div>
+                    <MudGrid Justify="Justify.Center">
+                        <MudItem xs="12" sm="10" md="8">
+                            <ul class="feature-list">
+                                <li>
+                                    <MudIcon Icon="@Icons.Material.Filled.CameraAlt" Color="Color.Primary" />
+                                    <MudText Typo="Typo.body1">@L["GetStarted_StudentFeature1"]</MudText>
+                                </li>
+                                <li>
+                                    <MudIcon Icon="@Icons.Material.Filled.Explore" Color="Color.Primary" />
+                                    <MudText Typo="Typo.body1">@L["GetStarted_StudentFeature2"]</MudText>
+                                </li>
+                                <li>
+                                    <MudIcon Icon="@Icons.Material.Filled.Science" Color="Color.Primary" />
+                                    <MudText Typo="Typo.body1">@L["GetStarted_StudentFeature3"]</MudText>
+                                </li>
+                                <li>
+                                    <MudIcon Icon="@Icons.Material.Filled.Timeline" Color="Color.Primary" />
+                                    <MudText Typo="Typo.body1">@L["GetStarted_StudentFeature4"]</MudText>
+                                </li>
+                            </ul>
+                        </MudItem>
+                    </MudGrid>
+                </MudPaper>
+                break;
+
+            case 3:
+                <!-- Slide 4: Get Access / Login -->
+                <MudGrid Spacing="4">
+                    <MudItem xs="12" md="6">
+                        <MudPaper Elevation="4" Class="pa-6 split-card" @onclick="NavigateToRegister">
+                            <div class="text-center">
+                                <MudIcon Icon="@Icons.Material.Filled.PersonAdd"
+                                         Style="font-size: 4rem;"
+                                         Color="Color.Primary" />
+                                <MudText Typo="Typo.h5" Color="Color.Primary" GutterBottom="true" Class="mt-2">
+                                    @L["GetStarted_NewHereTitle"]
+                                </MudText>
+                                <MudText Typo="Typo.body1" Class="mb-4">
+                                    @L["GetStarted_NewHereDescription"]
+                                </MudText>
+                                <MudButton Variant="Variant.Filled"
+                                           Color="Color.Primary"
+                                           EndIcon="@Icons.Material.Filled.ArrowForward"
+                                           Size="Size.Large">
+                                    @L["GetStarted_RequestAccess"]
+                                </MudButton>
+                            </div>
+                        </MudPaper>
+                    </MudItem>
+                    <MudItem xs="12" md="6">
+                        <MudPaper Elevation="4" Class="pa-6 split-card" @onclick="NavigateToLogin">
+                            <div class="text-center">
+                                <MudIcon Icon="@Icons.Material.Filled.Login"
+                                         Style="font-size: 4rem;"
+                                         Color="Color.Secondary" />
+                                <MudText Typo="Typo.h5" Color="Color.Secondary" GutterBottom="true" Class="mt-2">
+                                    @L["GetStarted_HaveAccountTitle"]
+                                </MudText>
+                                <MudText Typo="Typo.body1" Class="mb-4">
+                                    @L["GetStarted_HaveAccountDescription"]
+                                </MudText>
+                                <MudButton Variant="Variant.Outlined"
+                                           Color="Color.Secondary"
+                                           EndIcon="@Icons.Material.Filled.ArrowForward"
+                                           Size="Size.Large">
+                                    @L["GetStarted_Login"]
+                                </MudButton>
+                            </div>
+                        </MudPaper>
+                    </MudItem>
+                </MudGrid>
+                break;
+        }
+    </div>
+
+    <!-- Navigation Buttons -->
+    <div class="d-flex justify-space-between mt-6" style="width: 100%; max-width: 900px;">
+        <MudButton Variant="Variant.Outlined"
+                   Color="Color.Default"
+                   Disabled="@(_currentSlide == 0)"
+                   StartIcon="@Icons.Material.Filled.ArrowBack"
+                   OnClick="PreviousSlide"
+                   Size="Size.Large">
+            @L["Back"]
+        </MudButton>
+
+        @if (_currentSlide < TotalSlides - 1)
+        {
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       EndIcon="@Icons.Material.Filled.ArrowForward"
+                       OnClick="NextSlide"
+                       Size="Size.Large">
+                @L["GetStarted_Next"]
+            </MudButton>
+        }
+    </div>
+</div>

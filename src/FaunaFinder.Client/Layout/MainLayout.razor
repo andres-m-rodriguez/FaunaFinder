@@ -34,6 +34,11 @@
                     <MudButton Href="/dashboard" Color="Color.Inherit" Variant="Variant.Text">@L["Nav_Dashboard"]</MudButton>
                 </Authorized>
             </AuthorizeView>
+            <AuthorizeView>
+                <NotAuthorized>
+                    <MudButton Href="/get-started" Color="Color.Inherit" Variant="Variant.Filled" Class="ml-2">@L["Nav_GetStarted"]</MudButton>
+                </NotAuthorized>
+            </AuthorizeView>
             <div class="ml-2 d-flex align-center">
                 <DarkModeToggle />
                 <LanguageToggle />
@@ -66,6 +71,11 @@
                 <Authorized>
                     <MudNavLink Href="/dashboard" Icon="@Icons.Material.Filled.Dashboard" OnClick="CloseDrawer">@L["Nav_Dashboard"]</MudNavLink>
                 </Authorized>
+            </AuthorizeView>
+            <AuthorizeView>
+                <NotAuthorized>
+                    <MudNavLink Href="/get-started" Icon="@Icons.Material.Filled.RocketLaunch" OnClick="CloseDrawer">@L["Nav_GetStarted"]</MudNavLink>
+                </NotAuthorized>
             </AuthorizeView>
         </MudNavMenu>
     </MudDrawer>

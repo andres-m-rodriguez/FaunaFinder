@@ -386,6 +386,29 @@ public static class Translations
             ["Statistics_TopSpecies"] = "Most Observed Species",
             ["Statistics_Sightings"] = "Sightings",
             ["Statistics_NoData"] = "No data available yet.",
+
+            // Get Started Page
+            ["PageTitle_GetStarted"] = "Get Started - FaunaFinder",
+            ["Nav_GetStarted"] = "Get Started",
+            ["GetStarted_WelcomeTitle"] = "Welcome to FaunaFinder",
+            ["GetStarted_WelcomeSubtitle"] = "Discover Puerto Rico's Wildlife",
+            ["GetStarted_WelcomeDescription"] = "FaunaFinder is your gateway to exploring and documenting the rich biodiversity of Puerto Rico. Join students and researchers in contributing to wildlife conservation efforts.",
+            ["GetStarted_MissionTitle"] = "Our Mission",
+            ["GetStarted_MissionDescription1"] = "FaunaFinder empowers students to become citizen scientists by documenting wildlife sightings across Puerto Rico. Every observation contributes to our understanding of local ecosystems.",
+            ["GetStarted_MissionDescription2"] = "Together, we're building a comprehensive database of species locations, helping conservation efforts and scientific research throughout the island.",
+            ["GetStarted_StudentTitle"] = "For Students",
+            ["GetStarted_StudentSubtitle"] = "Your journey as a wildlife observer starts here",
+            ["GetStarted_StudentFeature1"] = "Report wildlife sightings with photos and location data",
+            ["GetStarted_StudentFeature2"] = "Explore species across Puerto Rico's municipalities",
+            ["GetStarted_StudentFeature3"] = "Learn about conservation practices and actions",
+            ["GetStarted_StudentFeature4"] = "Track your contributions and observations",
+            ["GetStarted_NewHereTitle"] = "New Here?",
+            ["GetStarted_NewHereDescription"] = "Request access to start contributing wildlife sightings and join our community of observers.",
+            ["GetStarted_RequestAccess"] = "Request Access",
+            ["GetStarted_HaveAccountTitle"] = "Have an Account?",
+            ["GetStarted_HaveAccountDescription"] = "Sign in to continue reporting sightings and exploring wildlife data.",
+            ["GetStarted_Login"] = "Sign In",
+            ["GetStarted_Next"] = "Next",
         };
 
     public static IReadOnlyDictionary<string, string> Spanish { get; } =
@@ -783,5 +806,28 @@ public static class Translations
             ["Statistics_TopSpecies"] = "Especies Más Observadas",
             ["Statistics_Sightings"] = "Avistamientos",
             ["Statistics_NoData"] = "No hay datos disponibles aún.",
+
+            // Get Started Page
+            ["PageTitle_GetStarted"] = "Comenzar - FaunaFinder",
+            ["Nav_GetStarted"] = "Comenzar",
+            ["GetStarted_WelcomeTitle"] = "Bienvenido a FaunaFinder",
+            ["GetStarted_WelcomeSubtitle"] = "Descubre la Vida Silvestre de Puerto Rico",
+            ["GetStarted_WelcomeDescription"] = "FaunaFinder es tu puerta de entrada para explorar y documentar la rica biodiversidad de Puerto Rico. Únete a estudiantes e investigadores en los esfuerzos de conservación de vida silvestre.",
+            ["GetStarted_MissionTitle"] = "Nuestra Misión",
+            ["GetStarted_MissionDescription1"] = "FaunaFinder empodera a los estudiantes para convertirse en científicos ciudadanos documentando avistamientos de vida silvestre en todo Puerto Rico. Cada observación contribuye a nuestra comprensión de los ecosistemas locales.",
+            ["GetStarted_MissionDescription2"] = "Juntos, estamos construyendo una base de datos completa de ubicaciones de especies, ayudando a los esfuerzos de conservación e investigación científica en toda la isla.",
+            ["GetStarted_StudentTitle"] = "Para Estudiantes",
+            ["GetStarted_StudentSubtitle"] = "Tu viaje como observador de vida silvestre comienza aquí",
+            ["GetStarted_StudentFeature1"] = "Reporta avistamientos de vida silvestre con fotos y datos de ubicación",
+            ["GetStarted_StudentFeature2"] = "Explora especies en los municipios de Puerto Rico",
+            ["GetStarted_StudentFeature3"] = "Aprende sobre prácticas y acciones de conservación",
+            ["GetStarted_StudentFeature4"] = "Rastrea tus contribuciones y observaciones",
+            ["GetStarted_NewHereTitle"] = "¿Eres Nuevo?",
+            ["GetStarted_NewHereDescription"] = "Solicita acceso para comenzar a contribuir avistamientos de vida silvestre y únete a nuestra comunidad de observadores.",
+            ["GetStarted_RequestAccess"] = "Solicitar Acceso",
+            ["GetStarted_HaveAccountTitle"] = "¿Tienes una Cuenta?",
+            ["GetStarted_HaveAccountDescription"] = "Inicia sesión para continuar reportando avistamientos y explorando datos de vida silvestre.",
+            ["GetStarted_Login"] = "Iniciar Sesión",
+            ["GetStarted_Next"] = "Siguiente",
         };
 }
