@@ -4,7 +4,7 @@
 
 <PageTitle>@L["PageTitle_GetStarted"]</PageTitle>
 
-<MudContainer Class="slide-container" MaxWidth="MaxWidth.False">
+<div class="slide-container">
     <!-- Slide Indicators -->
     <MudStack Row Justify="Justify.Center" Spacing="2" Class="slide-indicators">
         @for (int i = 0; i < TotalSlides; i++)
@@ -201,7 +201,7 @@
                 break;
         }
     </div>
-</MudContainer>
+</div>
 
 @code {
     private int _currentSlide = 0;
