@@ -14,16 +14,20 @@ permissions:
   id-token: write
   contents: read
 
+env:
+  AZURE_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
+  AZURE_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+  AZURE_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+  AZURE_LOCATION: ${{ vars.AZURE_LOCATION }}
+  AZURE_RESOURCE_GROUP: ${{ vars.AZURE_RESOURCE_GROUP }}
+  ASPIRE_CLI_TELEMETRY_OPTOUT: 1
+
 jobs:
-  deploy:
+  detect-changes:
     runs-on: ubuntu-latest
-    env:
-      AZURE_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
-      AZURE_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
-      AZURE_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
-      AZURE_LOCATION: ${{ vars.AZURE_LOCATION }}
-      AZURE_RESOURCE_GROUP: ${{ vars.AZURE_RESOURCE_GROUP }}
-      ASPIRE_CLI_TELEMETRY_OPTOUT: 1
+    outputs:
+      deploy-server: ${{ steps.check.outputs.deploy-server }}
+      deploy-seeder: ${{ steps.check.outputs.deploy-seeder }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -35,36 +39,112 @@ jobs:
         with:
           dotnet-version: 10.x
 
-      - name: Install tools
-        run: |
-          dotnet tool install -g dotnet-affected
-          dotnet tool install -g aspire.cli --prerelease
+      - name: Install dotnet-affected
+        run: dotnet tool install -g dotnet-affected
 
-      - name: Detect affected projects
-        id: affected
+      - name: Detect affected projects and map to resources
+        id: check
         run: |
+          # Get affected projects
           dotnet affected -p . --from HEAD~1 --to HEAD --format text -o affected.txt || true
-          if [ -f affected.txt ] && [ -s affected.txt ]; then
+
+          DEPLOY_SERVER="false"
+          DEPLOY_SEEDER="false"
+
+          if [ "${{ github.event.inputs.force-deploy-all }}" == "true" ]; then
+            echo "Force deploy all enabled"
+            DEPLOY_SERVER="true"
+            DEPLOY_SEEDER="true"
+          elif [ -f affected.txt ] && [ -s affected.txt ]; then
+            echo "Affected projects:"
             cat affected.txt
-            AFFECTED=$(cat affected.txt | tr '\n' ',' | sed 's/,$//')
-            echo "AFFECTED_PROJECTS=$AFFECTED" >> $GITHUB_ENV
-            echo "Affected projects: $AFFECTED"
+            AFFECTED=$(cat affected.txt)
+
+            # Map to server resource (matches SelectiveDeploymentExtensions.cs)
+            if echo "$AFFECTED" | grep -qE "FaunaFinder\.(Server|Client|ServiceDefaults)|\.Api|\.Application|\.Contracts|\.DataAccess|i18n|Pagination"; then
+              DEPLOY_SERVER="true"
+            fi
+
+            # Map to seeder resource (matches SelectiveDeploymentExtensions.cs)
+            if echo "$AFFECTED" | grep -qE "FaunaFinder\.Seeder|\.Database"; then
+              DEPLOY_SEEDER="true"
+            fi
           else
-            echo "No affected projects detected"
+            echo "No affected projects - deploying all"
+            DEPLOY_SERVER="true"
+            DEPLOY_SEEDER="true"
           fi
+
+          echo "deploy-server=$DEPLOY_SERVER" >> $GITHUB_OUTPUT
+          echo "deploy-seeder=$DEPLOY_SEEDER" >> $GITHUB_OUTPUT
+          echo "Deploy server: $DEPLOY_SERVER, Deploy seeder: $DEPLOY_SEEDER"
+
+  deploy-server:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.deploy-server == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.x
+
+      - name: Install Aspire CLI
+        run: dotnet tool install -g aspire.cli --prerelease
 
       - name: Log in with Azure CLI
         uses: azure/login@v2
         with:
-          client-id: ${{ vars.AZURE_CLIENT_ID }}
-          tenant-id: ${{ vars.AZURE_TENANT_ID }}
-          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+          client-id: ${{ env.AZURE_CLIENT_ID }}
+          tenant-id: ${{ env.AZURE_TENANT_ID }}
+          subscription-id: ${{ env.AZURE_SUBSCRIPTION_ID }}
 
-      - name: Deploy with Aspire
-        run: aspire do deploy --project src/FaunaFinder.AppHost --environment Production --non-interactive
+      - name: Deploy server
+        run: aspire do deploy-server --project src/FaunaFinder.AppHost --environment Production --non-interactive
         env:
-          Azure__SubscriptionId: ${{ vars.AZURE_SUBSCRIPTION_ID }}
-          Azure__Location: ${{ vars.AZURE_LOCATION }}
-          Azure__ResourceGroup: ${{ vars.AZURE_RESOURCE_GROUP }}
-          AFFECTED_PROJECTS: ${{ env.AFFECTED_PROJECTS }}
-          FORCE_DEPLOY_ALL: ${{ github.event.inputs.force-deploy-all }}
+          Azure__SubscriptionId: ${{ env.AZURE_SUBSCRIPTION_ID }}
+          Azure__Location: ${{ env.AZURE_LOCATION }}
+          Azure__ResourceGroup: ${{ env.AZURE_RESOURCE_GROUP }}
+
+  deploy-seeder:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.deploy-seeder == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.x
+
+      - name: Install Aspire CLI
+        run: dotnet tool install -g aspire.cli --prerelease
+
+      - name: Log in with Azure CLI
+        uses: azure/login@v2
+        with:
+          client-id: ${{ env.AZURE_CLIENT_ID }}
+          tenant-id: ${{ env.AZURE_TENANT_ID }}
+          subscription-id: ${{ env.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Deploy seeder and run migrations
+        run: |
+          aspire do deploy-seeder --project src/FaunaFinder.AppHost --environment Production --non-interactive
+          aspire do run-migrations --project src/FaunaFinder.AppHost --environment Production --non-interactive
+        env:
+          Azure__SubscriptionId: ${{ env.AZURE_SUBSCRIPTION_ID }}
+          Azure__Location: ${{ env.AZURE_LOCATION }}
+          Azure__ResourceGroup: ${{ env.AZURE_RESOURCE_GROUP }}
+          AFFECTED_PROJECTS: "seeder"  # Signal to run-migrations step
+
+  no-changes:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.deploy-server == 'false' && needs.detect-changes.outputs.deploy-seeder == 'false'
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "No services affected - skipping deployment"
