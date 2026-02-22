@@ -14,7 +14,86 @@ permissions:
   contents: read
 
 jobs:
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      has-changes: ${{ steps.affected.outputs.has-changes }}
+      affected-projects: ${{ steps.affected.outputs.affected-projects }}
+      deploy-server: ${{ steps.mapping.outputs.deploy-server }}
+      deploy-seeder: ${{ steps.mapping.outputs.deploy-seeder }}
+      run-migrations: ${{ steps.mapping.outputs.run-migrations }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.x
+
+      - name: Install dotnet-affected
+        run: dotnet tool install -g dotnet-affected
+
+      - name: Detect affected projects
+        id: affected
+        run: |
+          # Get affected projects compared to the previous commit
+          dotnet affected -p . --from HEAD~1 --to HEAD --format text -o affected.txt || true
+
+          if [ -f affected.txt ] && [ -s affected.txt ]; then
+            echo "has-changes=true" >> $GITHUB_OUTPUT
+            # Convert to comma-separated list
+            AFFECTED=$(cat affected.txt | tr '\n' ',' | sed 's/,$//')
+            echo "affected-projects=$AFFECTED" >> $GITHUB_OUTPUT
+            echo "Affected projects: $AFFECTED"
+          else
+            echo "has-changes=false" >> $GITHUB_OUTPUT
+            echo "affected-projects=" >> $GITHUB_OUTPUT
+            echo "No affected projects detected"
+          fi
+
+      - name: Map affected projects to resources
+        id: mapping
+        run: |
+          AFFECTED="${{ steps.affected.outputs.affected-projects }}"
+
+          DEPLOY_SERVER="false"
+          DEPLOY_SEEDER="false"
+          RUN_MIGRATIONS="false"
+
+          # Server resource - deployed if any server-related project changes
+          SERVER_PATTERNS="FaunaFinder.Server|FaunaFinder.Client|FaunaFinder.Api|\.Application[^.]|\.Contracts|\.DataAccess|FaunaFinder.ServiceDefaults|FaunaFinder.i18n|FaunaFinder.Pagination"
+          if echo "$AFFECTED" | grep -qE "$SERVER_PATTERNS"; then
+            DEPLOY_SERVER="true"
+          fi
+
+          # Seeder resource - deployed if seeder or database projects change
+          SEEDER_PATTERNS="FaunaFinder.Seeder|\.Database"
+          if echo "$AFFECTED" | grep -qE "$SEEDER_PATTERNS"; then
+            DEPLOY_SEEDER="true"
+            RUN_MIGRATIONS="true"
+          fi
+
+          # If workflow is manually triggered, deploy everything
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            DEPLOY_SERVER="true"
+            DEPLOY_SEEDER="true"
+            RUN_MIGRATIONS="true"
+          fi
+
+          echo "deploy-server=$DEPLOY_SERVER" >> $GITHUB_OUTPUT
+          echo "deploy-seeder=$DEPLOY_SEEDER" >> $GITHUB_OUTPUT
+          echo "run-migrations=$RUN_MIGRATIONS" >> $GITHUB_OUTPUT
+
+          echo "Deploy server: $DEPLOY_SERVER"
+          echo "Deploy seeder: $DEPLOY_SEEDER"
+          echo "Run migrations: $RUN_MIGRATIONS"
+
   deploy:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.has-changes == 'true' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     env:
       AZURE_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
@@ -43,9 +122,41 @@ jobs:
           subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
 
       - name: Deploy with Aspire Pipelines
-        run: aspire do deploy --project src/FaunaFinder.AppHost --environment Production
+        run: |
+          echo "Deploying affected services..."
+          echo "Deploy server: ${{ needs.detect-changes.outputs.deploy-server }}"
+          echo "Deploy seeder: ${{ needs.detect-changes.outputs.deploy-seeder }}"
+          echo "Run migrations: ${{ needs.detect-changes.outputs.run-migrations }}"
+
+          # Build filter for Aspire deploy based on affected resources
+          FILTER=""
+          if [ "${{ needs.detect-changes.outputs.deploy-server }}" == "true" ]; then
+            FILTER="$FILTER server"
+          fi
+          if [ "${{ needs.detect-changes.outputs.deploy-seeder }}" == "true" ]; then
+            FILTER="$FILTER seeder"
+          fi
+
+          if [ -n "$FILTER" ]; then
+            echo "Deploying resources:$FILTER"
+            aspire do deploy --project src/FaunaFinder.AppHost --environment Production
+          else
+            echo "No resources to deploy"
+          fi
         env:
           Azure__SubscriptionId: ${{ vars.AZURE_SUBSCRIPTION_ID }}
           Azure__Location: ${{ vars.AZURE_LOCATION }}
           Azure__ResourceGroup: ${{ vars.AZURE_RESOURCE_GROUP }}
-        
+          DEPLOY_SERVER: ${{ needs.detect-changes.outputs.deploy-server }}
+          DEPLOY_SEEDER: ${{ needs.detect-changes.outputs.deploy-seeder }}
+          RUN_MIGRATIONS: ${{ needs.detect-changes.outputs.run-migrations }}
+
+  skip-deployment:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.has-changes == 'false' && github.event_name != 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - name: No changes detected
+        run: |
+          echo "No affected projects detected. Skipping deployment."
+          echo "This saves CI/CD resources by not deploying unchanged services."
