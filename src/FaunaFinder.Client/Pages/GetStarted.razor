@@ -1,0 +1,257 @@
+@page "/get-started"
+@inject IAppLocalizer L
+@inject NavigationManager Navigation
+
+<PageTitle>@L["PageTitle_GetStarted"]</PageTitle>
+
+<MudContainer Class="slide-container" MaxWidth="MaxWidth.False">
+    <!-- Slide Indicators -->
+    <MudStack Row Justify="Justify.Center" Spacing="2" Class="slide-indicators">
+        @for (int i = 0; i < TotalSlides; i++)
+        {
+            var index = i;
+            <div class="slide-indicator @(i == _currentSlide ? "active" : "")"
+                 @onclick="() => GoToSlide(index)"></div>
+        }
+    </MudStack>
+
+    <!-- Slide Content -->
+    <div class="slide-content" @key="_currentSlide">
+        @switch (_currentSlide)
+        {
+            case 0:
+                <!-- Slide 1: Welcome -->
+                <MudPaper Elevation="4" Class="pa-8 slide-card">
+                    <MudStack AlignItems="AlignItems.Center" Justify="Justify.Center" Class="slide-card-content">
+                        <MudIcon Icon="@Icons.Material.Filled.Pets"
+                                 Color="Color.Primary"
+                                 Class="mb-4 icon-large" />
+                        <MudText Color="Color.Primary" GutterBottom="true" Class="welcome-title">
+                            @L["GetStarted_WelcomeTitle"]
+                        </MudText>
+                        <MudText Color="Color.Secondary" Class="mb-4 welcome-subtitle">
+                            @L["GetStarted_WelcomeSubtitle"]
+                        </MudText>
+                        <MudText Class="mb-6 welcome-description">
+                            @L["GetStarted_WelcomeDescription"]
+                        </MudText>
+                    </MudStack>
+                    <MudStack Row Justify="Justify.FlexEnd" Spacing="3" Class="slide-nav-buttons">
+                        <MudButton Variant="Variant.Outlined"
+                                   Color="Color.Default"
+                                   Disabled="true"
+                                   StartIcon="@Icons.Material.Filled.ArrowBack"
+                                   OnClick="PreviousSlide">
+                            @L["Back"]
+                        </MudButton>
+                        <MudButton Variant="Variant.Filled"
+                                   Color="Color.Primary"
+                                   EndIcon="@Icons.Material.Filled.ArrowForward"
+                                   OnClick="NextSlide">
+                            @L["GetStarted_Next"]
+                        </MudButton>
+                    </MudStack>
+                </MudPaper>
+                break;
+
+            case 1:
+                <!-- Slide 2: About with Coqui -->
+                <MudPaper Elevation="4" Class="pa-0 slide-card coqui-slide">
+                    <div class="coqui-image-container">
+                        <MudImage Src="images/coqui.png" Alt="Coquí frog" Class="coqui-image" />
+                    </div>
+                    <MudStack AlignItems="AlignItems.Center" Justify="Justify.Center" Class="coqui-content">
+                        <MudText Typo="Typo.h3" Color="Color.Primary" GutterBottom="true" Class="text-bold">
+                            @L["GetStarted_MissionTitle"]
+                        </MudText>
+                        <MudText Typo="Typo.h6" Class="mb-4 mission-description-primary">
+                            @L["GetStarted_MissionDescription1"]
+                        </MudText>
+                        <MudText Typo="Typo.body1" Color="Color.Secondary" Class="mission-description-secondary">
+                            @L["GetStarted_MissionDescription2"]
+                        </MudText>
+                    </MudStack>
+                    <MudStack Row Justify="Justify.FlexEnd" Spacing="3" Class="slide-nav-buttons slide-nav-buttons-absolute">
+                        <MudButton Variant="Variant.Outlined"
+                                   Color="Color.Default"
+                                   StartIcon="@Icons.Material.Filled.ArrowBack"
+                                   OnClick="PreviousSlide">
+                            @L["Back"]
+                        </MudButton>
+                        <MudButton Variant="Variant.Filled"
+                                   Color="Color.Primary"
+                                   EndIcon="@Icons.Material.Filled.ArrowForward"
+                                   OnClick="NextSlide">
+                            @L["GetStarted_Next"]
+                        </MudButton>
+                    </MudStack>
+                </MudPaper>
+                break;
+
+            case 2:
+                <!-- Slide 3: For Students -->
+                <MudPaper Elevation="4" Class="pa-8 slide-card">
+                    <MudStack AlignItems="AlignItems.Center" Justify="Justify.Center" Class="slide-card-content">
+                        <MudStack AlignItems="AlignItems.Center" Class="mb-4">
+                            <MudIcon Icon="@Icons.Material.Filled.School"
+                                     Color="Color.Primary"
+                                     Class="icon-large" />
+                            <MudText Typo="Typo.h3" Color="Color.Primary" GutterBottom="true" Class="mt-2 text-bold">
+                                @L["GetStarted_StudentTitle"]
+                            </MudText>
+                            <MudText Typo="Typo.h6" Color="Color.Secondary" Class="student-subtitle">
+                                @L["GetStarted_StudentSubtitle"]
+                            </MudText>
+                        </MudStack>
+                        <MudGrid Justify="Justify.Center" Class="mt-2">
+                            <MudItem xs="12" sm="11" md="10">
+                                <div class="feature-grid">
+                                    <MudPaper Elevation="0" Class="pa-4 feature-item">
+                                        <MudIcon Icon="@Icons.Material.Filled.CameraAlt" Color="Color.Primary" Class="icon-medium" />
+                                        <MudText Typo="Typo.subtitle1" Class="mt-2 text-bold">@L["GetStarted_StudentFeature1"]</MudText>
+                                        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mt-1">@L["GetStarted_StudentFeature1_Desc"]</MudText>
+                                    </MudPaper>
+                                    <MudPaper Elevation="0" Class="pa-4 feature-item">
+                                        <MudIcon Icon="@Icons.Material.Filled.Explore" Color="Color.Primary" Class="icon-medium" />
+                                        <MudText Typo="Typo.subtitle1" Class="mt-2 text-bold">@L["GetStarted_StudentFeature2"]</MudText>
+                                        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mt-1">@L["GetStarted_StudentFeature2_Desc"]</MudText>
+                                    </MudPaper>
+                                    <MudPaper Elevation="0" Class="pa-4 feature-item">
+                                        <MudIcon Icon="@Icons.Material.Filled.MenuBook" Color="Color.Primary" Class="icon-medium" />
+                                        <MudText Typo="Typo.subtitle1" Class="mt-2 text-bold">@L["GetStarted_StudentFeature3"]</MudText>
+                                        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mt-1">@L["GetStarted_StudentFeature3_Desc"]</MudText>
+                                    </MudPaper>
+                                    <MudPaper Elevation="0" Class="pa-4 feature-item">
+                                        <MudIcon Icon="@Icons.Material.Filled.TrendingUp" Color="Color.Primary" Class="icon-medium" />
+                                        <MudText Typo="Typo.subtitle1" Class="mt-2 text-bold">@L["GetStarted_StudentFeature4"]</MudText>
+                                        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mt-1">@L["GetStarted_StudentFeature4_Desc"]</MudText>
+                                    </MudPaper>
+                                </div>
+                            </MudItem>
+                        </MudGrid>
+                    </MudStack>
+                    <MudStack Row Justify="Justify.FlexEnd" Spacing="3" Class="slide-nav-buttons">
+                        <MudButton Variant="Variant.Outlined"
+                                   Color="Color.Default"
+                                   StartIcon="@Icons.Material.Filled.ArrowBack"
+                                   OnClick="PreviousSlide">
+                            @L["Back"]
+                        </MudButton>
+                        <MudButton Variant="Variant.Filled"
+                                   Color="Color.Primary"
+                                   EndIcon="@Icons.Material.Filled.ArrowForward"
+                                   OnClick="NextSlide">
+                            @L["GetStarted_Next"]
+                        </MudButton>
+                    </MudStack>
+                </MudPaper>
+                break;
+
+            case 3:
+                <!-- Slide 4: Get Access / Login -->
+                <MudStack Class="auth-slide-wrapper" Spacing="1">
+                    <div class="auth-back-button">
+                        <MudButton Variant="Variant.Text"
+                                   StartIcon="@Icons.Material.Filled.ArrowBack"
+                                   OnClick="PreviousSlide">
+                            @L["Back"]
+                        </MudButton>
+                    </div>
+                    <div class="auth-split-container">
+                        <div class="auth-card auth-card-register" @onclick="NavigateToRegister">
+                            <MudStack AlignItems="AlignItems.Center" Class="auth-card-content">
+                                <MudIcon Icon="@Icons.Material.Filled.PersonAdd"
+                                         Color="Color.Primary"
+                                         Class="icon-large" />
+                                <MudText Typo="Typo.h4" Color="Color.Primary" GutterBottom="true" Class="mt-3 text-bold">
+                                    @L["GetStarted_NewHereTitle"]
+                                </MudText>
+                                <MudText Typo="Typo.body1" Class="mb-4 auth-description">
+                                    @L["GetStarted_NewHereDescription"]
+                                </MudText>
+                                <MudButton Variant="Variant.Filled"
+                                           Color="Color.Primary"
+                                           EndIcon="@Icons.Material.Filled.ArrowForward"
+                                           Size="Size.Large">
+                                    @L["GetStarted_RequestAccess"]
+                                </MudButton>
+                            </MudStack>
+                        </div>
+                        <div class="auth-card auth-card-login" @onclick="NavigateToLogin">
+                            <MudStack AlignItems="AlignItems.Center" Class="auth-card-content">
+                                <MudIcon Icon="@Icons.Material.Filled.Login"
+                                         Color="Color.Secondary"
+                                         Class="icon-large" />
+                                <MudText Typo="Typo.h4" Color="Color.Secondary" GutterBottom="true" Class="mt-3 text-bold">
+                                    @L["GetStarted_HaveAccountTitle"]
+                                </MudText>
+                                <MudText Typo="Typo.body1" Class="mb-4 auth-description">
+                                    @L["GetStarted_HaveAccountDescription"]
+                                </MudText>
+                                <MudButton Variant="Variant.Outlined"
+                                           Color="Color.Secondary"
+                                           EndIcon="@Icons.Material.Filled.ArrowForward"
+                                           Size="Size.Large">
+                                    @L["GetStarted_Login"]
+                                </MudButton>
+                            </MudStack>
+                        </div>
+                    </div>
+                </MudStack>
+                break;
+        }
+    </div>
+</MudContainer>
+
+@code {
+    private int _currentSlide = 0;
+    private const int TotalSlides = 4;
+    private bool _isAnimating = false;
+
+    protected override void OnInitialized()
+    {
+        L.LanguageSignal.OnChange(async () => await InvokeAsync(StateHasChanged));
+    }
+
+    private async Task NextSlide()
+    {
+        if (_currentSlide < TotalSlides - 1 && !_isAnimating)
+        {
+            _isAnimating = true;
+            _currentSlide++;
+            StateHasChanged();
+            await Task.Delay(300);
+            _isAnimating = false;
+        }
+    }
+
+    private async Task PreviousSlide()
+    {
+        if (_currentSlide > 0 && !_isAnimating)
+        {
+            _isAnimating = true;
+            _currentSlide--;
+            StateHasChanged();
+            await Task.Delay(300);
+            _isAnimating = false;
+        }
+    }
+
+    private void GoToSlide(int index)
+    {
+        if (index >= 0 && index < TotalSlides && !_isAnimating)
+        {
+            _currentSlide = index;
+        }
+    }
+
+    private void NavigateToRegister()
+    {
+        Navigation.NavigateTo("/register");
+    }
+
+    private void NavigateToLogin()
+    {
+        Navigation.NavigateTo("/login");
+    }
+}
