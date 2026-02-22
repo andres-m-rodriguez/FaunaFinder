@@ -14,6 +14,21 @@ public sealed class Species
     public required string? ImageSourceUrl { get; set; }
     public required bool IsFauna { get; set; }
 
+    /// <summary>
+    /// NatureServe Element Code - standardized species identifier (e.g., "ABNKC12024")
+    /// </summary>
+    public string? ElCode { get; set; }
+
+    /// <summary>
+    /// Global Conservation Rank (e.g., "G1" = critically imperiled, "G5" = secure)
+    /// </summary>
+    public string? GRank { get; set; }
+
+    /// <summary>
+    /// Subnational (State/Territory) Conservation Rank (e.g., "S1" = critically imperiled)
+    /// </summary>
+    public string? SRank { get; set; }
+
     public ICollection<FwsLink> FwsLinks { get; set; } = [];
     public ICollection<MunicipalitySpecies> MunicipalitySpecies { get; set; } = [];
     public ICollection<SpeciesLocation> Locations { get; set; } = [];
@@ -33,6 +48,12 @@ public sealed class Species
             builder.Property(static e => e.ProfileImageContentType).HasMaxLength(100);
 
             builder.Property(static e => e.ImageSourceUrl).HasMaxLength(500);
+
+            builder.Property(static e => e.ElCode).HasMaxLength(20);
+
+            builder.Property(static e => e.GRank).HasMaxLength(20);
+
+            builder.Property(static e => e.SRank).HasMaxLength(20);
 
             builder
                 .HasIndex(static e => e.ScientificName)
