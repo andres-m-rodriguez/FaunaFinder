@@ -155,6 +155,11 @@ interface LeafletInterop {
     isDrawMode: boolean;
     drawCircle: L.Circle | null;
     drawStartPoint: L.LatLng | null;
+    isPolygonDrawMode: boolean;
+    drawPolygon: L.Polygon | null;
+    drawPolygonPoints: L.LatLng[];
+    drawPolygonMarkers: L.CircleMarker[];
+    drawPolygonPreviewLine: L.Polyline | null;
 
     setApiBaseUrl(url: string): void;
     initMap(dotNetHelper: DotNetHelper, apiBaseUrl?: string): void;
@@ -194,6 +199,11 @@ interface LeafletInterop {
     enableDrawMode(): void;
     disableDrawMode(): void;
     clearDrawnCircle(): void;
+    enablePolygonDrawMode(): void;
+    disablePolygonDrawMode(): void;
+    clearDrawnPolygon(): void;
+    updateDrawingPolygon(): void;
+    finishPolygon(): void;
 }
 
 // ============================================================================
@@ -223,6 +233,11 @@ window.leafletInterop = {
     isDrawMode: false,
     drawCircle: null,
     drawStartPoint: null,
+    isPolygonDrawMode: false,
+    drawPolygon: null,
+    drawPolygonPoints: [],
+    drawPolygonMarkers: [],
+    drawPolygonPreviewLine: null,
     lightTileUrl: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
     darkTileUrl: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
     lightTheme: {
@@ -1267,6 +1282,247 @@ window.leafletInterop = {
             this.drawCircle = null;
         }
         this.drawStartPoint = null;
+    },
+
+    enablePolygonDrawMode(): void {
+        if (!this.map || this.isPolygonDrawMode) return;
+
+        this.isPolygonDrawMode = true;
+        const self = this;
+        const mapContainer = this.map.getContainer();
+
+        // Add draw mode class for cursor styling
+        mapContainer.classList.add('draw-mode', 'polygon-draw-mode');
+
+        // Announce to screen readers
+        this.announceToScreenReader('Polygon draw mode enabled. Click on the map to add vertices. Double-click or click the first point to complete the shape.');
+
+        // Disable map dragging during draw mode
+        this.map.dragging.disable();
+
+        // Clear any existing polygon drawing state
+        this.clearDrawnPolygon();
+        this.drawPolygonPoints = [];
+
+        const onClick = (e: L.LeafletMouseEvent) => {
+            if (!self.isPolygonDrawMode) return;
+
+            const point = e.latlng;
+
+            // Check if clicking near the first point to close the polygon
+            if (self.drawPolygonPoints.length >= 3) {
+                const firstPoint = self.drawPolygonPoints[0];
+                const distance = self.map!.latLngToContainerPoint(point).distanceTo(
+                    self.map!.latLngToContainerPoint(firstPoint)
+                );
+
+                // If within 15 pixels of the first point, close the polygon
+                if (distance < 15) {
+                    self.finishPolygon();
+                    return;
+                }
+            }
+
+            // Add point to the polygon
+            self.drawPolygonPoints.push(point);
+
+            // Add a marker for this vertex
+            const marker = L.circleMarker(point, {
+                radius: 6,
+                fillColor: self.drawPolygonPoints.length === 1 ? '#22c55e' : '#8b5cf6',
+                color: '#fff',
+                weight: 2,
+                fillOpacity: 1
+            }).addTo(self.map!);
+            self.drawPolygonMarkers.push(marker);
+
+            // Update the polygon
+            self.updateDrawingPolygon();
+        };
+
+        const onMouseMove = (e: L.LeafletMouseEvent) => {
+            if (!self.isPolygonDrawMode || self.drawPolygonPoints.length === 0) return;
+
+            // Update preview line from last point to current mouse position
+            const lastPoint = self.drawPolygonPoints[self.drawPolygonPoints.length - 1];
+
+            if (self.drawPolygonPreviewLine) {
+                self.map!.removeLayer(self.drawPolygonPreviewLine);
+            }
+
+            self.drawPolygonPreviewLine = L.polyline([lastPoint, e.latlng], {
+                color: '#8b5cf6',
+                weight: 2,
+                dashArray: '5, 5',
+                opacity: 0.7
+            }).addTo(self.map!);
+        };
+
+        const onDblClick = (e: L.LeafletMouseEvent) => {
+            if (!self.isPolygonDrawMode) return;
+
+            L.DomEvent.stopPropagation(e.originalEvent);
+            L.DomEvent.preventDefault(e.originalEvent);
+
+            if (self.drawPolygonPoints.length >= 3) {
+                self.finishPolygon();
+            } else {
+                self.announceToScreenReader('At least 3 points are required to create a polygon.');
+            }
+        };
+
+        const onKeyDown = (e: KeyboardEvent) => {
+            if (!self.isPolygonDrawMode) return;
+
+            if (e.key === 'Escape') {
+                // Cancel polygon drawing
+                self.clearDrawnPolygon();
+                self.disablePolygonDrawMode();
+                self.announceToScreenReader('Polygon drawing cancelled.');
+            } else if (e.key === 'Enter' && self.drawPolygonPoints.length >= 3) {
+                // Complete polygon on Enter
+                self.finishPolygon();
+            } else if ((e.key === 'Backspace' || e.key === 'Delete') && self.drawPolygonPoints.length > 0) {
+                // Remove last point
+                self.drawPolygonPoints.pop();
+                const lastMarker = self.drawPolygonMarkers.pop();
+                if (lastMarker) {
+                    self.map!.removeLayer(lastMarker);
+                }
+                self.updateDrawingPolygon();
+                self.announceToScreenReader(`Point removed. ${self.drawPolygonPoints.length} points remaining.`);
+            }
+        };
+
+        // Store handlers for removal later
+        (this as any)._polygonDrawHandlers = { onClick, onMouseMove, onDblClick, onKeyDown };
+
+        this.map.on('click', onClick);
+        this.map.on('mousemove', onMouseMove);
+        this.map.on('dblclick', onDblClick);
+        document.addEventListener('keydown', onKeyDown);
+
+        // Disable double-click zoom during polygon drawing
+        this.map.doubleClickZoom.disable();
+    },
+
+    updateDrawingPolygon(): void {
+        if (!this.map) return;
+
+        // Remove existing polygon
+        if (this.drawPolygon) {
+            this.map.removeLayer(this.drawPolygon);
+            this.drawPolygon = null;
+        }
+
+        // Need at least 2 points to draw a line/polygon preview
+        if (this.drawPolygonPoints.length < 2) return;
+
+        // Draw the polygon (or line if only 2 points)
+        this.drawPolygon = L.polygon(this.drawPolygonPoints, {
+            fillColor: '#8b5cf6',
+            color: '#7c3aed',
+            weight: 3,
+            fillOpacity: 0.2,
+            dashArray: '10, 5'
+        }).addTo(this.map);
+    },
+
+    finishPolygon(): void {
+        if (!this.map || this.drawPolygonPoints.length < 3) return;
+
+        const self = this;
+
+        // Remove preview line
+        if (this.drawPolygonPreviewLine) {
+            this.map.removeLayer(this.drawPolygonPreviewLine);
+            this.drawPolygonPreviewLine = null;
+        }
+
+        // Remove vertex markers
+        this.drawPolygonMarkers.forEach(marker => {
+            self.map!.removeLayer(marker);
+        });
+        this.drawPolygonMarkers = [];
+
+        // Update polygon style to final
+        if (this.drawPolygon) {
+            this.drawPolygon.setStyle({
+                dashArray: undefined,
+                fillOpacity: 0.15
+            });
+        }
+
+        // Get the polygon coordinates
+        const coordinates = this.drawPolygonPoints.map(p => ({
+            latitude: p.lat,
+            longitude: p.lng
+        }));
+
+        // Disable polygon draw mode
+        this.disablePolygonDrawMode();
+
+        // Announce completion
+        this.announceToScreenReader(`Polygon drawn with ${coordinates.length} vertices. Searching for species in the area.`);
+
+        // Notify Blazor with the drawn polygon details
+        this.dotNetHelper?.invokeMethodAsync('OnPolygonDrawn', coordinates);
+    },
+
+    disablePolygonDrawMode(): void {
+        if (!this.map) return;
+
+        this.isPolygonDrawMode = false;
+        const mapContainer = this.map.getContainer();
+
+        // Remove draw mode classes
+        mapContainer.classList.remove('draw-mode', 'polygon-draw-mode');
+
+        // Re-enable map dragging and double-click zoom
+        this.map.dragging.enable();
+        this.map.doubleClickZoom.enable();
+
+        // Remove preview line
+        if (this.drawPolygonPreviewLine) {
+            this.map.removeLayer(this.drawPolygonPreviewLine);
+            this.drawPolygonPreviewLine = null;
+        }
+
+        // Remove event handlers
+        const handlers = (this as any)._polygonDrawHandlers;
+        if (handlers) {
+            this.map.off('click', handlers.onClick);
+            this.map.off('mousemove', handlers.onMouseMove);
+            this.map.off('dblclick', handlers.onDblClick);
+            document.removeEventListener('keydown', handlers.onKeyDown);
+            (this as any)._polygonDrawHandlers = null;
+        }
+    },
+
+    clearDrawnPolygon(): void {
+        if (!this.map) return;
+
+        // Remove polygon
+        if (this.drawPolygon) {
+            this.map.removeLayer(this.drawPolygon);
+            this.drawPolygon = null;
+        }
+
+        // Remove preview line
+        if (this.drawPolygonPreviewLine) {
+            this.map.removeLayer(this.drawPolygonPreviewLine);
+            this.drawPolygonPreviewLine = null;
+        }
+
+        // Remove vertex markers
+        const self = this;
+        this.drawPolygonMarkers.forEach(marker => {
+            self.map!.removeLayer(marker);
+        });
+        this.drawPolygonMarkers = [];
+
+        // Clear points
+        this.drawPolygonPoints = [];
     }
 };
 

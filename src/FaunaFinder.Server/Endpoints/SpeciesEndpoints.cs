@@ -16,6 +16,7 @@ public static class SpeciesEndpoints
         group.MapGet("/by-municipality/{municipalityId:int}", GetSpeciesByMunicipality).WithName("GetSpeciesByMunicipality");
         group.MapGet("/count", GetSpeciesCount).WithName("GetSpeciesCount");
         group.MapGet("/nearby", GetSpeciesNearby).WithName("GetSpeciesNearby");
+        group.MapPost("/in-polygon", GetSpeciesInPolygon).WithName("GetSpeciesInPolygon");
         group.MapGet("/categories", GetCategories).WithName("GetCategories");
     }
 
@@ -64,6 +65,15 @@ public static class SpeciesEndpoints
             parameters.Longitude,
             parameters.RadiusMeters,
             ct);
+        return TypedResults.Ok(species);
+    }
+
+    private static async Task<Ok<IReadOnlyList<SpeciesNearbyDto>>> GetSpeciesInPolygon(
+        PolygonSearchParameters parameters,
+        ISpeciesRepository repository,
+        CancellationToken ct)
+    {
+        var species = await repository.GetSpeciesInPolygonAsync(parameters.Coordinates, ct);
         return TypedResults.Ok(species);
     }
 

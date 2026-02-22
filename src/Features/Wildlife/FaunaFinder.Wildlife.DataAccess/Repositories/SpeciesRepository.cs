@@ -302,6 +302,112 @@ public sealed class SpeciesRepository(IDbContextFactory<WildlifeDbContext> conte
         return degrees * Math.PI / 180;
     }
 
+    public async Task<IReadOnlyList<SpeciesNearbyDto>> GetSpeciesInPolygonAsync(
+        IReadOnlyList<PolygonCoordinate> coordinates,
+        CancellationToken cancellationToken = default
+    )
+    {
+        if (coordinates.Count < 3)
+            return [];
+
+        await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
+
+        // Get all species locations
+        var speciesWithLocations = await context
+            .Species.AsNoTracking()
+            .Where(s => s.Locations.Any())
+            .Select(s => new
+            {
+                s.Id,
+                CommonName = s.CommonName.ToList(),
+                s.ScientificName,
+                Locations = s
+                    .Locations.Select(l => new
+                    {
+                        l.Latitude,
+                        l.Longitude,
+                        l.RadiusMeters,
+                        l.Description,
+                    })
+                    .ToList(),
+            })
+            .ToListAsync(cancellationToken);
+
+        // Calculate polygon centroid for distance calculation
+        var centroidLat = coordinates.Average(c => c.Latitude);
+        var centroidLng = coordinates.Average(c => c.Longitude);
+
+        // Filter by point-in-polygon test
+        var results = new List<SpeciesNearbyDto>();
+
+        foreach (var species in speciesWithLocations)
+        {
+            foreach (var location in species.Locations)
+            {
+                // Check if the location center is inside the polygon
+                if (IsPointInPolygon(location.Latitude, location.Longitude, coordinates))
+                {
+                    // Calculate distance from polygon centroid
+                    var distance = CalculateHaversineDistance(
+                        centroidLat,
+                        centroidLng,
+                        location.Latitude,
+                        location.Longitude
+                    );
+
+                    results.Add(
+                        new SpeciesNearbyDto(
+                            species.Id,
+                            species.CommonName,
+                            species.ScientificName,
+                            distance,
+                            location.Latitude,
+                            location.Longitude,
+                            location.RadiusMeters,
+                            location.Description
+                        )
+                    );
+                }
+            }
+        }
+
+        // Return distinct species by ID, keeping the closest location for each
+        return results
+            .GroupBy(r => r.Id)
+            .Select(g => g.OrderBy(r => r.DistanceMeters).First())
+            .OrderBy(r => r.DistanceMeters)
+            .ToList();
+    }
+
+    /// <summary>
+    /// Determines if a point is inside a polygon using the ray casting algorithm.
+    /// </summary>
+    private static bool IsPointInPolygon(
+        double latitude,
+        double longitude,
+        IReadOnlyList<PolygonCoordinate> polygon
+    )
+    {
+        var inside = false;
+        var j = polygon.Count - 1;
+
+        for (var i = 0; i < polygon.Count; j = i++)
+        {
+            var xi = polygon[i].Longitude;
+            var yi = polygon[i].Latitude;
+            var xj = polygon[j].Longitude;
+            var yj = polygon[j].Latitude;
+
+            if (((yi > latitude) != (yj > latitude)) &&
+                (longitude < (xj - xi) * (latitude - yi) / (yj - yi) + xi))
+            {
+                inside = !inside;
+            }
+        }
+
+        return inside;
+    }
+
     public async Task<IReadOnlyList<SpeciesCategoryDto>> GetAllCategoriesAsync(
         CancellationToken cancellationToken = default
     )

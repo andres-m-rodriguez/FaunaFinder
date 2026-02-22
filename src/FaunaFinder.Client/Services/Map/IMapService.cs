@@ -27,10 +27,15 @@ public interface IMapService
     Task<string?> GetSessionStorageAsync(string key);
     Task RemoveSessionStorageAsync(string key);
 
-    // Draw mode methods for custom area search
+    // Draw mode methods for custom area search (circle)
     Task EnableDrawModeAsync();
     Task DisableDrawModeAsync();
     Task ClearDrawnCircleAsync();
+
+    // Polygon draw mode methods for custom shapes
+    Task EnablePolygonDrawModeAsync();
+    Task DisablePolygonDrawModeAsync();
+    Task ClearDrawnPolygonAsync();
 
     // Municipality highlight methods
     Task HighlightMunicipalityAsync(string countyCode);

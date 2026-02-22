@@ -67,6 +67,25 @@ public sealed class SpeciesHttpClient(HttpClient httpClient) : ISpeciesHttpClien
         return result ?? [];
     }
 
+    public async Task<IReadOnlyList<SpeciesNearbyDto>> GetSpeciesInPolygonAsync(
+        IReadOnlyList<PolygonCoordinate> coordinates,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var parameters = new PolygonSearchParameters(coordinates);
+        var response = await httpClient.PostAsJsonAsync(
+            "api/species/in-polygon",
+            parameters,
+            cancellationToken
+        );
+        response.EnsureSuccessStatusCode();
+
+        var result = await response.Content.ReadFromJsonAsync<IReadOnlyList<SpeciesNearbyDto>>(
+            cancellationToken
+        );
+        return result ?? [];
+    }
+
     private static string BuildSpeciesQueryString(SpeciesParameters parameters)
     {
         var queryParams = new List<string> { $"pageSize={parameters.PageSize}" };

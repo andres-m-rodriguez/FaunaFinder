@@ -145,6 +145,13 @@ public static class Translations
             ["DrawCircle_Radius"] = "Search radius",
             ["DrawCircle_Redraw"] = "Redraw",
 
+            // Draw Polygon Search
+            ["DrawPolygon_Title"] = "Custom Area",
+            ["DrawPolygon_Button"] = "Draw Shape",
+            ["DrawPolygon_Tooltip"] = "Draw a custom shape on the map to search for species",
+            ["DrawPolygon_Instructions"] = "Click to add points, double-click to finish",
+            ["DrawPolygon_Redraw"] = "Redraw Shape",
+
             // Export
             ["Export_Button"] = "Export",
             ["Export_PDF"] = "Download PDF",
@@ -323,6 +330,13 @@ public static class Translations
             ["DrawCircle_Instructions"] = "Haz clic y arrastra para dibujar el area de busqueda",
             ["DrawCircle_Radius"] = "Radio de busqueda",
             ["DrawCircle_Redraw"] = "Redibujar",
+
+            // Draw Polygon Search
+            ["DrawPolygon_Title"] = "Area personalizada",
+            ["DrawPolygon_Button"] = "Dibujar forma",
+            ["DrawPolygon_Tooltip"] = "Dibuja una forma personalizada en el mapa para buscar especies",
+            ["DrawPolygon_Instructions"] = "Haz clic para agregar puntos, doble clic para terminar",
+            ["DrawPolygon_Redraw"] = "Redibujar forma",
 
             // Export
             ["Export_Button"] = "Exportar",
