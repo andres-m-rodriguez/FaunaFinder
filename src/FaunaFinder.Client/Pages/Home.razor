@@ -328,7 +328,18 @@
                         {
                             <div class="pa-3">
                                 <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mb-2">
-                                    @string.Format(L["NearMe_SpeciesFound"], nearbySpecies.Count, selectedRadiusKm)
+                                    @if (drawnPolygonCoordinates != null)
+                                    {
+                                        @string.Format(L["DrawPolygon_SpeciesFound"], nearbySpecies.Count)
+                                    }
+                                    else if (drawnCircleRadius.HasValue)
+                                    {
+                                        @string.Format(L["NearMe_SpeciesFound"], nearbySpecies.Count, FormatRadius(drawnCircleRadius.Value))
+                                    }
+                                    else
+                                    {
+                                        @string.Format(L["NearMe_SpeciesFound"], nearbySpecies.Count, selectedRadiusKm + "km")
+                                    }
                                 </MudText>
 
                                 <MudList T="SpeciesNearbyDto" Dense="true" Class="nearby-species-list">
@@ -581,7 +592,18 @@
                     {
                         <MudContainer Class="pa-3" MaxWidth="MaxWidth.False">
                             <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mb-2">
-                                @string.Format(L["NearMe_SpeciesFound"], nearbySpecies.Count, selectedRadiusKm)
+                                @if (drawnPolygonCoordinates != null)
+                                {
+                                    @string.Format(L["DrawPolygon_SpeciesFound"], nearbySpecies.Count)
+                                }
+                                else if (drawnCircleRadius.HasValue)
+                                {
+                                    @string.Format(L["NearMe_SpeciesFound"], nearbySpecies.Count, FormatRadius(drawnCircleRadius.Value))
+                                }
+                                else
+                                {
+                                    @string.Format(L["NearMe_SpeciesFound"], nearbySpecies.Count, selectedRadiusKm + "km")
+                                }
                             </MudText>
 
                             <MudList T="SpeciesNearbyDto" Dense="true" Class="nearby-species-list">

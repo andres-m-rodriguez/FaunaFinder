@@ -161,6 +161,7 @@ public static class Translations
             ["DrawPolygon_Tooltip"] = "Draw a custom shape on the map to search for species",
             ["DrawPolygon_Instructions"] = "Click to add points, double-click to finish",
             ["DrawPolygon_Redraw"] = "Redraw Shape",
+            ["DrawPolygon_SpeciesFound"] = "{0} species found in selected area",
 
             // Export
             ["Export_Button"] = "Export",
@@ -584,6 +585,7 @@ public static class Translations
             ["DrawPolygon_Tooltip"] = "Dibuja una forma personalizada en el mapa para buscar especies",
             ["DrawPolygon_Instructions"] = "Haz clic para agregar puntos, doble clic para terminar",
             ["DrawPolygon_Redraw"] = "Redibujar forma",
+            ["DrawPolygon_SpeciesFound"] = "{0} especies encontradas en el area seleccionada",
 
             // Export
             ["Export_Button"] = "Exportar",
