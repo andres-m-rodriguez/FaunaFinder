@@ -115,14 +115,15 @@
         justify-content: center;
         overflow: hidden;
         border-radius: 16px;
-        background: linear-gradient(135deg, var(--mud-palette-primary-lighten) 0%, var(--mud-palette-primary) 100%);
         min-height: 300px;
+        max-height: 400px;
     }
 
-    .coqui-icon {
-        font-size: 8rem;
-        color: white;
-        opacity: 0.9;
+    .coqui-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 16px;
     }
 
     .split-card {
@@ -160,10 +161,7 @@
 
         .coqui-image-container {
             min-height: 200px;
-        }
-
-        .coqui-icon {
-            font-size: 5rem;
+            max-height: 250px;
         }
 
         .slide-indicators {
@@ -216,8 +214,7 @@
                     <MudGrid Spacing="4">
                         <MudItem xs="12" md="5">
                             <div class="coqui-image-container">
-                                <MudIcon Icon="@Icons.Custom.Uncategorized.Radioactive"
-                                         Class="coqui-icon" />
+                                <img src="images/coqui.jpg" alt="Coquí frog" class="coqui-image" />
                             </div>
                         </MudItem>
                         <MudItem xs="12" md="7" Class="d-flex flex-column justify-center">
