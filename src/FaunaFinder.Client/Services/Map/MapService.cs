@@ -152,21 +152,6 @@ public sealed class MapService : IMapService
         await _js.InvokeVoidAsync("sessionStorage.removeItem", key);
     }
 
-    public async Task EnableDrawModeAsync()
-    {
-        await _js.InvokeVoidAsync("leafletInterop.enableDrawMode");
-    }
-
-    public async Task DisableDrawModeAsync()
-    {
-        await _js.InvokeVoidAsync("leafletInterop.disableDrawMode");
-    }
-
-    public async Task ClearDrawnCircleAsync()
-    {
-        await _js.InvokeVoidAsync("leafletInterop.clearDrawnCircle");
-    }
-
     public async Task EnablePolygonDrawModeAsync()
     {
         await _js.InvokeVoidAsync("leafletInterop.enablePolygonDrawMode");

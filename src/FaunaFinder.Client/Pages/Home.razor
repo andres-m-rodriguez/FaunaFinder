@@ -30,25 +30,17 @@
         <div id="map" class="map"></div>
     </div>
 
-    @* Desktop FAB for Draw Circle/Polygon when nothing selected *@
+    @* Desktop FAB for Draw Polygon when nothing selected *@
     <MudHidden Breakpoint="Breakpoint.SmAndDown">
-        @if (clickedMunicipalityName == null && !showNearbySpecies && viewingSpeciesLocations == null && !isDrawMode && !isPolygonDrawMode)
+        @if (clickedMunicipalityName == null && !showNearbySpecies && viewingSpeciesLocations == null && !isPolygonDrawMode)
         {
             <div class="desktop-fab-container">
-                <MudStack Spacing="2">
-                    <MudTooltip Text="@L["DrawPolygon_Tooltip"]" Placement="Placement.Left">
-                        <MudFab Color="Color.Tertiary"
-                                StartIcon="@Icons.Material.Filled.Pentagon"
-                                Size="Size.Medium"
-                                OnClick="EnablePolygonDrawMode" />
-                    </MudTooltip>
-                    <MudTooltip Text="@L["DrawCircle_Tooltip"]" Placement="Placement.Left">
-                        <MudFab Color="Color.Secondary"
-                                StartIcon="@Icons.Material.Filled.PanoramaFishEye"
-                                Size="Size.Large"
-                                OnClick="EnableDrawMode" />
-                    </MudTooltip>
-                </MudStack>
+                <MudTooltip Text="@L["DrawPolygon_Tooltip"]" Placement="Placement.Left">
+                    <MudFab Color="Color.Tertiary"
+                            StartIcon="@Icons.Material.Filled.Pentagon"
+                            Size="Size.Large"
+                            OnClick="EnablePolygonDrawMode" />
+                </MudTooltip>
             </div>
         }
     </MudHidden>
@@ -235,49 +227,6 @@
                             }
                         </MudPaper>
                     }
-                    else if (drawnCircleRadius.HasValue)
-                    {
-                        <SidebarHeader Title="@L["DrawCircle_Title"]"
-                                       Icon="@Icons.Material.Filled.PanoramaFishEye"
-                                       ThemeClass="mud-theme-secondary"
-                                       OnClose="CloseSpeciesNearMe" />
-
-                        <MudPaper Class="px-3 py-2" Square="true" Elevation="0">
-                            <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mb-2">
-                                @L["DrawCircle_Radius"]: @FormatRadius(drawnCircleRadius.Value)
-                            </MudText>
-                            <div class="d-flex flex-wrap gap-2 mb-3">
-                                <MudButton Variant="Variant.Outlined"
-                                           Color="Color.Secondary"
-                                           Size="Size.Small"
-                                           StartIcon="@Icons.Material.Filled.Refresh"
-                                           OnClick="RedrawCircle">
-                                    @L["DrawCircle_Redraw"]
-                                </MudButton>
-                                @if (userLatitude.HasValue && userLongitude.HasValue)
-                                {
-                                    <MudButton Variant="Variant.Text"
-                                               Color="Color.Default"
-                                               Size="Size.Small"
-                                               StartIcon="@Icons.Material.Filled.NearMe"
-                                               OnClick="SwitchToNearMe">
-                                        @L["NearMe_Button"]
-                                    </MudButton>
-                                }
-                            </div>
-                            @if (nearbySpecies.Count > 0)
-                            {
-                                <MudButton Variant="@(showSpeciesLocationsOnMap ? Variant.Filled : Variant.Outlined)"
-                                           Color="Color.Secondary"
-                                           Size="Size.Small"
-                                           StartIcon="@(showSpeciesLocationsOnMap ? Icons.Material.Filled.VisibilityOff : Icons.Material.Filled.Visibility)"
-                                           OnClick="ToggleSpeciesLocationsOnMap"
-                                           FullWidth="true">
-                                    @(showSpeciesLocationsOnMap ? L["NearMe_HideLocations"] : L["NearMe_ShowLocations"])
-                                </MudButton>
-                            }
-                        </MudPaper>
-                    }
                     else
                     {
                         <SidebarHeader Title="@L["NearMe_Title"]"
@@ -332,10 +281,6 @@
                                     {
                                         @string.Format(L["DrawPolygon_SpeciesFound"], nearbySpecies.Count)
                                     }
-                                    else if (drawnCircleRadius.HasValue)
-                                    {
-                                        @string.Format(L["NearMe_SpeciesFound"], nearbySpecies.Count, FormatRadius(drawnCircleRadius.Value))
-                                    }
                                     else
                                     {
                                         @string.Format(L["NearMe_SpeciesFound"], nearbySpecies.Count, selectedRadiusKm + "km")
@@ -370,7 +315,7 @@
             <div class="mobile-sheet @(sheetOpen ? "open" : "")">
                 <div class="mobile-sheet-header">
                     <MudText Typo="Typo.subtitle1" Class="ml-3">
-                        @(showNearbySpecies ? (drawnPolygonCoordinates != null ? L["DrawPolygon_Title"] : (drawnCircleRadius.HasValue ? L["DrawCircle_Title"] : L["NearMe_Title"])) : clickedMunicipalityName)
+                        @(showNearbySpecies ? (drawnPolygonCoordinates != null ? L["DrawPolygon_Title"] : L["NearMe_Title"]) : clickedMunicipalityName)
                     </MudText>
                     <MudSpacer />
                     @if (clickedMunicipalityName != null && species.Count > 0)
@@ -524,31 +469,6 @@
                                 }
                             </div>
                         }
-                        else if (drawnCircleRadius.HasValue)
-                        {
-                            <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mb-2">
-                                @L["DrawCircle_Radius"]: @FormatRadius(drawnCircleRadius.Value)
-                            </MudText>
-                            <div class="d-flex flex-wrap gap-2 mb-3">
-                                <MudButton Variant="Variant.Outlined"
-                                           Color="Color.Secondary"
-                                           Size="Size.Small"
-                                           StartIcon="@Icons.Material.Filled.Refresh"
-                                           OnClick="RedrawCircle">
-                                    @L["DrawCircle_Redraw"]
-                                </MudButton>
-                                @if (userLatitude.HasValue && userLongitude.HasValue)
-                                {
-                                    <MudButton Variant="Variant.Text"
-                                               Color="Color.Default"
-                                               Size="Size.Small"
-                                               StartIcon="@Icons.Material.Filled.NearMe"
-                                               OnClick="SwitchToNearMe">
-                                        @L["NearMe_Button"]
-                                    </MudButton>
-                                }
-                            </div>
-                        }
                         else
                         {
                             <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mb-2">@L["NearMe_SelectRadius"]</MudText>
@@ -568,7 +488,7 @@
                         @if (nearbySpecies.Count > 0)
                         {
                             <MudButton Variant="@(showSpeciesLocationsOnMap ? Variant.Filled : Variant.Outlined)"
-                                       Color="@(drawnPolygonCoordinates != null ? Color.Tertiary : (drawnCircleRadius.HasValue ? Color.Secondary : Color.Info))"
+                                       Color="@(drawnPolygonCoordinates != null ? Color.Tertiary : Color.Info)"
                                        Size="Size.Small"
                                        StartIcon="@(showSpeciesLocationsOnMap ? Icons.Material.Filled.VisibilityOff : Icons.Material.Filled.Visibility)"
                                        OnClick="ToggleSpeciesLocationsOnMap"
@@ -595,10 +515,6 @@
                                 @if (drawnPolygonCoordinates != null)
                                 {
                                     @string.Format(L["DrawPolygon_SpeciesFound"], nearbySpecies.Count)
-                                }
-                                else if (drawnCircleRadius.HasValue)
-                                {
-                                    @string.Format(L["NearMe_SpeciesFound"], nearbySpecies.Count, FormatRadius(drawnCircleRadius.Value))
                                 }
                                 else
                                 {
@@ -627,7 +543,7 @@
 
     @* Mobile FAB for "Species Near Me" / "Draw Area" when nothing selected *@
     <MudHidden Breakpoint="Breakpoint.MdAndUp">
-        @if (clickedMunicipalityName == null && !showNearbySpecies && viewingSpeciesLocations == null && !isDrawMode && !isPolygonDrawMode && !hasMinimizedDrawnCircleResults)
+        @if (clickedMunicipalityName == null && !showNearbySpecies && viewingSpeciesLocations == null && !isPolygonDrawMode)
         {
             <div class="mobile-fab-container">
                 @if (userLatitude.HasValue && userLongitude.HasValue)
@@ -643,46 +559,12 @@
                         Label="@L["DrawPolygon_Button"]"
                         Class="mobile-fab-item"
                         OnClick="EnablePolygonDrawMode" />
-                <MudFab Color="Color.Secondary"
-                        StartIcon="@Icons.Material.Filled.PanoramaFishEye"
-                        Label="@L["DrawCircle_Button"]"
-                        Class="mobile-fab-item"
-                        OnClick="EnableDrawMode" />
-            </div>
-        }
-        @* FAB to reopen minimized drawn circle results *@
-        else if (hasMinimizedDrawnCircleResults)
-        {
-            <div class="mobile-fab-container">
-                <MudFab Color="Color.Secondary"
-                        StartIcon="@Icons.Material.Filled.List"
-                        Label="@L["DrawCircle_ShowResults"]"
-                        Class="mobile-fab-item"
-                        OnClick="ReopenDrawnCircleResults" />
-                <MudFab Color="Color.Default"
-                        StartIcon="@Icons.Material.Filled.Close"
-                        Size="Size.Small"
-                        Class="mobile-fab-item"
-                        OnClick="ClearMinimizedDrawnCircle" />
             </div>
         }
     </MudHidden>
 
     @* Draw Mode Indicator Overlay *@
-    @if (isDrawMode)
-    {
-        <div class="draw-mode-indicator">
-            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
-                <MudIcon Icon="@Icons.Material.Filled.PanoramaFishEye" Size="Size.Small" />
-                <span>@L["DrawCircle_Instructions"]</span>
-                <MudIconButton Icon="@Icons.Material.Filled.Close"
-                               Size="Size.Small"
-                               OnClick="CancelDrawMode"
-                               Color="Color.Inherit" />
-            </MudStack>
-        </div>
-    }
-    else if (isPolygonDrawMode)
+    @if (isPolygonDrawMode)
     {
         <div class="draw-mode-indicator polygon-mode">
             <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
@@ -774,23 +656,9 @@
     private bool showSpeciesLocationsOnMap = false;
     private Dictionary<int, string> speciesColors = new();
 
-    // Draw circle search state
-    private bool isDrawMode = false;
-    private double? drawnCircleLat;
-    private double? drawnCircleLng;
-    private double? drawnCircleRadius;
-    private bool isDrawnCircleMinimized = false;
-
     // Draw polygon search state
     private bool isPolygonDrawMode = false;
     private List<PolygonCoordinate>? drawnPolygonCoordinates;
-
-    // Computed property to check if we have minimized drawn circle results
-    private bool hasMinimizedDrawnCircleResults =>
-        isDrawnCircleMinimized &&
-        drawnCircleRadius.HasValue &&
-        !showNearbySpecies &&
-        clickedMunicipalityName == null;
 
     private enum SortOption
     {
@@ -1143,15 +1011,6 @@
         // Wait for close animation
         await Task.Delay(300);
 
-        // If we have drawn circle results, just minimize instead of clearing
-        if (drawnCircleRadius.HasValue && showNearbySpecies)
-        {
-            isDrawnCircleMinimized = true;
-            showNearbySpecies = false;
-            StateHasChanged();
-            return;
-        }
-
         selectedMunicipality = null;
         clickedMunicipalityName = null;
         showNearbySpecies = false;
@@ -1248,152 +1107,18 @@
         sheetOpen = false;
         showSpeciesLocationsOnMap = false;
         speciesColors.Clear();
-        drawnCircleLat = null;
-        drawnCircleLng = null;
-        drawnCircleRadius = null;
         drawnPolygonCoordinates = null;
-        isDrawnCircleMinimized = false;
         await MapService.ClearSearchRadiusAsync();
-        await MapService.ClearDrawnCircleAsync();
         await MapService.ClearDrawnPolygonAsync();
         await MapService.ClearSpeciesLocationCirclesAsync();
         await MapService.ResetSpeciesColorsAsync();
         StateHasChanged();
     }
 
-    // Draw circle search methods
-    private async Task EnableDrawMode()
-    {
-        isDrawMode = true;
-        StateHasChanged();
-        await MapService.EnableDrawModeAsync();
-    }
-
-    private async Task CancelDrawMode()
-    {
-        isDrawMode = false;
-        await MapService.DisableDrawModeAsync();
-        StateHasChanged();
-    }
-
-    [JSInvokable]
-    public async Task OnCircleDrawn(double latitude, double longitude, double radiusMeters)
-    {
-        isDrawMode = false;
-        drawnCircleLat = latitude;
-        drawnCircleLng = longitude;
-        drawnCircleRadius = radiusMeters;
-
-        // Open the nearby species panel and search within the drawn circle
-        showNearbySpecies = true;
-        selectedMunicipality = null;
-        clickedMunicipalityName = null;
-        species = [];
-        sheetOpen = true;
-        sidebarOpen = true;
-
-        StateHasChanged();
-
-        await SearchNearbySpeciesInDrawnCircle();
-    }
-
-    private async Task SearchNearbySpeciesInDrawnCircle()
-    {
-        if (drawnCircleLat == null || drawnCircleLng == null || drawnCircleRadius == null) return;
-
-        // Clear existing species location circles if shown
-        if (showSpeciesLocationsOnMap)
-        {
-            await MapService.ClearSpeciesLocationCirclesAsync();
-            await MapService.ResetSpeciesColorsAsync();
-            showSpeciesLocationsOnMap = false;
-            speciesColors.Clear();
-        }
-
-        isLoadingNearbySpecies = true;
-        StateHasChanged();
-
-        try
-        {
-            // Query nearby species using the drawn circle center and radius
-            nearbySpecies = await SpeciesHttpClient.GetSpeciesNearbyAsync(
-                drawnCircleLat.Value,
-                drawnCircleLng.Value,
-                drawnCircleRadius.Value);
-
-            // Show nearby species on map
-            var speciesLocations = nearbySpecies.Select(s =>
-                new NearbySpeciesData(
-                    s.Id,
-                    L.GetLocalizedValue(s.CommonName),
-                    s.ScientificName,
-                    s.DistanceMeters,
-                    s.Latitude,
-                    s.Longitude,
-                    s.RadiusMeters,
-                    s.LocationDescription)).ToList();
-
-            await MapService.ShowNearbySpeciesAsync(speciesLocations);
-
-            // Automatically show species location circles for drawn circle search
-            if (speciesLocations.Count > 0)
-            {
-                await MapService.ShowSpeciesLocationCirclesAsync(speciesLocations);
-                var colors = await MapService.GetSpeciesColorsAsync();
-                speciesColors = colors.ToDictionary(c => c.Id, c => c.Color);
-                showSpeciesLocationsOnMap = true;
-            }
-        }
-        finally
-        {
-            isLoadingNearbySpecies = false;
-            StateHasChanged();
-        }
-    }
-
-    private async Task ClearDrawnCircleSearch()
-    {
-        drawnCircleLat = null;
-        drawnCircleLng = null;
-        drawnCircleRadius = null;
-        await MapService.ClearDrawnCircleAsync();
-
-        // Search with user location instead if available
-        if (userLatitude.HasValue && userLongitude.HasValue)
-        {
-            await SearchNearbySpecies();
-        }
-    }
-
-    private async Task RedrawCircle()
-    {
-        // Close the sidebar and enable draw mode again
-        showNearbySpecies = false;
-        nearbySpecies = [];
-        sidebarOpen = false;
-        sheetOpen = false;
-        showSpeciesLocationsOnMap = false;
-        speciesColors.Clear();
-        drawnCircleLat = null;
-        drawnCircleLng = null;
-        drawnCircleRadius = null;
-        isDrawnCircleMinimized = false;
-        await MapService.ClearDrawnCircleAsync();
-        await MapService.ClearSpeciesLocationCirclesAsync();
-        await MapService.ResetSpeciesColorsAsync();
-        StateHasChanged();
-
-        await EnableDrawMode();
-    }
-
     private async Task SwitchToNearMe()
     {
-        // Clear the drawn circle/polygon and switch to Near Me mode
-        drawnCircleLat = null;
-        drawnCircleLng = null;
-        drawnCircleRadius = null;
+        // Clear the drawn polygon and switch to Near Me mode
         drawnPolygonCoordinates = null;
-        await MapService.ClearDrawnCircleAsync();
         await MapService.ClearDrawnPolygonAsync();
         await SearchNearbySpecies();
     }
@@ -1424,11 +1149,6 @@
     {
         isPolygonDrawMode = false;
         drawnPolygonCoordinates = coordinates;
-
-        // Clear any circle drawing state
-        drawnCircleLat = null;
-        drawnCircleLng = null;
-        drawnCircleRadius = null;
 
         // Open the nearby species panel and search within the drawn polygon
         showNearbySpecies = true;
@@ -1511,47 +1231,6 @@
         StateHasChanged();
 
         await EnablePolygonDrawMode();
-    }
-
-    private string FormatRadius(double radiusMeters)
-    {
-        if (radiusMeters >= 1000)
-        {
-            return $"{radiusMeters / 1000:F1} km";
-        }
-        return $"{radiusMeters:F0} m";
-    }
-
-    private async Task ReopenDrawnCircleResults()
-    {
-        if (!drawnCircleRadius.HasValue) return;
-
-        isDrawnCircleMinimized = false;
-        showNearbySpecies = true;
-        sheetOpen = true;
-        sidebarOpen = true;
-        StateHasChanged();
-
-        // If we don't have cached results, search again
-        if (nearbySpecies.Count == 0)
-        {
-            await SearchNearbySpeciesInDrawnCircle();
-        }
-    }
-
-    private async Task ClearMinimizedDrawnCircle()
-    {
-        isDrawnCircleMinimized = false;
-        drawnCircleLat = null;
-        drawnCircleLng = null;
-        drawnCircleRadius = null;
-        nearbySpecies = [];
-        showSpeciesLocationsOnMap = false;
-        speciesColors.Clear();
-        await MapService.ClearDrawnCircleAsync();
-        await MapService.ClearSpeciesLocationCirclesAsync();
-        await MapService.ResetSpeciesColorsAsync();
-        StateHasChanged();
     }
 
     private async Task FocusOnNearbySpecies(int index)

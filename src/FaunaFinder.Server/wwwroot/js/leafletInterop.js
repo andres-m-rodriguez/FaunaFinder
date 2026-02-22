@@ -23,9 +23,6 @@ window.leafletInterop = {
     loadingOverlay: null,
     tilesLoading: 0,
     ariaLiveRegion: null,
-    isDrawMode: false,
-    drawCircle: null,
-    drawStartPoint: null,
     isPolygonDrawMode: false,
     drawPolygon: null,
     drawPolygonPoints: [],
@@ -397,8 +394,8 @@ window.leafletInterop = {
                         mouseover: (e) => self.highlightFeature(e),
                         mouseout: (e) => self.resetHighlight(e),
                         click: () => {
-                            // Ignore clicks during draw mode
-                            if (self.isDrawMode || self.isPolygonDrawMode)
+                            // Ignore clicks during polygon draw mode
+                            if (self.isPolygonDrawMode)
                                 return;
                             // Announce municipality selection to screen readers
                             self.announceToScreenReader(`Selected ${name} municipality. Loading species information.`);
@@ -472,8 +469,8 @@ window.leafletInterop = {
         return this.getDefaultStyle();
     },
     highlightFeature(e) {
-        // Skip hover effects when in draw mode
-        if (this.isDrawMode) {
+        // Skip hover effects when in polygon draw mode
+        if (this.isPolygonDrawMode) {
             const layer = e.target;
             layer.closeTooltip?.();
             return;
@@ -488,8 +485,8 @@ window.leafletInterop = {
         });
     },
     resetHighlight(e) {
-        // Skip hover effects when in draw mode
-        if (this.isDrawMode)
+        // Skip hover effects when in polygon draw mode
+        if (this.isPolygonDrawMode)
             return;
         if (this.geojsonLayer) {
             this.geojsonLayer.resetStyle(e.target);
@@ -783,157 +780,6 @@ window.leafletInterop = {
         setTimeout(() => {
             map.invalidateSize();
         }, 100);
-    },
-    enableDrawMode() {
-        if (!this.map || this.isDrawMode)
-            return;
-        this.isDrawMode = true;
-        const self = this;
-        const mapContainer = this.map.getContainer();
-        // Add draw mode class for cursor styling
-        mapContainer.classList.add('draw-mode');
-        // Announce to screen readers
-        this.announceToScreenReader('Draw mode enabled. Click and drag on the map to draw a search circle.');
-        // Disable map dragging during draw mode
-        this.map.dragging.disable();
-        const onMouseDown = (e) => {
-            if (!self.isDrawMode)
-                return;
-            self.drawStartPoint = e.latlng;
-            // Remove existing draw circle if any
-            if (self.drawCircle) {
-                self.map.removeLayer(self.drawCircle);
-            }
-            // Create initial circle with 0 radius
-            self.drawCircle = L.circle(e.latlng, {
-                radius: 0,
-                fillColor: '#8b5cf6',
-                color: '#7c3aed',
-                weight: 3,
-                fillOpacity: 0.2,
-                dashArray: '10, 5'
-            }).addTo(self.map);
-        };
-        const onMouseMove = (e) => {
-            if (!self.isDrawMode || !self.drawStartPoint || !self.drawCircle)
-                return;
-            // Calculate radius from start point to current mouse position
-            const radius = self.drawStartPoint.distanceTo(e.latlng);
-            self.drawCircle.setRadius(radius);
-        };
-        const onMouseUp = (e) => {
-            if (!self.isDrawMode || !self.drawStartPoint || !self.drawCircle)
-                return;
-            const radius = self.drawStartPoint.distanceTo(e.latlng);
-            // Minimum radius of 100 meters
-            if (radius < 100) {
-                self.announceToScreenReader('Circle too small. Please draw a larger area.');
-                if (self.drawCircle) {
-                    self.map.removeLayer(self.drawCircle);
-                    self.drawCircle = null;
-                }
-                self.drawStartPoint = null;
-                return;
-            }
-            // Finalize the circle style
-            self.drawCircle.setStyle({
-                dashArray: undefined,
-                fillOpacity: 0.15
-            });
-            // Save center coordinates BEFORE disabling draw mode (which clears drawStartPoint)
-            const center = self.drawStartPoint;
-            // Disable draw mode
-            self.disableDrawMode();
-            // Announce completion
-            const radiusKm = radius >= 1000
-                ? `${(radius / 1000).toFixed(1)} kilometers`
-                : `${Math.round(radius)} meters`;
-            self.announceToScreenReader(`Search area drawn with radius of ${radiusKm}. Searching for species.`);
-            // Notify Blazor with the drawn circle details
-            self.dotNetHelper?.invokeMethodAsync('OnCircleDrawn', center.lat, center.lng, radius);
-        };
-        // Store handlers for removal later
-        this._drawHandlers = { onMouseDown, onMouseMove, onMouseUp };
-        this.map.on('mousedown', onMouseDown);
-        this.map.on('mousemove', onMouseMove);
-        this.map.on('mouseup', onMouseUp);
-        // Track last touch position for touchend (which doesn't have coordinates)
-        let lastTouchLatLng = null;
-        const getTouchLatLng = (touch) => {
-            const rect = mapContainer.getBoundingClientRect();
-            const point = L.point(touch.clientX - rect.left, touch.clientY - rect.top);
-            return self.map.containerPointToLatLng(point);
-        };
-        const onTouchStart = (e) => {
-            if (!self.isDrawMode)
-                return;
-            if (e.touches.length === 1) {
-                e.preventDefault();
-                const latlng = getTouchLatLng(e.touches[0]);
-                lastTouchLatLng = latlng;
-                onMouseDown({ latlng });
-            }
-        };
-        const onTouchMove = (e) => {
-            if (!self.isDrawMode || !self.drawStartPoint)
-                return;
-            if (e.touches.length === 1) {
-                e.preventDefault();
-                const latlng = getTouchLatLng(e.touches[0]);
-                lastTouchLatLng = latlng;
-                onMouseMove({ latlng });
-            }
-        };
-        const onTouchEnd = (e) => {
-            if (!self.isDrawMode || !self.drawStartPoint || !self.drawCircle)
-                return;
-            e.preventDefault();
-            // Use last known touch position since touchend doesn't have coordinates
-            if (lastTouchLatLng) {
-                onMouseUp({ latlng: lastTouchLatLng });
-            }
-            lastTouchLatLng = null;
-        };
-        // Add touch event listeners directly to the container for better control
-        mapContainer.addEventListener('touchstart', onTouchStart, { passive: false });
-        mapContainer.addEventListener('touchmove', onTouchMove, { passive: false });
-        mapContainer.addEventListener('touchend', onTouchEnd, { passive: false });
-        // Store touch handlers for removal
-        this._touchHandlers = { onTouchStart, onTouchMove, onTouchEnd };
-    },
-    disableDrawMode() {
-        if (!this.map)
-            return;
-        this.isDrawMode = false;
-        const mapContainer = this.map.getContainer();
-        // Remove draw mode class
-        mapContainer.classList.remove('draw-mode');
-        // Re-enable map dragging
-        this.map.dragging.enable();
-        // Remove mouse event handlers
-        const handlers = this._drawHandlers;
-        if (handlers) {
-            this.map.off('mousedown', handlers.onMouseDown);
-            this.map.off('mousemove', handlers.onMouseMove);
-            this.map.off('mouseup', handlers.onMouseUp);
-            this._drawHandlers = null;
-        }
-        // Remove touch event handlers from container
-        const touchHandlers = this._touchHandlers;
-        if (touchHandlers) {
-            mapContainer.removeEventListener('touchstart', touchHandlers.onTouchStart);
-            mapContainer.removeEventListener('touchmove', touchHandlers.onTouchMove);
-            mapContainer.removeEventListener('touchend', touchHandlers.onTouchEnd);
-            this._touchHandlers = null;
-        }
-        this.drawStartPoint = null;
-    },
-    clearDrawnCircle() {
-        if (this.drawCircle && this.map) {
-            this.map.removeLayer(this.drawCircle);
-            this.drawCircle = null;
-        }
-        this.drawStartPoint = null;
     },
     enablePolygonDrawMode() {
         if (!this.map || this.isPolygonDrawMode)
