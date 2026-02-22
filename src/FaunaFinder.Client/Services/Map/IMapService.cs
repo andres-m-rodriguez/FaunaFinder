@@ -36,6 +36,7 @@ public interface IMapService
     Task EnablePolygonDrawModeAsync();
     Task DisablePolygonDrawModeAsync();
     Task ClearDrawnPolygonAsync();
+    Task FinishPolygonDrawingAsync();
 
     // Municipality highlight methods
     Task HighlightMunicipalityAsync(string countyCode);

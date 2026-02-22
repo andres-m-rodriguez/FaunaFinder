@@ -182,6 +182,11 @@ public sealed class MapService : IMapService
         await _js.InvokeVoidAsync("leafletInterop.clearDrawnPolygon");
     }
 
+    public async Task FinishPolygonDrawingAsync()
+    {
+        await _js.InvokeVoidAsync("leafletInterop.finishPolygon");
+    }
+
     public async Task HighlightMunicipalityAsync(string countyCode)
     {
         await _js.InvokeVoidAsync("leafletInterop.highlightMunicipality", countyCode);

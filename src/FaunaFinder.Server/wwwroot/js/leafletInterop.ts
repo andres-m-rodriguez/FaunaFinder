@@ -666,6 +666,9 @@ window.leafletInterop = {
                         mouseover: (e: L.LeafletMouseEvent) => self.highlightFeature(e),
                         mouseout: (e: L.LeafletMouseEvent) => self.resetHighlight(e),
                         click: () => {
+                            // Ignore clicks during draw mode
+                            if (self.isDrawMode || self.isPolygonDrawMode) return;
+
                             // Announce municipality selection to screen readers
                             self.announceToScreenReader(`Selected ${name} municipality. Loading species information.`);
                             self.dotNetHelper?.invokeMethodAsync('OnMunicipalityClick', geoJsonId, name);

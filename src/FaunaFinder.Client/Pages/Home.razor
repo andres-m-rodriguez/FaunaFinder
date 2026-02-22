@@ -688,6 +688,14 @@
             <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
                 <MudIcon Icon="@Icons.Material.Filled.Pentagon" Size="Size.Small" />
                 <span>@L["DrawPolygon_Instructions"]</span>
+                <MudButton Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           Size="Size.Small"
+                           StartIcon="@Icons.Material.Filled.Check"
+                           OnClick="FinishPolygonDrawing"
+                           Class="ml-2">
+                    @L["DrawPolygon_Finish"]
+                </MudButton>
                 <MudIconButton Icon="@Icons.Material.Filled.Close"
                                Size="Size.Small"
                                OnClick="CancelPolygonDrawMode"
@@ -1404,6 +1412,11 @@
         await MapService.DisablePolygonDrawModeAsync();
         await MapService.ClearDrawnPolygonAsync();
         StateHasChanged();
+    }
+
+    private async Task FinishPolygonDrawing()
+    {
+        await MapService.FinishPolygonDrawingAsync();
     }
 
     [JSInvokable]
