@@ -232,16 +232,15 @@
         transform: scale(1.05);
     }
 
-    .auth-back-button {
-        position: absolute;
-        bottom: 1.5rem;
-        left: 50%;
-        transform: translateX(-50%);
-        z-index: 10;
+    .auth-slide-wrapper {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
     }
 
-    .auth-back-button .mud-button {
-        color: var(--mud-palette-text-secondary);
+    .auth-back-button {
+        margin-left: 0.5rem;
     }
 
     .feature-grid {
@@ -387,13 +386,11 @@
         }
 
         .auth-back-button {
-            position: relative;
-            bottom: auto;
-            left: auto;
-            transform: none;
+            margin-left: 0;
+        }
+
+        .auth-slide-wrapper {
             width: 100%;
-            padding: 1rem;
-            text-align: center;
         }
     }
 </style>
@@ -544,52 +541,54 @@
 
             case 3:
                 <!-- Slide 4: Get Access / Login -->
-                <div class="auth-split-container">
-                    <div class="auth-card auth-card-register" @onclick="NavigateToRegister">
-                        <div class="auth-card-content">
-                            <MudIcon Icon="@Icons.Material.Filled.PersonAdd"
-                                     Style="font-size: 4rem;"
-                                     Color="Color.Primary" />
-                            <MudText Typo="Typo.h4" Color="Color.Primary" GutterBottom="true" Class="mt-3" Style="font-weight: 600;">
-                                @L["GetStarted_NewHereTitle"]
-                            </MudText>
-                            <MudText Typo="Typo.body1" Class="mb-4" Style="max-width: 300px;">
-                                @L["GetStarted_NewHereDescription"]
-                            </MudText>
-                            <MudButton Variant="Variant.Filled"
-                                       Color="Color.Primary"
-                                       EndIcon="@Icons.Material.Filled.ArrowForward"
-                                       Size="Size.Large">
-                                @L["GetStarted_RequestAccess"]
-                            </MudButton>
-                        </div>
-                    </div>
-                    <div class="auth-card auth-card-login" @onclick="NavigateToLogin">
-                        <div class="auth-card-content">
-                            <MudIcon Icon="@Icons.Material.Filled.Login"
-                                     Style="font-size: 4rem;"
-                                     Color="Color.Secondary" />
-                            <MudText Typo="Typo.h4" Color="Color.Secondary" GutterBottom="true" Class="mt-3" Style="font-weight: 600;">
-                                @L["GetStarted_HaveAccountTitle"]
-                            </MudText>
-                            <MudText Typo="Typo.body1" Class="mb-4" Style="max-width: 300px;">
-                                @L["GetStarted_HaveAccountDescription"]
-                            </MudText>
-                            <MudButton Variant="Variant.Outlined"
-                                       Color="Color.Secondary"
-                                       EndIcon="@Icons.Material.Filled.ArrowForward"
-                                       Size="Size.Large">
-                                @L["GetStarted_Login"]
-                            </MudButton>
-                        </div>
-                    </div>
+                <div class="auth-slide-wrapper">
                     <div class="auth-back-button">
                         <MudButton Variant="Variant.Text"
-                                   Color="Color.Default"
                                    StartIcon="@Icons.Material.Filled.ArrowBack"
-                                   OnClick="PreviousSlide">
+                                   OnClick="PreviousSlide"
+                                   Style="color: white;">
                             @L["Back"]
                         </MudButton>
+                    </div>
+                    <div class="auth-split-container">
+                        <div class="auth-card auth-card-register" @onclick="NavigateToRegister">
+                            <div class="auth-card-content">
+                                <MudIcon Icon="@Icons.Material.Filled.PersonAdd"
+                                         Style="font-size: 4rem;"
+                                         Color="Color.Primary" />
+                                <MudText Typo="Typo.h4" Color="Color.Primary" GutterBottom="true" Class="mt-3" Style="font-weight: 600;">
+                                    @L["GetStarted_NewHereTitle"]
+                                </MudText>
+                                <MudText Typo="Typo.body1" Class="mb-4" Style="max-width: 300px;">
+                                    @L["GetStarted_NewHereDescription"]
+                                </MudText>
+                                <MudButton Variant="Variant.Filled"
+                                           Color="Color.Primary"
+                                           EndIcon="@Icons.Material.Filled.ArrowForward"
+                                           Size="Size.Large">
+                                    @L["GetStarted_RequestAccess"]
+                                </MudButton>
+                            </div>
+                        </div>
+                        <div class="auth-card auth-card-login" @onclick="NavigateToLogin">
+                            <div class="auth-card-content">
+                                <MudIcon Icon="@Icons.Material.Filled.Login"
+                                         Style="font-size: 4rem;"
+                                         Color="Color.Secondary" />
+                                <MudText Typo="Typo.h4" Color="Color.Secondary" GutterBottom="true" Class="mt-3" Style="font-weight: 600;">
+                                    @L["GetStarted_HaveAccountTitle"]
+                                </MudText>
+                                <MudText Typo="Typo.body1" Class="mb-4" Style="max-width: 300px;">
+                                    @L["GetStarted_HaveAccountDescription"]
+                                </MudText>
+                                <MudButton Variant="Variant.Outlined"
+                                           Color="Color.Secondary"
+                                           EndIcon="@Icons.Material.Filled.ArrowForward"
+                                           Size="Size.Large">
+                                    @L["GetStarted_Login"]
+                                </MudButton>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 break;
