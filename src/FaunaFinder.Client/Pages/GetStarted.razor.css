@@ -1,4 +1,4 @@
-.slide-container {
+::deep .slide-container {
     min-height: calc(100vh - 64px);
     display: flex;
     flex-direction: column;
@@ -10,6 +10,7 @@
 .slide-content {
     max-width: 1200px;
     width: 100%;
+    margin: 0 auto;
     animation: fadeIn 0.3s ease-in-out;
 }
 
