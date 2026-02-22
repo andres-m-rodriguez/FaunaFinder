@@ -169,16 +169,21 @@
         transform: translateY(-4px);
     }
 
-    .feature-list {
-        list-style: none;
-        padding: 0;
+    .feature-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.5rem;
     }
 
-    .feature-list li {
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-        margin-bottom: 0.75rem;
+    .feature-item {
+        text-align: center;
+        border-radius: 12px;
+        background-color: var(--mud-palette-background-gray);
+        transition: transform 0.2s ease;
+    }
+
+    .feature-item:hover {
+        transform: translateY(-4px);
     }
 
     /* Mobile responsiveness */
@@ -215,8 +220,9 @@
             margin-bottom: 1rem;
         }
 
-        .feature-list li {
-            font-size: 0.9rem;
+        .feature-grid {
+            grid-template-columns: 1fr;
+            gap: 1rem;
         }
 
         .slide-nav-buttons {
@@ -314,38 +320,38 @@
             case 2:
                 <!-- Slide 3: For Students -->
                 <MudPaper Elevation="4" Class="pa-8 slide-card">
-                    <div class="slide-card-content">
+                    <div class="slide-card-content d-flex flex-column align-center justify-center">
                         <div class="text-center mb-6">
                             <MudIcon Icon="@Icons.Material.Filled.School"
-                                     Style="font-size: 4rem;"
+                                     Style="font-size: 5rem;"
                                      Color="Color.Primary" />
-                            <MudText Typo="Typo.h4" Color="Color.Primary" GutterBottom="true" Class="mt-2">
+                            <MudText Typo="Typo.h3" Color="Color.Primary" GutterBottom="true" Class="mt-3" Style="font-weight: 600;">
                                 @L["GetStarted_StudentTitle"]
                             </MudText>
-                            <MudText Typo="Typo.body1" Color="Color.Secondary">
+                            <MudText Typo="Typo.h6" Color="Color.Secondary" Style="font-weight: 400;">
                                 @L["GetStarted_StudentSubtitle"]
                             </MudText>
                         </div>
-                        <MudGrid Justify="Justify.Center">
+                        <MudGrid Justify="Justify.Center" Class="mt-4">
                             <MudItem xs="12" sm="10" md="8">
-                                <ul class="feature-list">
-                                    <li>
-                                        <MudIcon Icon="@Icons.Material.Filled.CameraAlt" Color="Color.Primary" />
-                                        <MudText Typo="Typo.body1">@L["GetStarted_StudentFeature1"]</MudText>
-                                    </li>
-                                    <li>
-                                        <MudIcon Icon="@Icons.Material.Filled.Explore" Color="Color.Primary" />
-                                        <MudText Typo="Typo.body1">@L["GetStarted_StudentFeature2"]</MudText>
-                                    </li>
-                                    <li>
-                                        <MudIcon Icon="@Icons.Material.Filled.Science" Color="Color.Primary" />
-                                        <MudText Typo="Typo.body1">@L["GetStarted_StudentFeature3"]</MudText>
-                                    </li>
-                                    <li>
-                                        <MudIcon Icon="@Icons.Material.Filled.Timeline" Color="Color.Primary" />
-                                        <MudText Typo="Typo.body1">@L["GetStarted_StudentFeature4"]</MudText>
-                                    </li>
-                                </ul>
+                                <div class="feature-grid">
+                                    <MudPaper Elevation="0" Class="pa-4 feature-item">
+                                        <MudIcon Icon="@Icons.Material.Filled.CameraAlt" Color="Color.Primary" Style="font-size: 2.5rem;" />
+                                        <MudText Typo="Typo.body1" Class="mt-2" Style="font-weight: 500;">@L["GetStarted_StudentFeature1"]</MudText>
+                                    </MudPaper>
+                                    <MudPaper Elevation="0" Class="pa-4 feature-item">
+                                        <MudIcon Icon="@Icons.Material.Filled.Explore" Color="Color.Primary" Style="font-size: 2.5rem;" />
+                                        <MudText Typo="Typo.body1" Class="mt-2" Style="font-weight: 500;">@L["GetStarted_StudentFeature2"]</MudText>
+                                    </MudPaper>
+                                    <MudPaper Elevation="0" Class="pa-4 feature-item">
+                                        <MudIcon Icon="@Icons.Material.Filled.Science" Color="Color.Primary" Style="font-size: 2.5rem;" />
+                                        <MudText Typo="Typo.body1" Class="mt-2" Style="font-weight: 500;">@L["GetStarted_StudentFeature3"]</MudText>
+                                    </MudPaper>
+                                    <MudPaper Elevation="0" Class="pa-4 feature-item">
+                                        <MudIcon Icon="@Icons.Material.Filled.Timeline" Color="Color.Primary" Style="font-size: 2.5rem;" />
+                                        <MudText Typo="Typo.body1" Class="mt-2" Style="font-weight: 500;">@L["GetStarted_StudentFeature4"]</MudText>
+                                    </MudPaper>
+                                </div>
                             </MudItem>
                         </MudGrid>
                     </div>
