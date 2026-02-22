@@ -127,21 +127,34 @@
         background-color: var(--mud-palette-primary-lighten);
     }
 
-    .coqui-image-container {
-        display: flex;
-        align-items: center;
-        justify-content: center;
+    .coqui-slide {
+        position: relative;
         overflow: hidden;
-        border-radius: 16px;
-        min-height: 300px;
-        max-height: 400px;
+    }
+
+    .coqui-image-container {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 45%;
+        height: 100%;
+        overflow: hidden;
+        clip-path: polygon(0 0, 100% 0, 75% 100%, 0 100%);
     }
 
     .coqui-image {
         width: 100%;
         height: 100%;
         object-fit: cover;
-        border-radius: 16px;
+    }
+
+    .coqui-content {
+        margin-left: 40%;
+        padding: 2rem;
+        min-height: 350px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
     }
 
     .split-card {
@@ -182,8 +195,18 @@
         }
 
         .coqui-image-container {
-            min-height: 200px;
-            max-height: 250px;
+            position: relative;
+            width: 100%;
+            height: 200px;
+            clip-path: none;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+        }
+
+        .coqui-content {
+            margin-left: 0;
+            padding: 0;
+            min-height: auto;
         }
 
         .slide-indicators {
@@ -254,28 +277,22 @@
 
             case 1:
                 <!-- Slide 2: About with Coqui -->
-                <MudPaper Elevation="4" Class="pa-6 slide-card">
-                    <div class="slide-card-content">
-                        <MudGrid Spacing="4">
-                            <MudItem xs="12" md="5">
-                                <div class="coqui-image-container">
-                                    <img src="images/coqui.jpg" alt="Coquí frog" class="coqui-image" />
-                                </div>
-                            </MudItem>
-                            <MudItem xs="12" md="7" Class="d-flex flex-column justify-center">
-                                <MudText Typo="Typo.h4" Color="Color.Primary" GutterBottom="true">
-                                    @L["GetStarted_MissionTitle"]
-                                </MudText>
-                                <MudText Typo="Typo.body1" Class="mb-4">
-                                    @L["GetStarted_MissionDescription1"]
-                                </MudText>
-                                <MudText Typo="Typo.body1">
-                                    @L["GetStarted_MissionDescription2"]
-                                </MudText>
-                            </MudItem>
-                        </MudGrid>
+                <MudPaper Elevation="4" Class="pa-0 slide-card coqui-slide">
+                    <div class="coqui-image-container">
+                        <img src="images/coqui.jpg" alt="Coquí frog" class="coqui-image" />
                     </div>
-                    <div class="slide-nav-buttons">
+                    <div class="coqui-content">
+                        <MudText Typo="Typo.h4" Color="Color.Primary" GutterBottom="true">
+                            @L["GetStarted_MissionTitle"]
+                        </MudText>
+                        <MudText Typo="Typo.body1" Class="mb-4">
+                            @L["GetStarted_MissionDescription1"]
+                        </MudText>
+                        <MudText Typo="Typo.body1">
+                            @L["GetStarted_MissionDescription2"]
+                        </MudText>
+                    </div>
+                    <div class="slide-nav-buttons" style="position: absolute; bottom: 1.5rem; right: 1.5rem;">
                         <MudButton Variant="Variant.Outlined"
                                    Color="Color.Default"
                                    StartIcon="@Icons.Material.Filled.ArrowBack"
