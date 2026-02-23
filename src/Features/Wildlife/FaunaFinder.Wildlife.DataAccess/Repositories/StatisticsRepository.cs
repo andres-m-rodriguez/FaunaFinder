@@ -40,53 +40,69 @@ public sealed class StatisticsRepository(IDbContextFactory<WildlifeDbContext> co
         var twelveMonthsAgo = DateTime.UtcNow.AddMonths(-11);
         var startDate = new DateTime(twelveMonthsAgo.Year, twelveMonthsAgo.Month, 1, 0, 0, 0, DateTimeKind.Utc);
 
-        var sightingsByMonth = await approvedSightings
+        var sightingsByMonthData = await approvedSightings
             .Where(s => s.ObservedAt >= startDate)
             .GroupBy(s => new { s.ObservedAt.Year, s.ObservedAt.Month })
-            .Select(g => new SightingsByMonthDto(g.Key.Year, g.Key.Month, g.Count()))
+            .Select(g => new { g.Key.Year, g.Key.Month, Count = g.Count() })
             .OrderBy(x => x.Year)
             .ThenBy(x => x.Month)
             .ToListAsync(cancellationToken);
 
+        var sightingsByMonth = sightingsByMonthData
+            .Select(x => new SightingsByMonthDto(x.Year, x.Month, x.Count))
+            .ToList();
+
         // Species by category (fauna vs flora)
-        var speciesByCategory = await context.Species
+        var speciesByCategoryData = await context.Species
             .GroupBy(s => s.IsFauna)
-            .Select(g => new SpeciesByCategoryDto(
-                g.Key ? "Fauna" : "Flora",
-                g.Count()
-            ))
+            .Select(g => new { g.Key, Count = g.Count() })
             .ToListAsync(cancellationToken);
+
+        var speciesByCategory = speciesByCategoryData
+            .Select(x => new SpeciesByCategoryDto(x.Key ? "Fauna" : "Flora", x.Count))
+            .ToList();
 
         // Sightings by municipality (top 10)
-        var sightingsByMunicipality = await approvedSightings
+        var sightingsByMunicipalityData = await approvedSightings
             .Where(s => s.MunicipalityId != null)
             .GroupBy(s => new { s.MunicipalityId, s.Municipality!.Name })
-            .Select(g => new SightingsByMunicipalityDto(
-                g.Key.MunicipalityId!.Value,
-                g.Key.Name,
-                g.Count()
-            ))
-            .OrderByDescending(x => x.SightingsCount)
+            .Select(g => new { g.Key.MunicipalityId, g.Key.Name, Count = g.Count() })
+            .OrderByDescending(x => x.Count)
             .Take(10)
             .ToListAsync(cancellationToken);
 
+        var sightingsByMunicipality = sightingsByMunicipalityData
+            .Select(x => new SightingsByMunicipalityDto(x.MunicipalityId!.Value, x.Name, x.Count))
+            .ToList();
+
         // Top observed species (top 10)
-        var topSpecies = await approvedSightings
-            .Where(s => s.SpeciesId != null && s.Species != null)
-            .GroupBy(s => new
-            {
-                s.SpeciesId,
-                Name = s.Species!.CommonName.FirstOrDefault(c => c.Code == "en")
-                       ?? s.Species.CommonName.FirstOrDefault()
-            })
-            .Select(g => new TopSpeciesDto(
-                g.Key.SpeciesId!.Value,
-                g.Key.Name != null ? g.Key.Name.Value : "Unknown",
-                g.Count()
-            ))
-            .OrderByDescending(x => x.SightingsCount)
+        var topSpeciesData = await approvedSightings
+            .Where(s => s.SpeciesId != null)
+            .GroupBy(s => s.SpeciesId)
+            .Select(g => new { SpeciesId = g.Key, Count = g.Count() })
+            .OrderByDescending(x => x.Count)
             .Take(10)
             .ToListAsync(cancellationToken);
+
+        var speciesIds = topSpeciesData.Select(x => x.SpeciesId!.Value).ToList();
+        var speciesNames = await context.Species
+            .Where(s => speciesIds.Contains(s.Id))
+            .Select(s => new
+            {
+                s.Id,
+                Name = s.CommonName.FirstOrDefault(c => c.Code == "en")
+                       ?? s.CommonName.FirstOrDefault()
+            })
+            .ToListAsync(cancellationToken);
+
+        var speciesNameLookup = speciesNames.ToDictionary(x => x.Id, x => x.Name?.Value ?? "Unknown");
+
+        var topSpecies = topSpeciesData
+            .Select(x => new TopSpeciesDto(
+                x.SpeciesId!.Value,
+                speciesNameLookup.GetValueOrDefault(x.SpeciesId.Value, "Unknown"),
+                x.Count))
+            .ToList();
 
         return new PublicStatisticsDto(
             overview,
