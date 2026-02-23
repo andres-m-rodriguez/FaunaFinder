@@ -8,7 +8,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace FaunaFinder.Wildlife.Database.Migrations
 {
     /// <inheritdoc />
-    public partial class Initial : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -23,7 +23,7 @@ namespace FaunaFinder.Wildlife.Database.Migrations
                     id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     code = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
-                    name = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false)
+                    name = table.Column<string>(type: "jsonb", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -52,7 +52,7 @@ namespace FaunaFinder.Wildlife.Database.Migrations
                     id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     code = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
-                    name = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false)
+                    name = table.Column<string>(type: "jsonb", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -69,6 +69,10 @@ namespace FaunaFinder.Wildlife.Database.Migrations
                     profile_image_data = table.Column<byte[]>(type: "bytea", nullable: true),
                     profile_image_content_type = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
                     image_source_url = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
+                    is_fauna = table.Column<bool>(type: "boolean", nullable: false),
+                    el_code = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
+                    g_rank = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
+                    s_rank = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
                     common_name = table.Column<string>(type: "jsonb", nullable: true)
                 },
                 constraints: table =>
@@ -99,7 +103,7 @@ namespace FaunaFinder.Wildlife.Database.Migrations
                     nrcs_practice_id = table.Column<int>(type: "integer", nullable: false),
                     fws_action_id = table.Column<int>(type: "integer", nullable: false),
                     species_id = table.Column<int>(type: "integer", nullable: false),
-                    justification = table.Column<string>(type: "character varying(2000)", maxLength: 2000, nullable: true)
+                    justification = table.Column<string>(type: "jsonb", nullable: true)
                 },
                 constraints: table =>
                 {

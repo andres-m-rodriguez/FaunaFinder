@@ -207,6 +207,8 @@ public static class DatabaseSeeder
             ("amphibian", "Amphibian", "Anfibio"),
             ("fish", "Fish", "Pez"),
             ("invertebrate", "Invertebrate", "Invertebrado"),
+            ("plant", "Plant", "Planta"),
+            ("fern", "Fern", "Helecho"),
         };
 
         var existing = await context.SpeciesCategories.ToDictionaryAsync(
@@ -287,6 +289,22 @@ public static class DatabaseSeeder
                 {
                     species.ImageSourceUrl = dto.ImageSourceUrl;
                 }
+
+                // Update conservation data if we have it and the existing doesn't
+                if (string.IsNullOrEmpty(species.ElCode) && !string.IsNullOrEmpty(dto.ElCode))
+                {
+                    species.ElCode = dto.ElCode;
+                }
+
+                if (string.IsNullOrEmpty(species.GRank) && !string.IsNullOrEmpty(dto.GRank))
+                {
+                    species.GRank = dto.GRank;
+                }
+
+                if (string.IsNullOrEmpty(species.SRank) && !string.IsNullOrEmpty(dto.SRank))
+                {
+                    species.SRank = dto.SRank;
+                }
             }
             else
             {
@@ -306,6 +324,9 @@ public static class DatabaseSeeder
                     ProfileImageContentType = dto.ImageContentType,
                     ImageSourceUrl = dto.ImageSourceUrl,
                     IsFauna = dto.IsFauna,
+                    ElCode = dto.ElCode ?? "",
+                    GRank = dto.GRank ?? "",
+                    SRank = dto.SRank ?? "",
                 };
                 context.Species.Add(species);
                 await context.SaveChangesAsync(cancellationToken);
@@ -554,6 +575,15 @@ public static class DatabaseSeeder
 
         [JsonPropertyName("isFauna")]
         public bool IsFauna { get; init; } = true;
+
+        [JsonPropertyName("elCode")]
+        public string? ElCode { get; init; }
+
+        [JsonPropertyName("gRank")]
+        public string? GRank { get; init; }
+
+        [JsonPropertyName("sRank")]
+        public string? SRank { get; init; }
     }
 
     private sealed class LocationDto

@@ -347,6 +347,18 @@ namespace FaunaFinder.Wildlife.Database.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("ElCode")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("el_code");
+
+                    b.Property<string>("GRank")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("g_rank");
+
                     b.Property<string>("ImageSourceUrl")
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)")
@@ -364,6 +376,12 @@ namespace FaunaFinder.Wildlife.Database.Migrations
                     b.Property<byte[]>("ProfileImageData")
                         .HasColumnType("bytea")
                         .HasColumnName("profile_image_data");
+
+                    b.Property<string>("SRank")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("s_rank");
 
                     b.Property<string>("ScientificName")
                         .IsRequired()

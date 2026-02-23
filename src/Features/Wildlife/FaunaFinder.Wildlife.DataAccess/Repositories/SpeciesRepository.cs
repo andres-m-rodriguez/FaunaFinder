@@ -54,9 +54,10 @@ public sealed class SpeciesRepository(IDbContextFactory<WildlifeDbContext> conte
     {
         await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
 
-        // NO .Include() - Project everything in one query
+        // Use split query to avoid cartesian explosion with multiple collections
         return await context
             .Species.AsNoTracking()
+            .AsSplitQuery()
             .Where(s => s.Id == speciesId)
             .Select(s => new SpeciesForDetailDto(
                 s.Id,
