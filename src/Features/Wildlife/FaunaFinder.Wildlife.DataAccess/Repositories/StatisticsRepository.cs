@@ -90,12 +90,15 @@ public sealed class StatisticsRepository(IDbContextFactory<WildlifeDbContext> co
             .Select(s => new
             {
                 s.Id,
-                Name = s.CommonName.FirstOrDefault(c => c.Code == "en")
-                       ?? s.CommonName.FirstOrDefault()
+                CommonName = s.CommonName.ToList()
             })
             .ToListAsync(cancellationToken);
 
-        var speciesNameLookup = speciesNames.ToDictionary(x => x.Id, x => x.Name?.Value ?? "Unknown");
+        var speciesNameLookup = speciesNames.ToDictionary(
+            x => x.Id,
+            x => x.CommonName.FirstOrDefault(c => c.Code == "en")?.Value
+                 ?? x.CommonName.FirstOrDefault()?.Value
+                 ?? "Unknown");
 
         var topSpecies = topSpeciesData
             .Select(x => new TopSpeciesDto(
