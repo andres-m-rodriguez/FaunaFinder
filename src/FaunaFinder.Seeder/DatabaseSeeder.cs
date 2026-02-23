@@ -291,17 +291,17 @@ public static class DatabaseSeeder
                 }
 
                 // Update conservation data if we have it and the existing doesn't
-                if (species.ElCode is null && !string.IsNullOrEmpty(dto.ElCode))
+                if (string.IsNullOrEmpty(species.ElCode) && !string.IsNullOrEmpty(dto.ElCode))
                 {
                     species.ElCode = dto.ElCode;
                 }
 
-                if (species.GRank is null && !string.IsNullOrEmpty(dto.GRank))
+                if (string.IsNullOrEmpty(species.GRank) && !string.IsNullOrEmpty(dto.GRank))
                 {
                     species.GRank = dto.GRank;
                 }
 
-                if (species.SRank is null && !string.IsNullOrEmpty(dto.SRank))
+                if (string.IsNullOrEmpty(species.SRank) && !string.IsNullOrEmpty(dto.SRank))
                 {
                     species.SRank = dto.SRank;
                 }
@@ -324,9 +324,9 @@ public static class DatabaseSeeder
                     ProfileImageContentType = dto.ImageContentType,
                     ImageSourceUrl = dto.ImageSourceUrl,
                     IsFauna = dto.IsFauna,
-                    ElCode = dto.ElCode,
-                    GRank = dto.GRank,
-                    SRank = dto.SRank,
+                    ElCode = dto.ElCode ?? "",
+                    GRank = dto.GRank ?? "",
+                    SRank = dto.SRank ?? "",
                 };
                 context.Species.Add(species);
                 await context.SaveChangesAsync(cancellationToken);

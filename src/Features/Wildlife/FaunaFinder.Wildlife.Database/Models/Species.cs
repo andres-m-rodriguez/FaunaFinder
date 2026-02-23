@@ -17,17 +17,17 @@ public sealed class Species
     /// <summary>
     /// NatureServe Element Code - standardized species identifier (e.g., "ABNKC12024")
     /// </summary>
-    public string? ElCode { get; set; }
+    public required string ElCode { get; set; }
 
     /// <summary>
     /// Global Conservation Rank (e.g., "G1" = critically imperiled, "G5" = secure)
     /// </summary>
-    public string? GRank { get; set; }
+    public required string GRank { get; set; }
 
     /// <summary>
     /// Subnational (State/Territory) Conservation Rank (e.g., "S1" = critically imperiled)
     /// </summary>
-    public string? SRank { get; set; }
+    public required string SRank { get; set; }
 
     public ICollection<FwsLink> FwsLinks { get; set; } = [];
     public ICollection<MunicipalitySpecies> MunicipalitySpecies { get; set; } = [];
