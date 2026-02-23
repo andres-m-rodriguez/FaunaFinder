@@ -43,6 +43,17 @@ public interface ISpeciesRepository
         CancellationToken cancellationToken = default
     );
 
+    /// <summary>
+    /// Gets species that have locations within the specified polygon.
+    /// </summary>
+    /// <param name="coordinates">The polygon vertices as a list of lat/lng coordinates.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>List of species found within the polygon.</returns>
+    Task<IReadOnlyList<SpeciesNearbyDto>> GetSpeciesInPolygonAsync(
+        IReadOnlyList<PolygonCoordinate> coordinates,
+        CancellationToken cancellationToken = default
+    );
+
     Task<IReadOnlyList<SpeciesCategoryDto>> GetAllCategoriesAsync(
         CancellationToken cancellationToken = default
     );

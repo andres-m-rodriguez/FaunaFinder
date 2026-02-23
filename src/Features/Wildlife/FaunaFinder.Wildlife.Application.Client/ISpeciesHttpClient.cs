@@ -32,6 +32,11 @@ public interface ISpeciesHttpClient
         CancellationToken cancellationToken = default
     );
 
+    Task<IReadOnlyList<SpeciesNearbyDto>> GetSpeciesInPolygonAsync(
+        IReadOnlyList<PolygonCoordinate> coordinates,
+        CancellationToken cancellationToken = default
+    );
+
     Task<IReadOnlyList<SpeciesCategoryDto>> GetCategoriesAsync(
         CancellationToken cancellationToken = default
     );

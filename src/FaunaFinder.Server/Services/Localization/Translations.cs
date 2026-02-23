@@ -137,13 +137,14 @@ public static class Translations
             ["NearMe_ShowLocations"] = "Show Locations",
             ["NearMe_HideLocations"] = "Hide Locations",
 
-            // Draw Circle Search
-            ["DrawCircle_Title"] = "Search Area",
-            ["DrawCircle_Button"] = "Draw Area",
-            ["DrawCircle_Tooltip"] = "Draw a circle on the map to search for species",
-            ["DrawCircle_Instructions"] = "Click and drag to draw search area",
-            ["DrawCircle_Radius"] = "Search radius",
-            ["DrawCircle_Redraw"] = "Redraw",
+            // Draw Polygon Search
+            ["DrawPolygon_Title"] = "Custom Area",
+            ["DrawPolygon_Button"] = "Draw Shape",
+            ["DrawPolygon_Tooltip"] = "Draw a custom shape on the map to search for species",
+            ["DrawPolygon_Instructions"] = "Click to add points",
+            ["DrawPolygon_Redraw"] = "Redraw Shape",
+            ["DrawPolygon_Finish"] = "Finish",
+            ["DrawPolygon_SpeciesFound"] = "{0} species found in selected area",
 
             // Export
             ["Export_Button"] = "Export",
@@ -316,13 +317,14 @@ public static class Translations
             ["NearMe_ShowLocations"] = "Mostrar Ubicaciones",
             ["NearMe_HideLocations"] = "Ocultar Ubicaciones",
 
-            // Draw Circle Search
-            ["DrawCircle_Title"] = "Area de busqueda",
-            ["DrawCircle_Button"] = "Dibujar area",
-            ["DrawCircle_Tooltip"] = "Dibuja un circulo en el mapa para buscar especies",
-            ["DrawCircle_Instructions"] = "Haz clic y arrastra para dibujar el area de busqueda",
-            ["DrawCircle_Radius"] = "Radio de busqueda",
-            ["DrawCircle_Redraw"] = "Redibujar",
+            // Draw Polygon Search
+            ["DrawPolygon_Title"] = "Area personalizada",
+            ["DrawPolygon_Button"] = "Dibujar forma",
+            ["DrawPolygon_Tooltip"] = "Dibuja una forma personalizada en el mapa para buscar especies",
+            ["DrawPolygon_Instructions"] = "Haz clic para agregar puntos",
+            ["DrawPolygon_Redraw"] = "Redibujar forma",
+            ["DrawPolygon_Finish"] = "Terminar",
+            ["DrawPolygon_SpeciesFound"] = "{0} especies encontradas en el area seleccionada",
 
             // Export
             ["Export_Button"] = "Exportar",

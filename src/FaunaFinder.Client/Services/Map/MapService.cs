@@ -152,19 +152,24 @@ public sealed class MapService : IMapService
         await _js.InvokeVoidAsync("sessionStorage.removeItem", key);
     }
 
-    public async Task EnableDrawModeAsync()
+    public async Task EnablePolygonDrawModeAsync()
     {
-        await _js.InvokeVoidAsync("leafletInterop.enableDrawMode");
+        await _js.InvokeVoidAsync("leafletInterop.enablePolygonDrawMode");
     }
 
-    public async Task DisableDrawModeAsync()
+    public async Task DisablePolygonDrawModeAsync()
     {
-        await _js.InvokeVoidAsync("leafletInterop.disableDrawMode");
+        await _js.InvokeVoidAsync("leafletInterop.disablePolygonDrawMode");
     }
 
-    public async Task ClearDrawnCircleAsync()
+    public async Task ClearDrawnPolygonAsync()
     {
-        await _js.InvokeVoidAsync("leafletInterop.clearDrawnCircle");
+        await _js.InvokeVoidAsync("leafletInterop.clearDrawnPolygon");
+    }
+
+    public async Task FinishPolygonDrawingAsync()
+    {
+        await _js.InvokeVoidAsync("leafletInterop.finishPolygon");
     }
 
     public async Task HighlightMunicipalityAsync(string countyCode)
