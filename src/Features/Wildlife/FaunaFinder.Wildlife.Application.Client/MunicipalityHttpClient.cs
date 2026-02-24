@@ -6,15 +6,23 @@ namespace FaunaFinder.Wildlife.Application.Client;
 
 public sealed class MunicipalityHttpClient(HttpClient httpClient) : IMunicipalityHttpClient
 {
+    private IReadOnlyList<MunicipalityForListDto>? _cachedMunicipalities;
+
     public async Task<IReadOnlyList<MunicipalityForListDto>> GetAllMunicipalitiesAsync(
         CancellationToken cancellationToken = default
     )
     {
+        if (_cachedMunicipalities is not null)
+        {
+            return _cachedMunicipalities;
+        }
+
         var result = await httpClient.GetFromJsonAsync<IReadOnlyList<MunicipalityForListDto>>(
             "api/municipalities",
             cancellationToken
         );
-        return result ?? [];
+        _cachedMunicipalities = result ?? [];
+        return _cachedMunicipalities;
     }
 
     public async Task<MunicipalityForDetailDto?> GetMunicipalityDetailAsync(
