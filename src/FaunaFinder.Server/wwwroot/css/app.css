@@ -439,7 +439,8 @@ code {
     background: var(--mud-palette-surface);
     border-radius: 16px 16px 0 0;
     z-index: 101;
-    height: 90vh;
+    height: 90dvh;
+    max-height: 90vh; /* Fallback for browsers that don't support dvh */
     overflow-y: auto;
     transform: translateY(100%);
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
