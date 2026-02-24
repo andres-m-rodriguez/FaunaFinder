@@ -52,14 +52,29 @@ public sealed class StatisticsRepository(IDbContextFactory<WildlifeDbContext> co
             .Select(x => new SightingsByMonthDto(x.Year, x.Month, x.Count))
             .ToList();
 
-        // Species by category (fauna vs flora)
-        var speciesByCategoryData = await context.Species
-            .GroupBy(s => s.IsFauna)
-            .Select(g => new { g.Key, Count = g.Count() })
+        // Species by category
+        var speciesByCategoryData = await context.SpeciesCategoryLinks
+            .GroupBy(scl => scl.CategoryId)
+            .Select(g => new { CategoryId = g.Key, Count = g.Count() })
             .ToListAsync(cancellationToken);
 
+        var categoryIds = speciesByCategoryData.Select(x => x.CategoryId).ToList();
+        var categories = await context.SpeciesCategories
+            .Where(c => categoryIds.Contains(c.Id))
+            .Select(c => new { c.Id, Name = c.Name.ToList() })
+            .ToListAsync(cancellationToken);
+
+        var categoryNameLookup = categories.ToDictionary(
+            x => x.Id,
+            x => x.Name.FirstOrDefault(n => n.Code == "en")?.Value
+                 ?? x.Name.FirstOrDefault()?.Value
+                 ?? "Unknown");
+
         var speciesByCategory = speciesByCategoryData
-            .Select(x => new SpeciesByCategoryDto(x.Key ? "Fauna" : "Flora", x.Count))
+            .Select(x => new SpeciesByCategoryDto(
+                categoryNameLookup.GetValueOrDefault(x.CategoryId, "Unknown"),
+                x.Count))
+            .OrderByDescending(x => x.Count)
             .ToList();
 
         // Sightings by municipality (top 10)
