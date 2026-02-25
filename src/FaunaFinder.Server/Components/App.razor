@@ -6,6 +6,48 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>FaunaFinder - Puerto Rico</title>
     <base href="/" />
+
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="FaunaFinder helps you discover and explore the wildlife and plant species of Puerto Rico. Search by municipality, view species locations on interactive maps, and access conservation information." />
+    <meta name="keywords" content="Puerto Rico wildlife, fauna, flora, species, conservation, biodiversity, coqui, endemic species, DRNA, FWS" />
+    <meta name="author" content="FaunaFinder" />
+    <link rel="canonical" href="https://fauna.ecodatapr.com/" />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://fauna.ecodatapr.com/" />
+    <meta property="og:title" content="FaunaFinder - Discover Puerto Rico's Wildlife" />
+    <meta property="og:description" content="Explore the wildlife and plant species of Puerto Rico. Search by municipality, view species locations on interactive maps, and access conservation information." />
+    <meta property="og:image" content="https://fauna.ecodatapr.com/images/og-image.png" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:locale:alternate" content="es_PR" />
+    <meta property="og:site_name" content="FaunaFinder" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content="https://fauna.ecodatapr.com/" />
+    <meta name="twitter:title" content="FaunaFinder - Discover Puerto Rico's Wildlife" />
+    <meta name="twitter:description" content="Explore the wildlife and plant species of Puerto Rico. Search by municipality, view species locations on interactive maps." />
+    <meta name="twitter:image" content="https://fauna.ecodatapr.com/images/og-image.png" />
+
+    <!-- Structured Data (JSON-LD) -->
+    <script type="application/ld+json">
+    {
+        "@@context": "https://schema.org",
+        "@@type": "WebSite",
+        "name": "FaunaFinder",
+        "alternateName": "FaunaFinder Puerto Rico",
+        "url": "https://fauna.ecodatapr.com/",
+        "description": "Discover and explore the wildlife and plant species of Puerto Rico",
+        "inLanguage": ["en", "es"],
+        "potentialAction": {
+            "@@type": "SearchAction",
+            "target": "https://fauna.ecodatapr.com/species?search={search_term_string}",
+            "query-input": "required name=search_term_string"
+        }
+    }
+    </script>
+
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet" />
     <link href="_content/MudBlazor/MudBlazor.min.css" rel="stylesheet" />
