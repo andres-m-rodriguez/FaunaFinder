@@ -1,0 +1,10 @@
+{
+  "projectToResource": {
+    "FaunaFinder.Server": "server",
+    "FaunaFinder.Seeder": "seeder"
+  },
+  "resourceToProject": {
+    "server": "FaunaFinder.Server",
+    "seeder": "FaunaFinder.Seeder"
+  }
+}
