@@ -123,4 +123,15 @@ public sealed class SpeciesHttpClient(HttpClient httpClient) : ISpeciesHttpClien
         );
         return result ?? [];
     }
+
+    public async Task<IReadOnlyList<HeatmapPointDto>> GetHeatmapDataAsync(
+        CancellationToken cancellationToken = default
+    )
+    {
+        var result = await httpClient.GetFromJsonAsync<IReadOnlyList<HeatmapPointDto>>(
+            "api/species/heatmap",
+            cancellationToken
+        );
+        return result ?? [];
+    }
 }

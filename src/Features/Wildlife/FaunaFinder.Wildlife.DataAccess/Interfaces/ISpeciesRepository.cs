@@ -57,4 +57,14 @@ public interface ISpeciesRepository
     Task<IReadOnlyList<SpeciesCategoryDto>> GetAllCategoriesAsync(
         CancellationToken cancellationToken = default
     );
+
+    /// <summary>
+    /// Gets all species locations for generating a heatmap visualization.
+    /// Each location point includes coordinates and whether the species is fauna or flora.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>List of heatmap points with intensity values.</returns>
+    Task<IReadOnlyList<HeatmapPointDto>> GetHeatmapDataAsync(
+        CancellationToken cancellationToken = default
+    );
 }

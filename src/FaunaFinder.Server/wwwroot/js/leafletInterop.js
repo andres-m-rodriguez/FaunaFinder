@@ -28,6 +28,10 @@ window.leafletInterop = {
     drawPolygonPoints: [],
     drawPolygonMarkers: [],
     drawPolygonPreviewLine: null,
+    heatmapLayer: null,
+    heatmapData: [],
+    heatmapFilter: 'all',
+    heatmapControl: null,
     lightTileUrl: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
     darkTileUrl: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
     lightTheme: {
@@ -983,6 +987,166 @@ window.leafletInterop = {
         this.drawPolygonMarkers = [];
         // Clear points
         this.drawPolygonPoints = [];
+    },
+    showHeatmap(points) {
+        if (!this.map)
+            return;
+        // Store the full heatmap data
+        this.heatmapData = points;
+        // Create heatmap control if it doesn't exist
+        if (!this.heatmapControl) {
+            this.createHeatmapControl();
+        }
+        // Update the heatmap layer with filtered data
+        this.updateHeatmapLayer();
+        // Show the heatmap control
+        if (this.heatmapControl) {
+            this.heatmapControl.style.display = '';
+        }
+        // Announce to screen readers
+        this.announceToScreenReader(`Heatmap enabled showing ${points.length} species locations.`);
+    },
+    hideHeatmap() {
+        if (!this.map)
+            return;
+        // Remove heatmap layer
+        if (this.heatmapLayer) {
+            this.map.removeLayer(this.heatmapLayer);
+            this.heatmapLayer = null;
+        }
+        // Clear data
+        this.heatmapData = [];
+        // Hide the heatmap control
+        if (this.heatmapControl) {
+            this.heatmapControl.style.display = 'none';
+        }
+        // Announce to screen readers
+        this.announceToScreenReader('Heatmap disabled.');
+    },
+    setHeatmapFilter(filter) {
+        this.heatmapFilter = filter;
+        this.updateHeatmapLayer();
+        // Update control button states
+        if (this.heatmapControl) {
+            const buttons = this.heatmapControl.querySelectorAll('.heatmap-filter-btn');
+            buttons.forEach((btn) => {
+                const btnElement = btn;
+                const btnFilter = btnElement.dataset.filter;
+                if (btnFilter === filter) {
+                    btnElement.classList.add('active');
+                }
+                else {
+                    btnElement.classList.remove('active');
+                }
+            });
+        }
+        // Announce filter change
+        const filterLabel = filter === 'all' ? 'all species' : filter === 'fauna' ? 'fauna only' : 'flora only';
+        this.announceToScreenReader(`Heatmap filter changed to ${filterLabel}.`);
+    },
+    createHeatmapControl() {
+        if (!this.map)
+            return;
+        const self = this;
+        const HeatmapControl = L.Control.extend({
+            options: {
+                position: 'topright'
+            },
+            onAdd() {
+                const container = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-heatmap');
+                container.innerHTML = `
+                    <div class="heatmap-control-content">
+                        <div class="heatmap-control-title">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                            </svg>
+                            <span>Heatmap</span>
+                        </div>
+                        <div class="heatmap-filter-buttons">
+                            <button class="heatmap-filter-btn active" data-filter="all" title="Show all species">All</button>
+                            <button class="heatmap-filter-btn" data-filter="fauna" title="Show fauna only">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M4.5 11c1.38 0 2.5-1.12 2.5-2.5S5.88 6 4.5 6 2 7.12 2 8.5 3.12 11 4.5 11zm9-2c1.38 0 2.5-1.12 2.5-2.5S14.88 4 13.5 4 11 5.12 11 6.5 12.12 9 13.5 9zm0 2c-1.38 0-2.5 1.12-2.5 2.5s1.12 2.5 2.5 2.5 2.5-1.12 2.5-2.5-1.12-2.5-2.5-2.5zm-9-2c-1.38 0-2.5 1.12-2.5 2.5s1.12 2.5 2.5 2.5 2.5-1.12 2.5-2.5S5.88 9 4.5 9zm0 7c1.38 0 2.5-1.12 2.5-2.5S5.88 11 4.5 11 2 12.12 2 13.5 3.12 16 4.5 16zm9 0c1.38 0 2.5-1.12 2.5-2.5s-1.12-2.5-2.5-2.5-2.5 1.12-2.5 2.5 1.12 2.5 2.5 2.5z"/>
+                                </svg>
+                            </button>
+                            <button class="heatmap-filter-btn" data-filter="flora" title="Show flora only">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M12 22c4.97 0 9-4.03 9-9-4.97 0-9 4.03-9 9zM5.6 10.25c0 1.38 1.12 2.5 2.5 2.5.53 0 1.01-.16 1.42-.44l-.02.19c0 1.38 1.12 2.5 2.5 2.5s2.5-1.12 2.5-2.5l-.02-.19c.4.28.89.44 1.42.44 1.38 0 2.5-1.12 2.5-2.5 0-1-.59-1.85-1.43-2.25.84-.4 1.43-1.25 1.43-2.25 0-1.38-1.12-2.5-2.5-2.5-.53 0-1.01.16-1.42.44l.02-.19C14.5 4.12 13.38 3 12 3s-2.5 1.12-2.5 2.5l.02.19c-.4-.28-.89-.44-1.42-.44-1.38 0-2.5 1.12-2.5 2.5 0 1 .59 1.85 1.43 2.25-.84.4-1.43 1.25-1.43 2.25zM12 5.5c1.38 0 2.5 1.12 2.5 2.5s-1.12 2.5-2.5 2.5S9.5 9.38 9.5 8s1.12-2.5 2.5-2.5zM3 13c0 4.97 4.03 9 9 9 0-4.97-4.03-9-9-9z"/>
+                                </svg>
+                            </button>
+                        </div>
+                        <button class="heatmap-close-btn" title="Close heatmap">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                            </svg>
+                        </button>
+                    </div>
+                `;
+                L.DomEvent.disableClickPropagation(container);
+                // Handle filter button clicks
+                container.querySelectorAll('.heatmap-filter-btn').forEach((btn) => {
+                    L.DomEvent.on(btn, 'click', function (e) {
+                        L.DomEvent.preventDefault(e);
+                        const filter = btn.dataset.filter;
+                        if (filter) {
+                            self.setHeatmapFilter(filter);
+                        }
+                    });
+                });
+                // Handle close button click
+                const closeBtn = container.querySelector('.heatmap-close-btn');
+                if (closeBtn) {
+                    L.DomEvent.on(closeBtn, 'click', function (e) {
+                        L.DomEvent.preventDefault(e);
+                        self.hideHeatmap();
+                        self.dotNetHelper?.invokeMethodAsync('OnHeatmapClosed');
+                    });
+                }
+                self.heatmapControl = container;
+                return container;
+            }
+        });
+        new HeatmapControl().addTo(this.map);
+    },
+    updateHeatmapLayer() {
+        if (!this.map)
+            return;
+        // Remove existing heatmap layer
+        if (this.heatmapLayer) {
+            this.map.removeLayer(this.heatmapLayer);
+            this.heatmapLayer = null;
+        }
+        // Filter data based on current filter
+        let filteredData = this.heatmapData;
+        if (this.heatmapFilter === 'fauna') {
+            filteredData = this.heatmapData.filter(p => p.isFauna);
+        }
+        else if (this.heatmapFilter === 'flora') {
+            filteredData = this.heatmapData.filter(p => !p.isFauna);
+        }
+        if (filteredData.length === 0)
+            return;
+        // Convert to heatmap format [lat, lng, intensity]
+        const heatData = filteredData.map(p => [
+            p.latitude,
+            p.longitude,
+            p.intensity
+        ]);
+        // Create heatmap layer using Leaflet.heat
+        // @ts-ignore - L.heatLayer is provided by leaflet.heat plugin
+        this.heatmapLayer = L.heatLayer(heatData, {
+            radius: 25,
+            blur: 15,
+            maxZoom: 17,
+            max: 1.0,
+            gradient: {
+                0.0: '#3b82f6', // blue (low)
+                0.25: '#22c55e', // green
+                0.5: '#eab308', // yellow (medium)
+                0.75: '#f97316', // orange
+                1.0: '#ef4444' // red (high)
+            }
+        }).addTo(this.map);
     }
 };
 // ============================================================================

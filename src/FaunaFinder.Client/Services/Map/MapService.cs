@@ -181,4 +181,28 @@ public sealed class MapService : IMapService
     {
         await _js.InvokeVoidAsync("leafletInterop.focusOnMunicipality", countyCode);
     }
+
+    public async Task ShowHeatmapAsync(IEnumerable<HeatmapPointData> points)
+    {
+        var jsPoints = points
+            .Select(p => new JsHeatmapPoint(
+                p.Latitude,
+                p.Longitude,
+                p.Intensity,
+                p.IsFauna
+            ))
+            .ToArray();
+
+        await _js.InvokeVoidAsync("leafletInterop.showHeatmap", (object)jsPoints);
+    }
+
+    public async Task HideHeatmapAsync()
+    {
+        await _js.InvokeVoidAsync("leafletInterop.hideHeatmap");
+    }
+
+    public async Task SetHeatmapFilterAsync(string filter)
+    {
+        await _js.InvokeVoidAsync("leafletInterop.setHeatmapFilter", filter);
+    }
 }

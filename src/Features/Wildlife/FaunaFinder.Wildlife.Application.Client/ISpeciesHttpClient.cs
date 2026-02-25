@@ -40,4 +40,8 @@ public interface ISpeciesHttpClient
     Task<IReadOnlyList<SpeciesCategoryDto>> GetCategoriesAsync(
         CancellationToken cancellationToken = default
     );
+
+    Task<IReadOnlyList<HeatmapPointDto>> GetHeatmapDataAsync(
+        CancellationToken cancellationToken = default
+    );
 }

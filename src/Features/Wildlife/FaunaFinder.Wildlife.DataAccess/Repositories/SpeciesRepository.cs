@@ -424,4 +424,24 @@ public sealed class SpeciesRepository(IDbContextFactory<WildlifeDbContext> conte
             .Select(c => new SpeciesCategoryDto(c.Id, c.Code, c.Name.ToList()))
             .ToListAsync(cancellationToken);
     }
+
+    public async Task<IReadOnlyList<HeatmapPointDto>> GetHeatmapDataAsync(
+        CancellationToken cancellationToken = default
+    )
+    {
+        await using var context = await contextFactory.CreateDbContextAsync(cancellationToken);
+
+        // Get all species locations with fauna/flora classification
+        // Intensity is set to 1.0 for now - can be adjusted based on species count at location
+        return await context
+            .Species.AsNoTracking()
+            .Where(s => s.Locations.Any())
+            .SelectMany(s => s.Locations.Select(l => new HeatmapPointDto(
+                l.Latitude,
+                l.Longitude,
+                1.0,
+                s.IsFauna
+            )))
+            .ToListAsync(cancellationToken);
+    }
 }

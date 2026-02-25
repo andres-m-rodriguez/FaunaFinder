@@ -36,6 +36,11 @@ public interface IMapService
     // Municipality highlight methods
     Task HighlightMunicipalityAsync(string countyCode);
     Task FocusOnMunicipalityAsync(string countyCode);
+
+    // Heatmap methods
+    Task ShowHeatmapAsync(IEnumerable<HeatmapPointData> points);
+    Task HideHeatmapAsync();
+    Task SetHeatmapFilterAsync(string filter);
 }
 
 public record SpeciesLocationData(
@@ -81,4 +86,18 @@ public record JsNearbySpecies(
     [property: System.Text.Json.Serialization.JsonPropertyName("radiusMeters")] double RadiusMeters,
     [property: System.Text.Json.Serialization.JsonPropertyName("locationDescription")]
         string? LocationDescription
+);
+
+public record HeatmapPointData(
+    double Latitude,
+    double Longitude,
+    double Intensity,
+    bool IsFauna
+);
+
+public record JsHeatmapPoint(
+    [property: System.Text.Json.Serialization.JsonPropertyName("latitude")] double Latitude,
+    [property: System.Text.Json.Serialization.JsonPropertyName("longitude")] double Longitude,
+    [property: System.Text.Json.Serialization.JsonPropertyName("intensity")] double Intensity,
+    [property: System.Text.Json.Serialization.JsonPropertyName("isFauna")] bool IsFauna
 );
