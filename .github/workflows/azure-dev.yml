@@ -58,10 +58,12 @@ jobs:
 
           # Determine which resources to deploy
           RESOURCES_TO_DEPLOY=""
+          DEPLOY_SERVER="false"
 
           if [ "${{ github.event.inputs.force-deploy-all }}" == "true" ]; then
             echo "Force deploy all enabled"
             RESOURCES_TO_DEPLOY=$(echo "$MAPPINGS" | jq -r '.projectToResource | values | .[]')
+            DEPLOY_SERVER="true"
           elif [ -f affected.txt ] && [ -s affected.txt ]; then
             echo "Affected projects:"
             cat affected.txt
@@ -69,11 +71,15 @@ jobs:
               resource=$(echo "$MAPPINGS" | jq -r --arg p "$project" '.projectToResource[$p] // empty')
               if [ -n "$resource" ]; then
                 RESOURCES_TO_DEPLOY="$RESOURCES_TO_DEPLOY $resource"
+                if [ "$resource" == "server" ]; then
+                  DEPLOY_SERVER="true"
+                fi
               fi
             done < affected.txt
           else
             echo "No affected projects detected - deploying all"
             RESOURCES_TO_DEPLOY=$(echo "$MAPPINGS" | jq -r '.projectToResource | values | .[]')
+            DEPLOY_SERVER="true"
           fi
 
           # Deploy each affected resource
@@ -81,3 +87,9 @@ jobs:
             echo "Deploying $resource..."
             aspire do deploy-$resource --project src/FaunaFinder.AppHost --environment Production --non-interactive
           done
+
+          # Configure custom domain after server deployment
+          if [ "$DEPLOY_SERVER" == "true" ]; then
+            echo "Configuring custom domain..."
+            aspire do configure-custom-domain --project src/FaunaFinder.AppHost --environment Production --non-interactive
+          fi
