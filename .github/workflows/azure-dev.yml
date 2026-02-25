@@ -50,37 +50,46 @@ jobs:
           Azure__Location: ${{ env.AZURE_LOCATION }}
           Azure__ResourceGroup: ${{ env.AZURE_RESOURCE_GROUP }}
         run: |
-          # Get affected projects
-          dotnet affected -p . --from HEAD~1 --to HEAD --format text -o affected.txt || true
-
           # Read resource mappings from JSON
           MAPPINGS=$(cat deployable-resources.json)
 
           # Determine which resources to deploy
           RESOURCES_TO_DEPLOY=""
-          DEPLOY_SERVER="false"
 
           if [ "${{ github.event.inputs.force-deploy-all }}" == "true" ]; then
             echo "Force deploy all enabled"
-            RESOURCES_TO_DEPLOY=$(echo "$MAPPINGS" | jq -r '.projectToResource | values | .[]')
-            DEPLOY_SERVER="true"
-          elif [ -f affected.txt ] && [ -s affected.txt ]; then
-            echo "Affected projects:"
-            cat affected.txt
-            while IFS= read -r project; do
-              resource=$(echo "$MAPPINGS" | jq -r --arg p "$project" '.projectToResource[$p] // empty')
-              if [ -n "$resource" ]; then
-                RESOURCES_TO_DEPLOY="$RESOURCES_TO_DEPLOY $resource"
-                if [ "$resource" == "server" ]; then
-                  DEPLOY_SERVER="true"
-                fi
-              fi
-            done < affected.txt
+            RESOURCES_TO_DEPLOY=$(echo "$MAPPINGS" | jq -r '.resources | keys | .[]')
           else
-            echo "No affected projects detected - deploying all"
-            RESOURCES_TO_DEPLOY=$(echo "$MAPPINGS" | jq -r '.projectToResource | values | .[]')
-            DEPLOY_SERVER="true"
+            # Get affected projects
+            dotnet affected -p . --from HEAD~1 --to HEAD --format text -o affected.txt || true
+
+            if [ -f affected.txt ] && [ -s affected.txt ]; then
+              echo "Affected projects:"
+              cat affected.txt
+
+              # For each affected project, get the resources it affects
+              while IFS= read -r project; do
+                resources=$(echo "$MAPPINGS" | jq -r --arg p "$project" '.projectToResources[$p] // [] | .[]')
+                for resource in $resources; do
+                  if [[ ! " $RESOURCES_TO_DEPLOY " =~ " $resource " ]]; then
+                    RESOURCES_TO_DEPLOY="$RESOURCES_TO_DEPLOY $resource"
+                  fi
+                done
+              done < affected.txt
+            else
+              echo "No affected projects detected - skipping deployment"
+            fi
           fi
+
+          # Trim whitespace
+          RESOURCES_TO_DEPLOY=$(echo "$RESOURCES_TO_DEPLOY" | xargs)
+
+          if [ -z "$RESOURCES_TO_DEPLOY" ]; then
+            echo "No resources to deploy"
+            exit 0
+          fi
+
+          echo "Resources to deploy: $RESOURCES_TO_DEPLOY"
 
           # Deploy each affected resource
           for resource in $RESOURCES_TO_DEPLOY; do
@@ -89,7 +98,7 @@ jobs:
           done
 
           # Configure custom domain after server deployment
-          if [ "$DEPLOY_SERVER" == "true" ]; then
+          if [[ " $RESOURCES_TO_DEPLOY " =~ " server " ]]; then
             echo "Configuring custom domain..."
             aspire do configure-custom-domain --project src/FaunaFinder.AppHost --environment Production --non-interactive
           fi
