@@ -25,8 +25,11 @@ env:
   ASPIRE_CLI_NOLOGO: 1
 
 jobs:
-  deploy:
+  detect-changes:
     runs-on: ubuntu-latest
+    outputs:
+      resources: ${{ steps.check.outputs.resources }}
+      has-changes: ${{ steps.check.outputs.has-changes }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -36,7 +39,60 @@ jobs:
         with:
           dotnet-version: 10.x
 
-      - run: dotnet tool install -g dotnet-affected && dotnet tool install -g aspire.cli --prerelease
+      - name: Detect affected resources
+        id: check
+        run: |
+          MAPPINGS=$(cat deployable-resources.json)
+          RESOURCES=""
+
+          if [ "${{ github.event.inputs.force-deploy-all }}" == "true" ]; then
+            echo "Force deploy all enabled"
+            RESOURCES=$(echo "$MAPPINGS" | jq -r '.resources | keys | .[]' | tr '\n' ' ' | xargs)
+          else
+            dotnet tool install -g dotnet-affected
+            dotnet affected -p . --from HEAD~1 --to HEAD --format text -o affected.txt || true
+
+            if [ -f affected.txt ] && [ -s affected.txt ]; then
+              echo "Affected projects:"
+              cat affected.txt
+
+              while IFS= read -r project; do
+                project=$(echo "$project" | xargs)
+                res=$(echo "$MAPPINGS" | jq -r --arg p "$project" '.projectToResources[$p] // [] | .[]')
+                for r in $res; do
+                  if [[ ! " $RESOURCES " =~ " $r " ]]; then
+                    RESOURCES="$RESOURCES $r"
+                  fi
+                done
+              done < affected.txt
+
+              RESOURCES=$(echo "$RESOURCES" | xargs)
+            else
+              echo "No affected projects detected"
+            fi
+          fi
+
+          echo "Resources to deploy: $RESOURCES"
+          echo "resources=$RESOURCES" >> $GITHUB_OUTPUT
+
+          if [ -n "$RESOURCES" ]; then
+            echo "has-changes=true" >> $GITHUB_OUTPUT
+          else
+            echo "has-changes=false" >> $GITHUB_OUTPUT
+          fi
+
+  deploy:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.has-changes == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.x
+
+      - run: dotnet tool install -g aspire.cli --prerelease
 
       - uses: azure/login@v2
         with:
@@ -44,61 +100,21 @@ jobs:
           tenant-id: ${{ env.AZURE_TENANT_ID }}
           subscription-id: ${{ env.AZURE_SUBSCRIPTION_ID }}
 
-      - name: Deploy affected resources
+      - name: Deploy resources
         env:
           Azure__SubscriptionId: ${{ env.AZURE_SUBSCRIPTION_ID }}
           Azure__Location: ${{ env.AZURE_LOCATION }}
           Azure__ResourceGroup: ${{ env.AZURE_RESOURCE_GROUP }}
+          RESOURCES: ${{ needs.detect-changes.outputs.resources }}
         run: |
-          # Read resource mappings from JSON
-          MAPPINGS=$(cat deployable-resources.json)
+          echo "Deploying: $RESOURCES"
 
-          # Determine which resources to deploy
-          RESOURCES_TO_DEPLOY=""
-
-          if [ "${{ github.event.inputs.force-deploy-all }}" == "true" ]; then
-            echo "Force deploy all enabled"
-            RESOURCES_TO_DEPLOY=$(echo "$MAPPINGS" | jq -r '.resources | keys | .[]')
-          else
-            # Get affected projects
-            dotnet affected -p . --from HEAD~1 --to HEAD --format text -o affected.txt || true
-
-            if [ -f affected.txt ] && [ -s affected.txt ]; then
-              echo "Affected projects:"
-              cat affected.txt
-
-              # For each affected project, get the resources it affects
-              while IFS= read -r project; do
-                resources=$(echo "$MAPPINGS" | jq -r --arg p "$project" '.projectToResources[$p] // [] | .[]')
-                for resource in $resources; do
-                  if [[ ! " $RESOURCES_TO_DEPLOY " =~ " $resource " ]]; then
-                    RESOURCES_TO_DEPLOY="$RESOURCES_TO_DEPLOY $resource"
-                  fi
-                done
-              done < affected.txt
-            else
-              echo "No affected projects detected - skipping deployment"
-            fi
-          fi
-
-          # Trim whitespace
-          RESOURCES_TO_DEPLOY=$(echo "$RESOURCES_TO_DEPLOY" | xargs)
-
-          if [ -z "$RESOURCES_TO_DEPLOY" ]; then
-            echo "No resources to deploy"
-            exit 0
-          fi
-
-          echo "Resources to deploy: $RESOURCES_TO_DEPLOY"
-
-          # Deploy each affected resource
-          for resource in $RESOURCES_TO_DEPLOY; do
+          for resource in $RESOURCES; do
             echo "Deploying $resource..."
             aspire do deploy-$resource --project src/FaunaFinder.AppHost --environment Production --non-interactive
           done
 
-          # Configure custom domain after server deployment
-          if [[ " $RESOURCES_TO_DEPLOY " =~ " server " ]]; then
+          if [[ " $RESOURCES " =~ " server " ]]; then
             echo "Configuring custom domain..."
             aspire do configure-custom-domain --project src/FaunaFinder.AppHost --environment Production --non-interactive
           fi
