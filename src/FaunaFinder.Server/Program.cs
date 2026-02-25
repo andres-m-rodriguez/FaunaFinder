@@ -1,4 +1,3 @@
-// Trigger deployment for custom domain configuration
 using System.Threading.RateLimiting;
 using FaunaFinder.Identity.Api;
 using FaunaFinder.Identity.Application.Extensions;

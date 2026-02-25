@@ -143,7 +143,7 @@ builder.Pipeline.AddStep(
             context.Logger.LogInformation("Custom domain {Domain} configured successfully", customDomain);
         }
     },
-    dependsOn: "deploy"
+    dependsOn: "deploy-server"
 );
 
 static async Task<(int exitCode, string output, string error)> RunAzCommandAsync(
