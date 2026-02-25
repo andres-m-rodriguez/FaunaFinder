@@ -22,6 +22,7 @@ env:
   AZURE_RESOURCE_GROUP: ${{ vars.AZURE_RESOURCE_GROUP }}
   CUSTOM_DOMAIN: ${{ vars.CUSTOM_DOMAIN }}
   ASPIRE_CLI_TELEMETRY_OPTOUT: 1
+  ASPIRE_CLI_NOLOGO: 1
 
 jobs:
   detect-changes:
@@ -40,15 +41,10 @@ jobs:
         with:
           dotnet-version: 10.x
 
-      - name: Install dotnet-affected
-        run: dotnet tool install -g dotnet-affected
-
       - name: Detect affected projects
         id: check
         run: |
-          # dotnet-affected handles transitive dependencies automatically
-          # If a shared project (Contracts, etc.) changes, it will include
-          # all projects that depend on it in the affected list
+          dotnet tool install -g dotnet-affected
           dotnet affected -p . --from HEAD~1 --to HEAD --format text -o affected.txt || true
 
           DEPLOY_SERVER="false"
@@ -61,15 +57,8 @@ jobs:
           elif [ -f affected.txt ] && [ -s affected.txt ]; then
             echo "Affected projects:"
             cat affected.txt
-
-            # Just check if the deployable projects are in the affected list
-            # No pattern matching needed - dotnet-affected already resolved dependencies
-            if grep -q "FaunaFinder.Server" affected.txt; then
-              DEPLOY_SERVER="true"
-            fi
-            if grep -q "FaunaFinder.Seeder" affected.txt; then
-              DEPLOY_SEEDER="true"
-            fi
+            grep -q "FaunaFinder.Server" affected.txt && DEPLOY_SERVER="true"
+            grep -q "FaunaFinder.Seeder" affected.txt && DEPLOY_SEEDER="true"
           else
             echo "No affected projects detected - deploying all"
             DEPLOY_SERVER="true"
@@ -78,33 +67,23 @@ jobs:
 
           echo "deploy-server=$DEPLOY_SERVER" >> $GITHUB_OUTPUT
           echo "deploy-seeder=$DEPLOY_SEEDER" >> $GITHUB_OUTPUT
-          echo "Deploy server: $DEPLOY_SERVER, Deploy seeder: $DEPLOY_SEEDER"
 
   deploy-server:
     needs: detect-changes
     if: needs.detect-changes.outputs.deploy-server == 'true'
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 10.x
-
-      - name: Install Aspire CLI
-        run: dotnet tool install -g aspire.cli --prerelease
-
-      - name: Log in with Azure CLI
-        uses: azure/login@v2
+      - run: dotnet tool install -g aspire.cli --prerelease
+      - uses: azure/login@v2
         with:
           client-id: ${{ env.AZURE_CLIENT_ID }}
           tenant-id: ${{ env.AZURE_TENANT_ID }}
           subscription-id: ${{ env.AZURE_SUBSCRIPTION_ID }}
-
-      - name: Deploy server
-        run: aspire do deploy-server --project src/FaunaFinder.AppHost --environment Production --non-interactive
+      - run: aspire do deploy-server --project src/FaunaFinder.AppHost --environment Production --non-interactive
         env:
           Azure__SubscriptionId: ${{ env.AZURE_SUBSCRIPTION_ID }}
           Azure__Location: ${{ env.AZURE_LOCATION }}
@@ -115,36 +94,18 @@ jobs:
     if: needs.detect-changes.outputs.deploy-seeder == 'true'
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 10.x
-
-      - name: Install Aspire CLI
-        run: dotnet tool install -g aspire.cli --prerelease
-
-      - name: Log in with Azure CLI
-        uses: azure/login@v2
+      - run: dotnet tool install -g aspire.cli --prerelease
+      - uses: azure/login@v2
         with:
           client-id: ${{ env.AZURE_CLIENT_ID }}
           tenant-id: ${{ env.AZURE_TENANT_ID }}
           subscription-id: ${{ env.AZURE_SUBSCRIPTION_ID }}
-
-      - name: Deploy seeder and run migrations
-        run: |
-          aspire do deploy-seeder --project src/FaunaFinder.AppHost --environment Production --non-interactive
-          aspire do run-migrations --project src/FaunaFinder.AppHost --environment Production --non-interactive
+      - run: aspire do deploy-seeder --project src/FaunaFinder.AppHost --environment Production --non-interactive
         env:
           Azure__SubscriptionId: ${{ env.AZURE_SUBSCRIPTION_ID }}
           Azure__Location: ${{ env.AZURE_LOCATION }}
           Azure__ResourceGroup: ${{ env.AZURE_RESOURCE_GROUP }}
-
-  no-changes:
-    needs: detect-changes
-    if: needs.detect-changes.outputs.deploy-server == 'false' && needs.detect-changes.outputs.deploy-seeder == 'false'
-    runs-on: ubuntu-latest
-    steps:
-      - run: echo "No deployable projects affected - skipping deployment"
