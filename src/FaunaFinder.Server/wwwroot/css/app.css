@@ -551,37 +551,92 @@ body {
 
 /* Municipality Card */
 .municipality-card {
-    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
     height: 100%;
     cursor: pointer;
+    border: 1px solid var(--mud-palette-lines-default);
+    border-radius: 12px !important;
+    background: var(--mud-palette-surface);
+    transition: all 0.2s ease;
 }
 
 .municipality-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15) !important;
+    border-color: var(--mud-palette-primary);
+    background: var(--mud-palette-primary-hover);
+}
+
+.municipality-card:hover .municipality-card-chevron {
+    transform: translateX(4px);
+    color: var(--mud-palette-primary) !important;
+}
+
+.municipality-card-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    background: var(--mud-palette-primary-hover);
+    flex-shrink: 0;
+}
+
+.municipality-card-chevron {
+    transition: transform 0.2s ease, color 0.2s ease;
+    opacity: 0.5;
+}
+
+.municipality-card:hover .municipality-card-chevron {
+    opacity: 1;
 }
 
 /* Species Card */
 .species-card {
-    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
     height: 100%;
     cursor: pointer;
+    border: 1px solid var(--mud-palette-lines-default);
+    border-radius: 12px !important;
+    background: var(--mud-palette-surface);
+    transition: all 0.2s ease;
 }
 
 .species-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15) !important;
+    border-color: var(--mud-palette-tertiary);
+    background: var(--mud-palette-tertiary-hover);
+}
+
+.species-card:hover .species-card-chevron {
+    transform: translateX(4px);
+    color: var(--mud-palette-tertiary) !important;
+}
+
+.species-card-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    background: var(--mud-palette-tertiary-hover);
+    flex-shrink: 0;
+}
+
+.species-card-chevron {
+    transition: transform 0.2s ease, color 0.2s ease;
+    opacity: 0.5;
+}
+
+.species-card:hover .species-card-chevron {
+    opacity: 1;
 }
 
 /* Municipality Card (compact version for species detail) */
 .municipality-card-compact {
     cursor: pointer;
-    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    transition: all 0.2s ease;
 }
 
 .municipality-card-compact:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+    background: var(--mud-palette-primary-hover);
 }
 
 /* ==========================================================================

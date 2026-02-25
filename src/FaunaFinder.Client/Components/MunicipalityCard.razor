@@ -1,6 +1,6 @@
 @inject IAppLocalizer L
 
-<MudCard Elevation="2" Class="municipality-card" @onclick="OnClick">
+<MudCard Elevation="0" Class="municipality-card" @onclick="OnClick">
     <MudCardContent Class="@ContentClass">
         @if (Compact)
         {
@@ -9,16 +9,21 @@
         }
         else
         {
-            <MudText Typo="Typo.h6" Color="Color.Primary">@Name</MudText>
-            @if (ShowSpeciesCount)
-            {
-                <div class="d-flex align-center mt-2">
-                    <MudIcon Icon="@Icons.Material.Filled.Pets" Size="Size.Small" Color="Color.Secondary" Class="mr-2" />
-                    <MudText Typo="Typo.body2" Color="Color.Secondary">
-                        @SpeciesCount @L["Pueblos_Species"]
-                    </MudText>
+            <div class="d-flex align-center gap-3">
+                <div class="municipality-card-icon">
+                    <MudIcon Icon="@Icons.Material.Filled.LocationCity" Size="Size.Medium" Color="Color.Primary" />
                 </div>
-            }
+                <div class="flex-1">
+                    <MudText Typo="Typo.subtitle1" Class="font-semibold">@Name</MudText>
+                    @if (ShowSpeciesCount)
+                    {
+                        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mt-1">
+                            @SpeciesCount @L["Pueblos_Species"]
+                        </MudText>
+                    }
+                </div>
+                <MudIcon Icon="@Icons.Material.Filled.ChevronRight" Size="Size.Small" Color="Color.Secondary" Class="municipality-card-chevron" />
+            </div>
         }
     </MudCardContent>
 </MudCard>

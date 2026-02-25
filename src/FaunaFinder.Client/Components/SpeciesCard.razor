@@ -1,20 +1,28 @@
 @inject IAppLocalizer L
 
-<MudCard Elevation="2" Class="species-card" @onclick="OnClick">
+<MudCard Elevation="0" Class="species-card" @onclick="OnClick">
     <MudCardContent>
-        <MudText Typo="Typo.h6" Color="Color.Primary">@L.GetLocalizedValue(CommonName)</MudText>
-        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="font-italic">
-            @ScientificName
-        </MudText>
-        @if (ShowMunicipalityCount)
-        {
-            <div class="d-flex align-center mt-2">
-                <MudIcon Icon="@Icons.Material.Filled.LocationOn" Size="Size.Small" Color="Color.Secondary" Class="mr-2" />
-                <MudText Typo="Typo.body2" Color="Color.Secondary">
-                    @MunicipalityCount @(MunicipalityCount == 1 ? L["Species_Municipality"] : L["Species_Municipalities"])
-                </MudText>
+        <div class="d-flex align-center gap-3">
+            <div class="species-card-icon">
+                <MudIcon Icon="@Icons.Material.Filled.Pets" Size="Size.Medium" Color="Color.Tertiary" />
             </div>
-        }
+            <div class="flex-1">
+                <MudText Typo="Typo.subtitle1" Class="font-semibold">@L.GetLocalizedValue(CommonName)</MudText>
+                <MudText Typo="Typo.body2" Color="Color.Secondary" Class="italic">
+                    @ScientificName
+                </MudText>
+                @if (ShowMunicipalityCount)
+                {
+                    <div class="d-flex align-center mt-1">
+                        <MudIcon Icon="@Icons.Material.Filled.LocationOn" Size="Size.Small" Color="Color.Secondary" Class="mr-1" />
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">
+                            @MunicipalityCount @(MunicipalityCount == 1 ? L["Species_Municipality"] : L["Species_Municipalities"])
+                        </MudText>
+                    </div>
+                }
+            </div>
+            <MudIcon Icon="@Icons.Material.Filled.ChevronRight" Size="Size.Small" Color="Color.Secondary" Class="species-card-chevron" />
+        </div>
     </MudCardContent>
 </MudCard>
 
