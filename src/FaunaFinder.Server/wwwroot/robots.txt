@@ -1,0 +1,24 @@
+# robots.txt for FaunaFinder
+# https://fauna.ecodatapr.com
+
+User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: https://fauna.ecodatapr.com/sitemap.xml
+
+# Disallow API endpoints from being indexed
+Disallow: /api/
+
+# Disallow authentication pages
+Disallow: /account/
+Disallow: /login
+Disallow: /register
+
+# Allow all crawlers to access species and municipality pages
+Allow: /species
+Allow: /species/*
+Allow: /pueblos
+Allow: /pueblos/*
+Allow: /about
+Allow: /statistics
