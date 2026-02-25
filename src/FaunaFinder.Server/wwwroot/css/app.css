@@ -592,11 +592,27 @@ body {
 /* Species Card */
 .species-card {
     height: 100%;
+    min-height: 88px;
     cursor: pointer;
     border: 1px solid var(--mud-palette-lines-default);
     border-radius: 12px !important;
     background: var(--mud-palette-surface);
     transition: all 0.2s ease;
+}
+
+.species-card .mud-card-content {
+    height: 100%;
+    display: flex;
+    align-items: center;
+}
+
+/* Ensure equal height cards in species grid */
+.species-grid .mud-grid-item {
+    display: flex;
+}
+
+.species-grid .species-card {
+    width: 100%;
 }
 
 .species-card:hover {

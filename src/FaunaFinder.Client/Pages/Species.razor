@@ -65,10 +65,10 @@
     }
     else
     {
-        <MudGrid Spacing="3">
+        <MudGrid Spacing="3" Class="species-grid">
             @foreach (var s in species)
             {
-                <MudItem xs="12" sm="6" md="4" lg="3">
+                <MudItem xs="12" sm="6" md="4" lg="3" Class="d-flex">
                     <SpeciesCard CommonName="@s.CommonName"
                                  ScientificName="@s.ScientificName"
                                  MunicipalityCount="@s.MunicipalityNames.Count"
