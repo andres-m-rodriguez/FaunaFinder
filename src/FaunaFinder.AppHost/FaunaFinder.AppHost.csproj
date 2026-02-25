@@ -18,10 +18,4 @@
     <ProjectReference Include="..\FaunaFinder.Server\FaunaFinder.Server.csproj" />
     <ProjectReference Include="..\FaunaFinder.Seeder\FaunaFinder.Seeder.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\FaunaFinder.Aspire.Generators\FaunaFinder.Aspire.Generators.csproj"
-                      OutputItemType="Analyzer"
-                      ReferenceOutputAssembly="false"
-                      IsAspireProjectResource="false" />
-  </ItemGroup>
 </Project>
