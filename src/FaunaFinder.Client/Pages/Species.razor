@@ -144,8 +144,7 @@
     private List<StatsHero.StatItem> GetStatsItems() =>
     [
         new(Icons.Material.Filled.Pets, statsOverview?.TotalSpecies ?? 0, L["Stats_Species"]),
-        new(Icons.Material.Filled.LocationCity, statsOverview?.TotalMunicipalities ?? 0, L["Stats_Municipalities"]),
-        new(Icons.Material.Filled.PhotoCamera, statsOverview?.TotalApprovedSightings ?? 0, L["Stats_Sightings"])
+        new(Icons.Material.Filled.LocationCity, statsOverview?.TotalMunicipalities ?? 0, L["Stats_Municipalities"])
     ];
 
     private async Task ToggleCategory(int categoryId)
