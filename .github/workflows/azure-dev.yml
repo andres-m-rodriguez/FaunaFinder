@@ -25,59 +25,92 @@ env:
   ASPIRE_CLI_NOLOGO: 1
 
 jobs:
-  deploy:
+  detect-changes:
     runs-on: ubuntu-latest
+    outputs:
+      deploy-server: ${{ steps.check.outputs.deploy-server }}
+      deploy-seeder: ${{ steps.check.outputs.deploy-seeder }}
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-dotnet@v4
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 10.x
 
-      - run: dotnet tool install -g dotnet-affected && dotnet tool install -g aspire.cli --prerelease
+      - name: Detect affected projects
+        id: check
+        run: |
+          dotnet tool install -g dotnet-affected
+          dotnet affected -p . --from HEAD~1 --to HEAD --format text -o affected.txt || true
 
+          DEPLOY_SERVER="false"
+          DEPLOY_SEEDER="false"
+
+          if [ "${{ github.event.inputs.force-deploy-all }}" == "true" ]; then
+            echo "Force deploy all enabled"
+            DEPLOY_SERVER="true"
+            DEPLOY_SEEDER="true"
+          elif [ -f affected.txt ] && [ -s affected.txt ]; then
+            echo "Affected projects:"
+            cat affected.txt
+            grep -q "FaunaFinder.Server" affected.txt && DEPLOY_SERVER="true"
+            grep -q "FaunaFinder.Seeder" affected.txt && DEPLOY_SEEDER="true"
+          else
+            echo "No affected projects detected - deploying all"
+            DEPLOY_SERVER="true"
+            DEPLOY_SEEDER="true"
+          fi
+
+          echo "deploy-server=$DEPLOY_SERVER" >> $GITHUB_OUTPUT
+          echo "deploy-seeder=$DEPLOY_SEEDER" >> $GITHUB_OUTPUT
+
+  deploy-server:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.deploy-server == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.x
+      - run: dotnet tool install -g aspire.cli --prerelease
       - uses: azure/login@v2
         with:
           client-id: ${{ env.AZURE_CLIENT_ID }}
           tenant-id: ${{ env.AZURE_TENANT_ID }}
           subscription-id: ${{ env.AZURE_SUBSCRIPTION_ID }}
-
-      - name: Deploy affected resources
+      - run: aspire do deploy-server --project src/FaunaFinder.AppHost --environment Production --non-interactive
         env:
           Azure__SubscriptionId: ${{ env.AZURE_SUBSCRIPTION_ID }}
           Azure__Location: ${{ env.AZURE_LOCATION }}
           Azure__ResourceGroup: ${{ env.AZURE_RESOURCE_GROUP }}
-        run: |
-          # Get affected projects
-          dotnet affected -p . --from HEAD~1 --to HEAD --format text -o affected.txt || true
+      - run: aspire do configure-custom-domain --project src/FaunaFinder.AppHost --environment Production --non-interactive
+        env:
+          Azure__SubscriptionId: ${{ env.AZURE_SUBSCRIPTION_ID }}
+          Azure__Location: ${{ env.AZURE_LOCATION }}
+          Azure__ResourceGroup: ${{ env.AZURE_RESOURCE_GROUP }}
 
-          # Read resource mappings from JSON
-          MAPPINGS=$(cat deployable-resources.json)
-
-          # Determine which resources to deploy
-          RESOURCES_TO_DEPLOY=""
-
-          if [ "${{ github.event.inputs.force-deploy-all }}" == "true" ]; then
-            echo "Force deploy all enabled"
-            RESOURCES_TO_DEPLOY=$(echo "$MAPPINGS" | jq -r '.projectToResource | values | .[]')
-          elif [ -f affected.txt ] && [ -s affected.txt ]; then
-            echo "Affected projects:"
-            cat affected.txt
-            while IFS= read -r project; do
-              resource=$(echo "$MAPPINGS" | jq -r --arg p "$project" '.projectToResource[$p] // empty')
-              if [ -n "$resource" ]; then
-                RESOURCES_TO_DEPLOY="$RESOURCES_TO_DEPLOY $resource"
-              fi
-            done < affected.txt
-          else
-            echo "No affected projects detected - deploying all"
-            RESOURCES_TO_DEPLOY=$(echo "$MAPPINGS" | jq -r '.projectToResource | values | .[]')
-          fi
-
-          # Deploy each affected resource
-          for resource in $RESOURCES_TO_DEPLOY; do
-            echo "Deploying $resource..."
-            aspire do deploy-$resource --project src/FaunaFinder.AppHost --environment Production --non-interactive
-          done
+  deploy-seeder:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.deploy-seeder == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.x
+      - run: dotnet tool install -g aspire.cli --prerelease
+      - uses: azure/login@v2
+        with:
+          client-id: ${{ env.AZURE_CLIENT_ID }}
+          tenant-id: ${{ env.AZURE_TENANT_ID }}
+          subscription-id: ${{ env.AZURE_SUBSCRIPTION_ID }}
+      - run: aspire do deploy-seeder --project src/FaunaFinder.AppHost --environment Production --non-interactive
+        env:
+          Azure__SubscriptionId: ${{ env.AZURE_SUBSCRIPTION_ID }}
+          Azure__Location: ${{ env.AZURE_LOCATION }}
+          Azure__ResourceGroup: ${{ env.AZURE_RESOURCE_GROUP }}
