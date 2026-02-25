@@ -20,6 +20,7 @@ env:
   AZURE_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
   AZURE_LOCATION: ${{ vars.AZURE_LOCATION }}
   AZURE_RESOURCE_GROUP: ${{ vars.AZURE_RESOURCE_GROUP }}
+  CUSTOM_DOMAIN: ${{ vars.CUSTOM_DOMAIN }}
   ASPIRE_CLI_TELEMETRY_OPTOUT: 1
 
 jobs:
@@ -104,6 +105,14 @@ jobs:
 
       - name: Deploy server
         run: aspire do deploy-server --project src/FaunaFinder.AppHost --environment Production --non-interactive
+        env:
+          Azure__SubscriptionId: ${{ env.AZURE_SUBSCRIPTION_ID }}
+          Azure__Location: ${{ env.AZURE_LOCATION }}
+          Azure__ResourceGroup: ${{ env.AZURE_RESOURCE_GROUP }}
+
+      - name: Configure custom domain
+        if: env.CUSTOM_DOMAIN != ''
+        run: aspire do configure-custom-domain --project src/FaunaFinder.AppHost --environment Production --non-interactive
         env:
           Azure__SubscriptionId: ${{ env.AZURE_SUBSCRIPTION_ID }}
           Azure__Location: ${{ env.AZURE_LOCATION }}
