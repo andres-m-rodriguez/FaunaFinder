@@ -80,14 +80,18 @@ builder.Pipeline.AddStep(
         var customDomain = Environment.GetEnvironmentVariable("CUSTOM_DOMAIN");
         if (string.IsNullOrEmpty(customDomain))
         {
-            context.Logger.LogInformation("CUSTOM_DOMAIN not set, skipping custom domain configuration");
+            context.Logger.LogInformation(
+                "CUSTOM_DOMAIN not set, skipping custom domain configuration"
+            );
             return;
         }
 
         var resourceGroup = Environment.GetEnvironmentVariable("AZURE_RESOURCE_GROUP");
         if (string.IsNullOrEmpty(resourceGroup))
         {
-            context.Logger.LogWarning("AZURE_RESOURCE_GROUP not set, skipping custom domain configuration");
+            context.Logger.LogWarning(
+                "AZURE_RESOURCE_GROUP not set, skipping custom domain configuration"
+            );
             return;
         }
 
@@ -122,7 +126,10 @@ builder.Pipeline.AddStep(
             );
 
             // Hostname may already exist, only fail on unexpected errors
-            if (addExitCode != 0 && !addError.Contains("already exists", StringComparison.OrdinalIgnoreCase))
+            if (
+                addExitCode != 0
+                && !addError.Contains("already exists", StringComparison.OrdinalIgnoreCase)
+            )
             {
                 context.Logger.LogWarning("Hostname add returned: {Error}", addError);
             }
@@ -134,16 +141,22 @@ builder.Pipeline.AddStep(
                 context.CancellationToken
             );
 
-            if (bindExitCode != 0 && !bindError.Contains("already", StringComparison.OrdinalIgnoreCase))
+            if (
+                bindExitCode != 0
+                && !bindError.Contains("already", StringComparison.OrdinalIgnoreCase)
+            )
             {
                 context.Logger.LogError("Failed to bind hostname: {Error}", bindError);
                 throw new InvalidOperationException($"Failed to bind custom domain: {bindError}");
             }
 
-            context.Logger.LogInformation("Custom domain {Domain} configured successfully", customDomain);
+            context.Logger.LogInformation(
+                "Custom domain {Domain} configured successfully",
+                customDomain
+            );
         }
     },
-    dependsOn: "deploy"
+    dependsOn: "deploy-server"
 );
 
 static async Task<(int exitCode, string output, string error)> RunAzCommandAsync(

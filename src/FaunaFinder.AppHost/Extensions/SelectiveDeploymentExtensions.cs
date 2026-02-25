@@ -30,7 +30,10 @@ public static class SelectiveDeploymentExtensions
         if (string.IsNullOrWhiteSpace(affected))
             return [];
 
-        return affected.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        return affected.Split(
+            ',',
+            StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries
+        );
     }
 
     /// <summary>
@@ -65,7 +68,8 @@ public static class SelectiveDeploymentExtensions
 
         // Check if the project is in the affected list
         return affectedProjects.Any(p =>
-            p.Contains(projectName, StringComparison.OrdinalIgnoreCase));
+            p.Contains(projectName, StringComparison.OrdinalIgnoreCase)
+        );
     }
 
     /// <summary>
@@ -92,7 +96,11 @@ public static class SelectiveDeploymentExtensions
         foreach (var (resource, project) in ResourceToProject)
         {
             var shouldDeploy = ShouldDeployResource(resource);
-            logger.LogInformation("  {Resource}: {Status}", resource, shouldDeploy ? "DEPLOY" : "SKIP");
+            logger.LogInformation(
+                "  {Resource}: {Status}",
+                resource,
+                shouldDeploy ? "DEPLOY" : "SKIP"
+            );
         }
     }
 }
