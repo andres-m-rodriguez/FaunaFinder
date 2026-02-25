@@ -7,7 +7,8 @@ public sealed record SpeciesForSearchDto(
     List<LocaleValue> CommonName,
     string ScientificName,
     IReadOnlyList<string> MunicipalityNames,
-    bool IsFauna
+    bool IsFauna,
+    bool HasProfileImage
 )
 {
     public string GetCommonName(string locale = "en") =>

@@ -19,15 +19,8 @@
             {
                 var savedPreference = await JS.InvokeAsync<string?>("localStorage.getItem", "faunafinder-darkmode");
 
-                if (!string.IsNullOrEmpty(savedPreference))
-                {
-                    _isDarkMode = savedPreference == "true";
-                }
-                else
-                {
-                    var prefersDark = await JS.InvokeAsync<bool>("eval", "window.matchMedia('(prefers-color-scheme: dark)').matches");
-                    _isDarkMode = prefersDark;
-                }
+                // Default to light mode unless user explicitly chose dark mode
+                _isDarkMode = savedPreference == "true";
 
                 DarkModeService.SetDarkMode(_isDarkMode);
                 StateHasChanged();
