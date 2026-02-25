@@ -40,7 +40,10 @@ jobs:
           dotnet-version: 10.x
 
       - name: Generate deploy mappings
-        run: dotnet run scripts/generate-deploy-mappings.cs
+        run: |
+          dotnet run scripts/generate-deploy-mappings.cs
+          echo "Generated mappings:"
+          cat deployable-resources.json
 
       - name: Detect affected resources
         id: check
@@ -59,8 +62,11 @@ jobs:
               echo "Affected projects:"
               cat affected.txt
 
-              while IFS= read -r project; do
-                project=$(echo "$project" | xargs)
+              while IFS= read -r line; do
+                line=$(echo "$line" | xargs)
+                # Extract project name from full path (e.g., /path/to/FaunaFinder.Client.csproj -> FaunaFinder.Client)
+                project=$(basename "$line" .csproj)
+                echo "Looking up: $project"
                 res=$(echo "$MAPPINGS" | jq -r --arg p "$project" '.projectToResources[$p] // [] | .[]')
                 for r in $res; do
                   if [[ ! " $RESOURCES " =~ " $r " ]]; then
