@@ -31,17 +31,29 @@
         <div id="map" class="map"></div>
     </div>
 
-    @* Desktop FAB for Draw Polygon when nothing selected *@
+    @* Desktop FABs for Draw Polygon and Heatmap when nothing selected *@
     <MudHidden Breakpoint="Breakpoint.SmAndDown">
         @if (clickedMunicipalityName == null && !showNearbySpecies && viewingSpeciesLocations == null && !isPolygonDrawMode)
         {
             <div class="desktop-fab-container">
-                <MudTooltip Text="@L["DrawPolygon_Tooltip"]" Placement="Placement.Left">
-                    <MudFab Color="Color.Tertiary"
-                            StartIcon="@Icons.Material.Filled.Pentagon"
-                            Size="Size.Large"
-                            OnClick="EnablePolygonDrawMode" />
-                </MudTooltip>
+                <MudStack Spacing="2">
+                    @if (!isHeatmapVisible)
+                    {
+                        <MudTooltip Text="@L["Heatmap_Tooltip"]" Placement="Placement.Left">
+                            <MudFab Color="Color.Error"
+                                    StartIcon="@Icons.Material.Filled.Whatshot"
+                                    Size="Size.Medium"
+                                    OnClick="ToggleHeatmap"
+                                    Disabled="isLoadingHeatmap" />
+                        </MudTooltip>
+                    }
+                    <MudTooltip Text="@L["DrawPolygon_Tooltip"]" Placement="Placement.Left">
+                        <MudFab Color="Color.Tertiary"
+                                StartIcon="@Icons.Material.Filled.Pentagon"
+                                Size="Size.Large"
+                                OnClick="EnablePolygonDrawMode" />
+                    </MudTooltip>
+                </MudStack>
             </div>
         }
     </MudHidden>
@@ -542,7 +554,7 @@
         }
     </MudHidden>
 
-    @* Mobile FAB for "Species Near Me" / "Draw Area" when nothing selected *@
+    @* Mobile FAB for "Species Near Me" / "Draw Area" / "Heatmap" when nothing selected *@
     <MudHidden Breakpoint="Breakpoint.MdAndUp">
         @if (clickedMunicipalityName == null && !showNearbySpecies && viewingSpeciesLocations == null && !isPolygonDrawMode)
         {
@@ -554,6 +566,15 @@
                             Label="@L["NearMe_Button"]"
                             Class="mobile-fab-item"
                             OnClick="OpenSpeciesNearMe" />
+                }
+                @if (!isHeatmapVisible)
+                {
+                    <MudFab Color="Color.Error"
+                            StartIcon="@Icons.Material.Filled.Whatshot"
+                            Label="@L["Heatmap_Toggle"]"
+                            Class="mobile-fab-item"
+                            OnClick="ToggleHeatmap"
+                            Disabled="isLoadingHeatmap" />
                 }
                 <MudFab Color="Color.Tertiary"
                         StartIcon="@Icons.Material.Filled.Pentagon"
@@ -660,6 +681,10 @@
     // Draw polygon search state
     private bool isPolygonDrawMode = false;
     private List<PolygonCoordinate>? drawnPolygonCoordinates;
+
+    // Heatmap state
+    private bool isHeatmapVisible = false;
+    private bool isLoadingHeatmap = false;
 
     private enum SortOption
     {
@@ -1329,6 +1354,60 @@
         [property: System.Text.Json.Serialization.JsonPropertyName("latitude")] double Latitude,
         [property: System.Text.Json.Serialization.JsonPropertyName("longitude")] double Longitude,
         [property: System.Text.Json.Serialization.JsonPropertyName("radiusKm")] int RadiusKm);
+
+    // Heatmap methods
+    private async Task ToggleHeatmap()
+    {
+        if (isHeatmapVisible)
+        {
+            await HideHeatmap();
+        }
+        else
+        {
+            await ShowHeatmap();
+        }
+    }
+
+    private async Task ShowHeatmap()
+    {
+        if (isLoadingHeatmap) return;
+
+        isLoadingHeatmap = true;
+        StateHasChanged();
+
+        try
+        {
+            var heatmapData = await SpeciesHttpClient.GetHeatmapDataAsync();
+            var points = heatmapData.Select(p => new HeatmapPointData(
+                p.Latitude,
+                p.Longitude,
+                p.Intensity,
+                p.IsFauna
+            ));
+
+            await MapService.ShowHeatmapAsync(points);
+            isHeatmapVisible = true;
+        }
+        finally
+        {
+            isLoadingHeatmap = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task HideHeatmap()
+    {
+        await MapService.HideHeatmapAsync();
+        isHeatmapVisible = false;
+        StateHasChanged();
+    }
+
+    [JSInvokable]
+    public void OnHeatmapClosed()
+    {
+        isHeatmapVisible = false;
+        StateHasChanged();
+    }
 
     public void Dispose()
     {

@@ -18,6 +18,7 @@ public static class SpeciesEndpoints
         group.MapGet("/nearby", GetSpeciesNearby).WithName("GetSpeciesNearby");
         group.MapPost("/in-polygon", GetSpeciesInPolygon).WithName("GetSpeciesInPolygon");
         group.MapGet("/categories", GetCategories).WithName("GetCategories");
+        group.MapGet("/heatmap", GetHeatmapData).WithName("GetHeatmapData");
     }
 
     private static IAsyncEnumerable<SpeciesForSearchDto> GetSpecies(
@@ -83,5 +84,13 @@ public static class SpeciesEndpoints
     {
         var categories = await repository.GetAllCategoriesAsync(ct);
         return TypedResults.Ok(categories);
+    }
+
+    private static async Task<Ok<IReadOnlyList<HeatmapPointDto>>> GetHeatmapData(
+        ISpeciesRepository repository,
+        CancellationToken ct)
+    {
+        var heatmapData = await repository.GetHeatmapDataAsync(ct);
+        return TypedResults.Ok(heatmapData);
     }
 }

@@ -1201,3 +1201,153 @@ body {
         transition-duration: 0.01ms !important;
     }
 }
+
+/* ============================================================================
+   Heatmap Control Styles
+   ============================================================================ */
+
+.leaflet-control-heatmap {
+    background: white;
+    border-radius: 4px;
+    box-shadow: 0 1px 5px rgba(0,0,0,0.4);
+    overflow: hidden;
+}
+
+.mud-theme-dark .leaflet-control-heatmap {
+    background: #424242;
+}
+
+.heatmap-control-content {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    min-width: 160px;
+}
+
+.heatmap-control-title {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #333;
+    white-space: nowrap;
+}
+
+.mud-theme-dark .heatmap-control-title {
+    color: #fff;
+}
+
+.heatmap-control-title svg {
+    color: #ef4444;
+}
+
+.heatmap-filter-buttons {
+    display: flex;
+    gap: 4px;
+}
+
+.heatmap-filter-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 28px;
+    height: 28px;
+    padding: 4px 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: #f5f5f5;
+    color: #666;
+    font-size: 11px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.mud-theme-dark .heatmap-filter-btn {
+    background: #333;
+    border-color: #555;
+    color: #ccc;
+}
+
+.heatmap-filter-btn:hover {
+    background: #e0e0e0;
+    border-color: #bbb;
+}
+
+.mud-theme-dark .heatmap-filter-btn:hover {
+    background: #444;
+    border-color: #666;
+}
+
+.heatmap-filter-btn.active {
+    background: #ef4444;
+    border-color: #ef4444;
+    color: white;
+}
+
+.heatmap-filter-btn.active:hover {
+    background: #dc2626;
+    border-color: #dc2626;
+}
+
+.heatmap-filter-btn[data-filter="fauna"].active {
+    background: #f97316;
+    border-color: #f97316;
+}
+
+.heatmap-filter-btn[data-filter="flora"].active {
+    background: #22c55e;
+    border-color: #22c55e;
+}
+
+.heatmap-close-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border: none;
+    border-radius: 4px;
+    background: transparent;
+    color: #999;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.heatmap-close-btn:hover {
+    background: #f0f0f0;
+    color: #666;
+}
+
+.mud-theme-dark .heatmap-close-btn:hover {
+    background: #555;
+    color: #fff;
+}
+
+/* Heatmap toggle button (FAB style) */
+.heatmap-fab {
+    position: absolute;
+    top: 80px;
+    right: 10px;
+    z-index: 1000;
+}
+
+@media (max-width: 600px) {
+    .heatmap-control-content {
+        flex-wrap: wrap;
+        min-width: auto;
+        padding: 8px;
+    }
+
+    .heatmap-control-title {
+        flex: 1 0 100%;
+        margin-bottom: 4px;
+    }
+
+    .heatmap-filter-buttons {
+        flex: 1;
+    }
+}

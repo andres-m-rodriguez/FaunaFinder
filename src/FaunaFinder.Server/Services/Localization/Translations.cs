@@ -158,6 +158,14 @@ public static class Translations
             ["DrawPolygon_Finish"] = "Finish",
             ["DrawPolygon_SpeciesFound"] = "{0} species found in selected area",
 
+            // Heatmap
+            ["Heatmap_Toggle"] = "Heatmap",
+            ["Heatmap_Tooltip"] = "Show species density heatmap",
+            ["Heatmap_Loading"] = "Loading heatmap data...",
+            ["Heatmap_FilterAll"] = "All",
+            ["Heatmap_FilterFauna"] = "Fauna",
+            ["Heatmap_FilterFlora"] = "Flora",
+
             // Export
             ["Export_Button"] = "Export",
             ["Export_PDF"] = "Download PDF",
@@ -349,6 +357,14 @@ public static class Translations
             ["DrawPolygon_Redraw"] = "Redibujar forma",
             ["DrawPolygon_Finish"] = "Terminar",
             ["DrawPolygon_SpeciesFound"] = "{0} especies encontradas en el area seleccionada",
+
+            // Heatmap
+            ["Heatmap_Toggle"] = "Mapa de calor",
+            ["Heatmap_Tooltip"] = "Mostrar mapa de calor de densidad de especies",
+            ["Heatmap_Loading"] = "Cargando datos del mapa de calor...",
+            ["Heatmap_FilterAll"] = "Todas",
+            ["Heatmap_FilterFauna"] = "Fauna",
+            ["Heatmap_FilterFlora"] = "Flora",
 
             // Export
             ["Export_Button"] = "Exportar",
