@@ -39,6 +39,9 @@ jobs:
         with:
           dotnet-version: 10.x
 
+      - name: Generate deploy mappings
+        run: dotnet run scripts/generate-deploy-mappings.cs
+
       - name: Detect affected resources
         id: check
         run: |
