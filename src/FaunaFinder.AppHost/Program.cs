@@ -72,6 +72,80 @@ builder.Pipeline.AddStep(
     dependsOn: "deploy"
 );
 
+// Pipeline step to configure custom domain after deployment
+builder.Pipeline.AddStep(
+    "configure-custom-domain",
+    async (context) =>
+    {
+        var customDomain = Environment.GetEnvironmentVariable("CUSTOM_DOMAIN");
+        if (string.IsNullOrEmpty(customDomain))
+        {
+            context.Logger.LogInformation("CUSTOM_DOMAIN not set, skipping custom domain configuration");
+            return;
+        }
+
+        var resourceGroup = Environment.GetEnvironmentVariable("AZURE_RESOURCE_GROUP");
+        if (string.IsNullOrEmpty(resourceGroup))
+        {
+            context.Logger.LogWarning("AZURE_RESOURCE_GROUP not set, skipping custom domain configuration");
+            return;
+        }
+
+        var task = await context.ReportingStep.CreateTaskAsync(
+            $"Configuring custom domain: {customDomain}",
+            context.CancellationToken
+        );
+
+        await using (task.ConfigureAwait(false))
+        {
+            context.Logger.LogInformation("Adding custom hostname {Domain}...", customDomain);
+
+            // Get the environment name from the server container app
+            var (envExitCode, envOutput, envError) = await RunAzCommandAsync(
+                $"containerapp show --name server --resource-group {resourceGroup} --query properties.environmentId --output tsv",
+                context.CancellationToken
+            );
+
+            if (envExitCode != 0)
+            {
+                context.Logger.LogError("Failed to get environment ID: {Error}", envError);
+                throw new InvalidOperationException($"Failed to get environment ID: {envError}");
+            }
+
+            var environmentId = envOutput.Trim();
+            var environmentName = environmentId.Split('/').Last();
+
+            // Add hostname (may already exist, that's OK)
+            var (addExitCode, _, addError) = await RunAzCommandAsync(
+                $"containerapp hostname add --name server --resource-group {resourceGroup} --hostname {customDomain}",
+                context.CancellationToken
+            );
+
+            // Hostname may already exist, only fail on unexpected errors
+            if (addExitCode != 0 && !addError.Contains("already exists", StringComparison.OrdinalIgnoreCase))
+            {
+                context.Logger.LogWarning("Hostname add returned: {Error}", addError);
+            }
+
+            // Bind with managed certificate
+            context.Logger.LogInformation("Binding hostname with managed certificate...");
+            var (bindExitCode, _, bindError) = await RunAzCommandAsync(
+                $"containerapp hostname bind --name server --resource-group {resourceGroup} --hostname {customDomain} --environment {environmentName} --validation-method HTTP",
+                context.CancellationToken
+            );
+
+            if (bindExitCode != 0 && !bindError.Contains("already", StringComparison.OrdinalIgnoreCase))
+            {
+                context.Logger.LogError("Failed to bind hostname: {Error}", bindError);
+                throw new InvalidOperationException($"Failed to bind custom domain: {bindError}");
+            }
+
+            context.Logger.LogInformation("Custom domain {Domain} configured successfully", customDomain);
+        }
+    },
+    dependsOn: "deploy"
+);
+
 static async Task<(int exitCode, string output, string error)> RunAzCommandAsync(
     string arguments,
     CancellationToken ct
