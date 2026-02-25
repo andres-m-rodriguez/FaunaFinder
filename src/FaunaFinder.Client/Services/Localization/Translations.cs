@@ -58,6 +58,18 @@ public static class Translations
             ["Species_Municipalities"] = "municipalities",
             ["Species_Showing"] = "Showing {0}-{1} of {2} species",
 
+            // Conservation Status
+            ["Conservation_CriticallyImperiled"] = "Critically Imperiled",
+            ["Conservation_Imperiled"] = "Imperiled",
+            ["Conservation_Vulnerable"] = "Vulnerable",
+            ["Conservation_ApparentlySecure"] = "Apparently Secure",
+            ["Conservation_Secure"] = "Secure",
+
+            // Stats Hero
+            ["Stats_Species"] = "Species",
+            ["Stats_Municipalities"] = "Municipalities",
+            ["Stats_Sightings"] = "Sightings",
+
             // Species Detail Page
             ["SpeciesDetail_FoundIn"] = "Found in {0} {1}",
             ["SpeciesDetail_MunicipalitiesTitle"] = "Municipalities",
@@ -471,6 +483,18 @@ public static class Translations
             ["Species_Municipality"] = "municipio",
             ["Species_Municipalities"] = "municipios",
             ["Species_Showing"] = "Mostrando {0}-{1} de {2} especies",
+
+            // Conservation Status
+            ["Conservation_CriticallyImperiled"] = "En Peligro Crítico",
+            ["Conservation_Imperiled"] = "En Peligro",
+            ["Conservation_Vulnerable"] = "Vulnerable",
+            ["Conservation_ApparentlySecure"] = "Aparentemente Segura",
+            ["Conservation_Secure"] = "Segura",
+
+            // Stats Hero
+            ["Stats_Species"] = "Especies",
+            ["Stats_Municipalities"] = "Municipios",
+            ["Stats_Sightings"] = "Avistamientos",
 
             // Species Detail Page
             ["SpeciesDetail_FoundIn"] = "Encontrada en {0} {1}",

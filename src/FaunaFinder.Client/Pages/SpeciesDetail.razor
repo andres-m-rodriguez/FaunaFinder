@@ -52,61 +52,65 @@
     }
     else
     {
-        @* Species Header *@
-        <MudPaper Elevation="2" Class="pa-4 mb-6">
-            <MudGrid>
-                @if (species.HasProfileImage)
-                {
-                    <MudItem xs="12" sm="4" md="3">
+        @* Species Hero Banner *@
+        <div class="species-hero mb-6 @(species.HasProfileImage ? "has-image" : "")"
+             style="@(species.HasProfileImage ? $"--hero-bg: url('{GetProfileImageUrl()}')" : "")">
+            <div class="species-hero-content">
+                <div class="d-flex gap-4 flex-wrap align-center">
+                    @if (species.HasProfileImage)
+                    {
                         <MudImage Src="@GetProfileImageUrl()"
                                   Alt="@L.GetLocalizedValue(species.CommonName)"
                                   ObjectFit="ObjectFit.Cover"
-                                  Class="rounded-lg species-image w-full max-h-200" />
-                        @if (!string.IsNullOrEmpty(species.ImageSourceUrl))
-                        {
-                            <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-1">
-                                @L["SpeciesDetail_ImageSource"]:
-                                <MudLink Href="@species.ImageSourceUrl" Target="_blank" Color="Color.Primary">
-                                    @GetImageSourceHostname()
-                                </MudLink>
-                            </MudText>
-                        }
-                    </MudItem>
-                }
-                <MudItem xs="12" sm="@(species.HasProfileImage ? 8 : 12)" md="@(species.HasProfileImage ? 9 : 12)">
-                    <MudText Typo="Typo.h4" Color="Color.Primary" GutterBottom="true">@L.GetLocalizedValue(species.CommonName)</MudText>
-                    <MudText Typo="Typo.h6" Color="Color.Secondary" Class="font-italic">@species.ScientificName</MudText>
-                    <div class="d-flex align-center mt-3">
-                        <MudIcon Icon="@Icons.Material.Filled.LocationOn" Size="Size.Medium" Color="Color.Secondary" Class="mr-2" />
-                        <MudText Typo="Typo.body1" Color="Color.Secondary">
-                            @L["SpeciesDetail_FoundIn", species.Municipalities.Count, species.Municipalities.Count == 1 ? L["Species_Municipality"] : L["Species_Municipalities"]]
-                        </MudText>
+                                  Class="species-hero-image" />
+                    }
+                    else
+                    {
+                        <div class="species-hero-icon">
+                            <MudIcon Icon="@(species.IsFauna ? Icons.Material.Filled.Pets : Icons.Material.Filled.Grass)"
+                                     Size="Size.Large" />
+                        </div>
+                    }
+                    <div class="flex-1">
+                        <MudText Typo="Typo.h4" Class="species-hero-title">@L.GetLocalizedValue(species.CommonName)</MudText>
+                        <MudText Typo="Typo.h6" Class="species-hero-subtitle font-italic">@species.ScientificName</MudText>
+                        <div class="d-flex align-center mt-2 species-hero-meta">
+                            <MudIcon Icon="@Icons.Material.Filled.LocationOn" Size="Size.Small" Class="mr-1" />
+                            <span>@L["SpeciesDetail_FoundIn", species.Municipalities.Count, species.Municipalities.Count == 1 ? L["Species_Municipality"] : L["Species_Municipalities"]]</span>
+                        </div>
                     </div>
-                    <div class="d-flex flex-wrap gap-2 mt-4">
-                        @if (species.Locations.Count > 0)
-                        {
-                            <MudButton Variant="Variant.Filled"
-                                       Color="Color.Primary"
-                                       StartIcon="@Icons.Material.Filled.Map"
-                                       OnClick="ViewLocations">
-                                @L["SpeciesDetail_ViewLocations"]
-                            </MudButton>
-                        }
-                        <MudButton Variant="Variant.Outlined"
-                                   Color="Color.Primary"
-                                   StartIcon="@Icons.Material.Filled.PictureAsPdf"
-                                   OnClick="() => DownloadPdfCommand.ExecuteAsync()"
-                                   Disabled="DownloadPdfCommand.IsLoading">
-                            @if (DownloadPdfCommand.IsLoading)
-                            {
-                                <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
-                            }
-                            @L["Export_PDF"]
+                </div>
+                <div class="d-flex flex-wrap gap-2 mt-4">
+                    @if (species.Locations.Count > 0)
+                    {
+                        <MudButton Variant="Variant.Filled"
+                                   Class="species-hero-btn-primary"
+                                   StartIcon="@Icons.Material.Filled.Map"
+                                   OnClick="ViewLocations">
+                            @L["SpeciesDetail_ViewLocations"]
                         </MudButton>
+                    }
+                    <MudButton Variant="Variant.Outlined"
+                               Class="species-hero-btn-secondary"
+                               StartIcon="@Icons.Material.Filled.PictureAsPdf"
+                               OnClick="() => DownloadPdfCommand.ExecuteAsync()"
+                               Disabled="DownloadPdfCommand.IsLoading">
+                        @if (DownloadPdfCommand.IsLoading)
+                        {
+                            <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                        }
+                        @L["Export_PDF"]
+                    </MudButton>
+                </div>
+                @if (!string.IsNullOrEmpty(species.ImageSourceUrl))
+                {
+                    <div class="species-hero-source mt-3">
+                        @L["SpeciesDetail_ImageSource"]:
+                        <a href="@species.ImageSourceUrl" target="_blank">@GetImageSourceHostname()</a>
                     </div>
-                </MudItem>
-            </MudGrid>
-        </MudPaper>
+                }
+            </div>
+        </div>
 
         @* Municipalities Section *@
         <MudText Typo="Typo.h5" Color="Color.Primary" GutterBottom="true" Class="mb-4">@L["SpeciesDetail_MunicipalitiesTitle"]</MudText>

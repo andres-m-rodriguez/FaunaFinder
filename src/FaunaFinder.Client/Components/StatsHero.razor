@@ -1,0 +1,25 @@
+@inject IAppLocalizer L
+
+<div class="stats-hero mb-6">
+    <div class="stats-hero-content">
+        @foreach (var stat in Stats)
+        {
+            <div class="stats-hero-item">
+                <div class="stats-hero-icon">
+                    <MudIcon Icon="@stat.Icon" Size="Size.Medium" />
+                </div>
+                <div class="stats-hero-text">
+                    <span class="stats-hero-value">@stat.Value.ToString("N0")</span>
+                    <span class="stats-hero-label">@stat.Label</span>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public List<StatItem> Stats { get; set; } = [];
+
+    public sealed record StatItem(string Icon, int Value, string Label);
+}
