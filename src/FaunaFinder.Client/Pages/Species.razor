@@ -1,6 +1,7 @@
 @page "/species"
 @implements IDisposable
 @inject ISpeciesHttpClient SpeciesHttpClient
+@inject IWildlifeHttpClient WildlifeHttpClient
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JS
 @inject IAppLocalizer L
@@ -12,6 +13,11 @@
     <MudText Typo="Typo.body1" Color="Color.Secondary" Class="mb-4">
         @L["Species_Description"]
     </MudText>
+
+    @if (statsOverview != null)
+    {
+        <StatsHero Stats="@GetStatsItems()" />
+    }
 
     @* Search and Filter Bar *@
     <MudGrid Class="mb-4">
@@ -74,6 +80,8 @@
                                  ScientificName="@s.ScientificName"
                                  MunicipalityCount="@s.MunicipalityNames.Count"
                                  HasProfileImage="@s.HasProfileImage"
+                                 GRank="@s.GRank"
+                                 SRank="@s.SRank"
                                  OnClick="() => NavigateToSpecies(s.Id)" />
                 </MudItem>
             }
@@ -113,17 +121,31 @@
     private ElementReference loadMoreTrigger;
     private DotNetObjectReference<Species>? dotNetRef;
     private bool isObserverInitialized = false;
+    private StatisticsOverviewDto? statsOverview;
 
     private const int PageSize = 20;
 
     protected override async Task OnInitializedAsync()
     {
-        // Load categories first
-        categories = (await SpeciesHttpClient.GetCategoriesAsync()).ToList();
+        // Load stats and categories in parallel
+        var statsTask = WildlifeHttpClient.GetPublicStatisticsAsync();
+        var categoriesTask = SpeciesHttpClient.GetCategoriesAsync();
+
+        await Task.WhenAll(statsTask, categoriesTask);
+
+        var stats = await statsTask;
+        statsOverview = stats?.Overview;
+        categories = (await categoriesTask).ToList();
 
         await LoadPageAsync();
         isInitialLoading = false;
     }
+
+    private List<StatsHero.StatItem> GetStatsItems() =>
+    [
+        new(Icons.Material.Filled.Pets, statsOverview?.TotalSpecies ?? 0, L["Stats_Species"]),
+        new(Icons.Material.Filled.LocationCity, statsOverview?.TotalMunicipalities ?? 0, L["Stats_Municipalities"])
+    ];
 
     private async Task ToggleCategory(int categoryId)
     {

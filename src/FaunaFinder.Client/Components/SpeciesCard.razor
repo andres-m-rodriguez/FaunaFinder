@@ -16,7 +16,15 @@
                 </div>
             }
             <div class="flex-1">
-                <MudText Typo="Typo.subtitle1" Class="font-semibold">@L.GetLocalizedValue(CommonName)</MudText>
+                <div class="d-flex align-center gap-2">
+                    <MudText Typo="Typo.subtitle1" Class="font-semibold">@L.GetLocalizedValue(CommonName)</MudText>
+                    @if (!string.IsNullOrEmpty(GRank) && ConservationLevel != ConservationStatus.Unknown)
+                    {
+                        <MudTooltip Text="@GetConservationTooltip()">
+                            <span class="conservation-badge @GetConservationClass()">@GRank</span>
+                        </MudTooltip>
+                    }
+                </div>
                 <MudText Typo="Typo.body2" Color="Color.Secondary" Class="italic">
                     @ScientificName
                 </MudText>
@@ -55,7 +63,45 @@
     public bool HasProfileImage { get; set; }
 
     [Parameter]
+    public string GRank { get; set; } = string.Empty;
+
+    [Parameter]
+    public string SRank { get; set; } = string.Empty;
+
+    [Parameter]
     public EventCallback OnClick { get; set; }
+
+    private enum ConservationStatus { CriticallyImperiled, Imperiled, Vulnerable, ApparentlySecure, Secure, Unknown }
+
+    private ConservationStatus ConservationLevel => GRank?.ToUpperInvariant() switch
+    {
+        var r when r?.StartsWith("G1") == true => ConservationStatus.CriticallyImperiled,
+        var r when r?.StartsWith("G2") == true => ConservationStatus.Imperiled,
+        var r when r?.StartsWith("G3") == true => ConservationStatus.Vulnerable,
+        var r when r?.StartsWith("G4") == true => ConservationStatus.ApparentlySecure,
+        var r when r?.StartsWith("G5") == true => ConservationStatus.Secure,
+        _ => ConservationStatus.Unknown
+    };
+
+    private string GetConservationClass() => ConservationLevel switch
+    {
+        ConservationStatus.CriticallyImperiled => "conservation-critical",
+        ConservationStatus.Imperiled => "conservation-imperiled",
+        ConservationStatus.Vulnerable => "conservation-vulnerable",
+        ConservationStatus.ApparentlySecure => "conservation-secure",
+        ConservationStatus.Secure => "conservation-stable",
+        _ => ""
+    };
+
+    private string GetConservationTooltip() => ConservationLevel switch
+    {
+        ConservationStatus.CriticallyImperiled => L["Conservation_CriticallyImperiled"],
+        ConservationStatus.Imperiled => L["Conservation_Imperiled"],
+        ConservationStatus.Vulnerable => L["Conservation_Vulnerable"],
+        ConservationStatus.ApparentlySecure => L["Conservation_ApparentlySecure"],
+        ConservationStatus.Secure => L["Conservation_Secure"],
+        _ => GRank
+    };
 
     protected override void OnInitialized()
     {

@@ -660,6 +660,258 @@ body {
     opacity: 1;
 }
 
+/* Conservation Status Badges */
+.conservation-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    flex-shrink: 0;
+}
+
+.conservation-critical {
+    background-color: #ffebee;
+    color: #c62828;
+    border: 1px solid #ef9a9a;
+}
+
+.conservation-imperiled {
+    background-color: #fff3e0;
+    color: #e65100;
+    border: 1px solid #ffcc80;
+}
+
+.conservation-vulnerable {
+    background-color: #fffde7;
+    color: #f9a825;
+    border: 1px solid #fff59d;
+}
+
+.conservation-secure {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+    border: 1px solid #a5d6a7;
+}
+
+.conservation-stable {
+    background-color: #e0f2f1;
+    color: #00695c;
+    border: 1px solid #80cbc4;
+}
+
+/* Dark mode conservation badges */
+.mud-theme-dark .conservation-critical {
+    background-color: rgba(198, 40, 40, 0.2);
+    color: #ef5350;
+    border-color: rgba(198, 40, 40, 0.4);
+}
+
+.mud-theme-dark .conservation-imperiled {
+    background-color: rgba(230, 81, 0, 0.2);
+    color: #ff9800;
+    border-color: rgba(230, 81, 0, 0.4);
+}
+
+.mud-theme-dark .conservation-vulnerable {
+    background-color: rgba(249, 168, 37, 0.2);
+    color: #ffc107;
+    border-color: rgba(249, 168, 37, 0.4);
+}
+
+.mud-theme-dark .conservation-secure {
+    background-color: rgba(46, 125, 50, 0.2);
+    color: #66bb6a;
+    border-color: rgba(46, 125, 50, 0.4);
+}
+
+.mud-theme-dark .conservation-stable {
+    background-color: rgba(0, 105, 92, 0.2);
+    color: #4db6ac;
+    border-color: rgba(0, 105, 92, 0.4);
+}
+
+/* ==========================================================================
+   Stats Hero Section
+   ========================================================================== */
+
+.stats-hero {
+    background: linear-gradient(135deg, var(--mud-palette-primary) 0%, var(--mud-palette-primary-darken) 100%);
+    border-radius: 16px;
+    padding: 24px 32px;
+    color: white;
+}
+
+.stats-hero-content {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 32px;
+    justify-content: center;
+}
+
+.stats-hero-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.stats-hero-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+}
+
+.stats-hero-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.stats-hero-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.stats-hero-label {
+    font-size: 0.875rem;
+    opacity: 0.85;
+}
+
+@media (max-width: 600px) {
+    .stats-hero {
+        padding: 20px 16px;
+    }
+
+    .stats-hero-content {
+        gap: 20px;
+    }
+
+    .stats-hero-value {
+        font-size: 1.5rem;
+    }
+}
+
+/* ==========================================================================
+   Species Detail Hero Banner
+   ========================================================================== */
+
+.species-hero {
+    position: relative;
+    border-radius: 16px;
+    overflow: hidden;
+    background: linear-gradient(135deg, var(--mud-palette-primary) 0%, var(--mud-palette-primary-darken) 100%);
+}
+
+.species-hero.has-image::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: var(--hero-bg);
+    background-size: cover;
+    background-position: center;
+    filter: blur(20px) brightness(0.4);
+    transform: scale(1.1);
+}
+
+.species-hero-content {
+    position: relative;
+    padding: 32px;
+    color: white;
+}
+
+.species-hero-image {
+    width: 140px;
+    height: 140px;
+    border-radius: 12px;
+    object-fit: cover;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    flex-shrink: 0;
+}
+
+.species-hero-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 80px;
+    height: 80px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.15);
+    flex-shrink: 0;
+}
+
+.species-hero-title {
+    color: white !important;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.species-hero-subtitle {
+    color: rgba(255, 255, 255, 0.85) !important;
+}
+
+.species-hero-meta {
+    color: rgba(255, 255, 255, 0.75);
+    font-size: 0.95rem;
+}
+
+.species-hero-btn-primary {
+    background-color: white !important;
+    color: var(--mud-palette-primary-darken) !important;
+}
+
+.species-hero-btn-primary:hover {
+    background-color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.species-hero-btn-secondary {
+    border-color: rgba(255, 255, 255, 0.5) !important;
+    color: white !important;
+}
+
+.species-hero-btn-secondary:hover {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    border-color: white !important;
+}
+
+.species-hero-source {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.species-hero-source a {
+    color: rgba(255, 255, 255, 0.8);
+    text-decoration: underline;
+}
+
+.species-hero-source a:hover {
+    color: white;
+}
+
+@media (max-width: 600px) {
+    .species-hero-content {
+        padding: 20px;
+    }
+
+    .species-hero-image {
+        width: 100px;
+        height: 100px;
+    }
+
+    .species-hero-icon {
+        width: 60px;
+        height: 60px;
+    }
+}
+
 /* Municipality Card (compact version for species detail) */
 .municipality-card-compact {
     cursor: pointer;

@@ -165,7 +165,9 @@ public sealed class SpeciesRepository(IDbContextFactory<WildlifeDbContext> conte
                 s.ScientificName,
                 s.MunicipalitySpecies.Select(ms => ms.Municipality.Name).OrderBy(n => n).ToList(),
                 s.IsFauna,
-                s.ProfileImageData != null
+                s.ProfileImageData != null,
+                s.GRank ?? string.Empty,
+                s.SRank ?? string.Empty
             ))
             .AsAsyncEnumerable()
             .WithCancellation(cancellationToken))
