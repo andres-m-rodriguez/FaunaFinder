@@ -3,9 +3,18 @@
 <MudCard Elevation="0" Class="species-card" @onclick="OnClick">
     <MudCardContent>
         <div class="d-flex align-center gap-3">
-            <div class="species-card-icon">
-                <MudIcon Icon="@Icons.Material.Filled.Pets" Size="Size.Medium" Color="Color.Tertiary" />
-            </div>
+            @if (HasProfileImage && SpeciesId > 0)
+            {
+                <div class="species-card-thumbnail">
+                    <img src="api/species/@SpeciesId/image" alt="@L.GetLocalizedValue(CommonName)" loading="lazy" />
+                </div>
+            }
+            else
+            {
+                <div class="species-card-icon">
+                    <MudIcon Icon="@Icons.Material.Filled.Pets" Size="Size.Medium" Color="Color.Tertiary" />
+                </div>
+            }
             <div class="flex-1">
                 <MudText Typo="Typo.subtitle1" Class="font-semibold">@L.GetLocalizedValue(CommonName)</MudText>
                 <MudText Typo="Typo.body2" Color="Color.Secondary" Class="italic">
@@ -27,6 +36,9 @@
 </MudCard>
 
 @code {
+    [Parameter]
+    public int SpeciesId { get; set; }
+
     [Parameter, EditorRequired]
     public List<LocaleValue> CommonName { get; set; } = [];
 
@@ -38,6 +50,9 @@
 
     [Parameter]
     public bool ShowMunicipalityCount { get; set; } = true;
+
+    [Parameter]
+    public bool HasProfileImage { get; set; }
 
     [Parameter]
     public EventCallback OnClick { get; set; }
